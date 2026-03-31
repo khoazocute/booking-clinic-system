@@ -7,6 +7,7 @@ import com.example.booking_clinic.dto.auth.RegisterRequest;
 import com.example.booking_clinic.dto.auth.RegisterResponse;
 import com.example.booking_clinic.entity.Role;
 import com.example.booking_clinic.entity.User;
+import com.example.booking_clinic.repository.RefreshTokenRepository;
 import com.example.booking_clinic.repository.RoleRepository;
 import com.example.booking_clinic.repository.UserRepository;
 import com.example.booking_clinic.service.AuthService;
@@ -14,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.booking_clinic.entity.RefreshToken;
+import com.example.booking_clinic.security.JwtService;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,9 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtService jwtService;
 
     @Override
     @Transactional //Mỏi phương thức đăng ký và đăng nhập sẽ được thực thi trong một transaction riêng biệt, 
@@ -61,7 +68,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    @Transactional(readOnly = true) //Đánh dấu phương thức login là read-only, 
+    @Transactional//Đánh dấu phương thức login là read-only, 
     // cho biết rằng phương thức này chỉ thực hiện các thao tác đọc dữ liệu từ cơ sở dữ liệu mà không thực hiện bất kỳ thay đổi nào.
     public LoginResponse login(LoginRequest request) {
         User user = userRepository.findByEmail(request.email())
@@ -74,8 +81,20 @@ public class AuthServiceImpl implements AuthService {
         if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
             throw new IllegalStateException("Account is not active");
         }
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshTokenValue = jwtService.generateRefreshToken(user);
 
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .refreshToken(refreshTokenValue)
+                .expiredAt(LocalDateTime.now().plusDays(7))
+                .revoked(false)
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
         return new LoginResponse(
+                accessToken,
+                refreshTokenValue,
                 user.getId(),
                 user.getFullName(),
                 user.getEmail(),
