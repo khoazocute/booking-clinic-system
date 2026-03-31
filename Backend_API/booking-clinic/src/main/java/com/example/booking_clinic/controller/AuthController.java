@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.example.booking_clinic.dto.auth.LoginRequest;
+import com.example.booking_clinic.dto.auth.LoginResponse;
+
 
 @RestController
 @RequestMapping("/api/v1/auth") //Nhận tất cả request bắt đầu bằng /api/v1/auth
@@ -22,11 +25,23 @@ public class AuthController {
 
     @PostMapping("/register") //Nhận request POST đến /api/v1/auth/register
     public ResponseEntity<ApiResponse<RegisterResponse>> register(
+        //@Valid để kích hoạt validation tự động dựa trên các annotation trong RegisterRequest
+        //@RequestBody để ánh xạ dữ liệu JSON từ request body vào đối tượng RegisterRequest
             @Valid @RequestBody RegisterRequest request) {
 
         RegisterResponse response = authService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Registered successfully", response));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<LoginResponse>> login(
+            @Valid @RequestBody LoginRequest request) {
+
+        LoginResponse response = authService.login(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("Login successfully", response)
+        );
     }
 }
 //File này chỉ làm 3 việc chính:
