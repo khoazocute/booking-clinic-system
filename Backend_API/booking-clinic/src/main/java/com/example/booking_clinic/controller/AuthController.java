@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.booking_clinic.dto.auth.LoginRequest;
 import com.example.booking_clinic.dto.auth.LoginResponse;
+import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
+import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 
 
 @RestController
@@ -21,7 +23,7 @@ import com.example.booking_clinic.dto.auth.LoginResponse;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthService authService; //Gọi service
 
     @PostMapping("/register") //Nhận request POST đến /api/v1/auth/register
     public ResponseEntity<ApiResponse<RegisterResponse>> register(
@@ -41,6 +43,16 @@ public class AuthController {
         LoginResponse response = authService.login(request);
         return ResponseEntity.ok(
                 ApiResponse.success("Login successfully", response)
+        );
+    }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<ApiResponse<RefreshTokenResponse>> refreshToken(
+        @Valid @RequestBody RefreshTokenRequest request) {
+
+        RefreshTokenResponse response = authService.refreshToken(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("Token refreshed successfully", response)
         );
     }
 }
