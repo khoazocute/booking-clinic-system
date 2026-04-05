@@ -18,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.booking_clinic.entity.RefreshToken;
 import com.example.booking_clinic.security.JwtService;
 import java.time.LocalDateTime;
+import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
+import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -103,4 +105,26 @@ public class AuthServiceImpl implements AuthService {
                 user.getStatus()
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public RefreshTokenResponse refreshToken(RefreshTokenRequest request) {
+        RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(request.refreshToken())
+                .orElseThrow(() -> new IllegalArgumentException("Refresh token is invalid"));
+
+        if (Boolean.TRUE.equals(refreshToken.getRevoked())) {
+            throw new IllegalStateException("Refresh token has been revoked");
+        }
+
+        User user = refreshToken.getUser();
+
+        if (!jwtService.isTokenValid(refreshToken.getRefreshToken(), user)) {
+            throw new IllegalArgumentException("Refresh token is expired or invalid");
+        }
+
+        String newAccessToken = jwtService.generateAccessToken(user);
+
+        return new RefreshTokenResponse(newAccessToken);
+    }
+
 }
