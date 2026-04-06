@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.example.booking_clinic.dto.auth.LoginRequest;
 import com.example.booking_clinic.dto.auth.LoginResponse;
+import com.example.booking_clinic.dto.auth.LogoutRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 
@@ -55,6 +56,22 @@ public class AuthController {
                 ApiResponse.success("Token refreshed successfully", response)
         );
     }
+
+    @PostMapping("/logout")
+    // Method sẽ trả về HTTP response và được bọc trong API response 
+    // APi này chỉ trả trạng thái thành công or thất bại và k trả về data
+    // LogoutRequest là DTO đầu vào ( chứa dữ liệu đầu vào), và kích hoạt validation
+    //@Request lấy json từ client và map vào object LogoutRequest
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @Valid @RequestBody LogoutRequest request) {
+
+        authService.logout(request); //controller gọi Service
+        return ResponseEntity.ok(
+                ApiResponse.success("Logout successfully", null)
+        );
+    }
+
+    
 }
 //File này chỉ làm 3 việc chính:
 //1. Nhận request đăng ký từ client (POST /api/v1/auth/register)
