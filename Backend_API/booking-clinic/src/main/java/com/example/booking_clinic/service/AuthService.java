@@ -2,6 +2,7 @@ package com.example.booking_clinic.service;
 
 import com.example.booking_clinic.dto.auth.LoginRequest;
 import com.example.booking_clinic.dto.auth.LoginResponse;
+import com.example.booking_clinic.dto.auth.LogoutRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 import com.example.booking_clinic.dto.auth.RegisterRequest;
@@ -17,6 +18,9 @@ public interface AuthService {
     LoginResponse login(LoginRequest request);
 
     RefreshTokenResponse refreshToken(RefreshTokenRequest request);
+
+    void logout(LogoutRequest request);
+
 }
 //Đây là interface định nghĩa phương thức register để xử lý logic đăng ký người dùng. 
 // Các lớp triển khai interface này sẽ cung cấp chi tiết về cách thực hiện đăng ký,

@@ -18,6 +18,8 @@ import java.util.Optional;
 //=> ta chỉ cần định nghĩa thêm những hàm mà nghiệp vụ cần
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
+//Optional dùng để trả về User nếu có và rỗng nếu không tìm được để tránh trả về lỗi null khi ép trực tiếp về User
+// sẽ dễ gây ra lỗi NullPointerException
 // Kiểm tra xem email đã tồn tại trong cơ sở dữ liệu hay chưa, 
 // trả về true nếu tồn tại, false nếu không tồn tại
     boolean existsByEmail(String email);

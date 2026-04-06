@@ -3,6 +3,7 @@ package com.example.booking_clinic.service.impl;
 import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.dto.auth.LoginRequest;
 import com.example.booking_clinic.dto.auth.LoginResponse;
+import com.example.booking_clinic.dto.auth.LogoutRequest;
 import com.example.booking_clinic.dto.auth.RegisterRequest;
 import com.example.booking_clinic.dto.auth.RegisterResponse;
 import com.example.booking_clinic.entity.Role;
@@ -125,6 +126,19 @@ public class AuthServiceImpl implements AuthService {
         String newAccessToken = jwtService.generateAccessToken(user);
 
         return new RefreshTokenResponse(newAccessToken);
+    }
+
+    @Override
+    @Transactional
+    // Dữ liệu đầu vào là LogoutRequest , req chứa refreshToken
+    // Nối reponsitory truy xuất database
+    // Service dùng DTO và service gọi repository
+    public void logout(LogoutRequest request) {
+        RefreshToken refreshToken = refreshTokenRepository.findByRefreshToken(request.refreshToken())
+                .orElseThrow(() -> new IllegalArgumentException("Refresh token is invalid"));
+
+        refreshToken.setRevoked(true); // chỉnh revoked giá trị true để thu hồi token
+        refreshTokenRepository.save(refreshToken);// Lưu vào DB
     }
 
 }
