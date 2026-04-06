@@ -1,5 +1,6 @@
 package com.example.booking_clinic.service;
 
+import com.example.booking_clinic.dto.auth.CurrentUserResponse;
 import com.example.booking_clinic.dto.auth.LoginRequest;
 import com.example.booking_clinic.dto.auth.LoginResponse;
 import com.example.booking_clinic.dto.auth.LogoutRequest;
@@ -7,6 +8,7 @@ import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 import com.example.booking_clinic.dto.auth.RegisterRequest;
 import com.example.booking_clinic.dto.auth.RegisterResponse;
+import com.example.booking_clinic.dto.auth.CurrentUserResponse;
 
 public interface AuthService {
 //Đây là tính trừu tượng trong OOP, 
@@ -20,6 +22,8 @@ public interface AuthService {
     RefreshTokenResponse refreshToken(RefreshTokenRequest request);
 
     void logout(LogoutRequest request);
+
+    CurrentUserResponse getCurrentUser();
 
 }
 //Đây là interface định nghĩa phương thức register để xử lý logic đăng ký người dùng. 

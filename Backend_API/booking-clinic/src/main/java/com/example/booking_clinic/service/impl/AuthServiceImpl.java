@@ -18,9 +18,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.booking_clinic.entity.RefreshToken;
 import com.example.booking_clinic.security.JwtService;
+
+import java.security.Security;
 import java.time.LocalDateTime;
 import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
+import com.example.booking_clinic.dto.auth.CurrentUserResponse;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 
 @Service
 @RequiredArgsConstructor
@@ -139,6 +145,29 @@ public class AuthServiceImpl implements AuthService {
 
         refreshToken.setRevoked(true); // chỉnh revoked giá trị true để thu hồi token
         refreshTokenRepository.save(refreshToken);// Lưu vào DB
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CurrentUserResponse getCurrentUser() {
+// lấy thông tin xác thực hiện tại từ Spring Security
+// SecurityContextHolder là nơi Spring lưu thông tin user của request hiện tại
+//Tức là backend đang kiểm tra request này đang được xác thực bởi ai
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
+//principal chính là user là JWT xác thực trước đó 
+// Đoạn này dùng để biết chính xác user đang đăng nhập và tìm đúng user đó trong DB
+        User user = userRepository.findByEmail(principal.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+//map entity User sang DTO để trả về client
+        return new CurrentUserResponse(
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getName(),
+                user.getStatus()
+        );
     }
 
 }

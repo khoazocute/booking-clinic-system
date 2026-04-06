@@ -17,6 +17,9 @@ import com.example.booking_clinic.dto.auth.LoginResponse;
 import com.example.booking_clinic.dto.auth.LogoutRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
+import com.example.booking_clinic.dto.auth.CurrentUserResponse;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 @RestController
@@ -71,6 +74,14 @@ public class AuthController {
         );
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<CurrentUserResponse>> getCurrentUser() {
+        CurrentUserResponse response = authService.getCurrentUser();
+
+        return ResponseEntity.ok(
+            ApiResponse.success("Current user fetched successfully", response)
+        );
+    }
     
 }
 //File này chỉ làm 3 việc chính:
