@@ -26,7 +26,7 @@ public class JwtService {
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
-
+// Tạo AccessToken
     public String generateAccessToken(User user) {
         return Jwts.builder()
                 .subject(user.getEmail())
@@ -36,7 +36,7 @@ public class JwtService {
                 .signWith(getSigningKey())
                 .compact();
     }
-
+// Tạo refreshToken
     public String generateRefreshToken(User user) {
         return Jwts.builder()
                 .subject(user.getEmail())
@@ -45,6 +45,7 @@ public class JwtService {
                 .signWith(getSigningKey())
                 .compact();
     }
+// Xác thực JWT
 // Dùng để nhận diện token đó thuộc user nào
     public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
