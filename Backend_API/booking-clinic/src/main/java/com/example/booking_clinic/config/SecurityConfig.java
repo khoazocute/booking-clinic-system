@@ -27,13 +27,15 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                // Sau này khi vào project sẽ sửa lại API thật 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/v1/auth/**",
-                                "/api/v1/health"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                        .requestMatchers("/api/v1/auth/**", "/api/v1/health").permitAll()
+                        .requestMatchers("/api/v1/test/admin").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/test/doctor").hasRole("DOCTOR")
+                        .requestMatchers("/api/v1/test/patient").hasRole("PATIENT")
+                        .anyRequest().authenticated() //Bắt buộc phải đăng nhập
                 )
+
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
