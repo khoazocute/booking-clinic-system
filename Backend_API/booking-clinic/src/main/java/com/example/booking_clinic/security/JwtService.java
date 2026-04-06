@@ -77,4 +77,8 @@ public class JwtService {
                 .getPayload();
     }
 
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
 }
