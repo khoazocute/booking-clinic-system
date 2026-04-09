@@ -54,6 +54,19 @@ public class User {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Column(name = "reset_password_otp", length = 6)
+    private String resetPasswordOtp;
+
+    @Column(name = "otp_expiration_time")
+    private LocalDateTime otpExpirationTime;
+
+    @Column(name = "last_otp_request_time")
+    private LocalDateTime lastOtpRequestTime;
+    
+    @Builder.Default
+    @Column(name = "otp_failed_attempts")
+    private Integer otpFailedAttempts = 0;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

@@ -9,6 +9,9 @@ import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 import com.example.booking_clinic.dto.auth.RegisterRequest;
 import com.example.booking_clinic.dto.auth.RegisterResponse;
 import com.example.booking_clinic.dto.auth.CurrentUserResponse;
+import com.example.booking_clinic.dto.auth.ChangePasswordRequest;
+import com.example.booking_clinic.dto.auth.ForgotPasswordRequest;
+import com.example.booking_clinic.dto.auth.ResetPasswordRequest;
 
 public interface AuthService {
 //Đây là tính trừu tượng trong OOP, 
@@ -24,6 +27,12 @@ public interface AuthService {
     void logout(LogoutRequest request);
 
     CurrentUserResponse getCurrentUser();
+
+    void changePassword(ChangePasswordRequest request);
+
+    void forgotPassword(ForgotPasswordRequest request);
+
+    void resetPassword(ResetPasswordRequest request);
 
 }
 //Đây là interface định nghĩa phương thức register để xử lý logic đăng ký người dùng. 

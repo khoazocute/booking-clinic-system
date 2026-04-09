@@ -19,10 +19,10 @@ import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 import com.example.booking_clinic.dto.auth.CurrentUserResponse;
 import org.springframework.web.bind.annotation.GetMapping;
-
-
-
-@RestController
+import org.springframework.web.bind.annotation.PutMapping;
+import com.example.booking_clinic.dto.auth.ChangePasswordRequest;
+import com.example.booking_clinic.dto.auth.ForgotPasswordRequest;
+import com.example.booking_clinic.dto.auth.ResetPasswordRequest;@RestController
 @RequestMapping("/api/v1/auth") //Nhận tất cả request bắt đầu bằng /api/v1/auth
 @RequiredArgsConstructor
 public class AuthController {
@@ -83,6 +83,35 @@ public class AuthController {
         );
     }
     
+    @PutMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request) {
+
+        authService.changePassword(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("Password changed successfully", null)
+        );
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+
+        authService.forgotPassword(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("OTP sent to your email", null)
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+
+        authService.resetPassword(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("Password reset successfully", null)
+        );
+    }
 }
 //File này chỉ làm 3 việc chính:
 //1. Nhận request đăng ký từ client (POST /api/v1/auth/register)
