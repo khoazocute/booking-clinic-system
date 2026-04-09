@@ -4,6 +4,7 @@ import com.example.booking_clinic.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,7 +34,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/test/admin").hasRole("ADMIN")
                         .requestMatchers("/api/v1/test/doctor").hasRole("DOCTOR")
                         .requestMatchers("/api/v1/test/patient").hasRole("PATIENT")
-                        .anyRequest().authenticated() //Bắt buộc phải đăng nhập
+                        // Specialty: GET public, POST/PATCH/DELETE chỉ ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/v1/specialties", "/api/v1/specialties/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/specialties").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/specialties/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/specialties/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
