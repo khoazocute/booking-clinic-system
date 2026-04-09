@@ -67,14 +67,15 @@ DAMH_JAVA
 ## Hướng dẫn cài đặt môi trường
 
 ### Phần mềm cần cài
-
-JDK 17 https://adoptium.net/temurin/releases/?version=17 , Chọn bản `.msi` Windows x64 
-XAMPP (Mới nhất) https://www.apachefriends.org/download.html Dùng để chạy MySQL 
-Git (Mới nhất) https://git-scm.com/downloads , Quản lý source code 
-VS Code hoặc IntelliJ IDEA Mới nhất | https://code.visualstudio.com / https://www.jetbrains.com/idea/ , IDE lập trình 
+|-----------|-----------|----------|---------|
+| **JDK** | 17 | https://adoptium.net/temurin/releases/?version=17 | Chọn bản `.msi` Windows x64 |
+| **XAMPP** | Mới nhất | https://www.apachefriends.org/download.html | Dùng để chạy MySQL |
+| **Git** | Mới nhất | https://git-scm.com/downloads | Quản lý source code |
+| **VS Code** hoặc **IntelliJ IDEA** | Mới nhất | https://code.visualstudio.com / https://www.jetbrains.com/idea/ | IDE lập trình |
 ### Bắt buộc khi làm Frontend
 
-Node.js ( 18 trở lên ) https://nodejs.org/ (chọn bản LTS) 
+|-----------|-----------|----------|
+| **Node.js** | 18 trở lên | https://nodejs.org/ (chọn bản LTS) |
 Không cần cài riêng:
 
 - `Maven` vì project đã có `mvnw.cmd`

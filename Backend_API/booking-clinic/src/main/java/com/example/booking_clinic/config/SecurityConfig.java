@@ -39,11 +39,21 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/specialties").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/specialties/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/specialties/**").hasRole("ADMIN")
+
+
+                        //Doctor : GET pulic , POST/PATCH/DELETE chỉ ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/v1/doctors", "/api/v1/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/doctors").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
+
+
                 )
 
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-}
+}               
