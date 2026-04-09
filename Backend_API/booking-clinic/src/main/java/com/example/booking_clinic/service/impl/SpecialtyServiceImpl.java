@@ -75,7 +75,7 @@ public class SpecialtyServiceImpl implements SpecialtyService {
 
     @Override
     @Transactional
-    public void deleteSpecialty(Long id) {
+    public void deleteSpecialty(Long id) { // TODO: Waiting for Khoa to implement Doctor Service
         Specialty specialty = specialtyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found with id: " + id));
 
