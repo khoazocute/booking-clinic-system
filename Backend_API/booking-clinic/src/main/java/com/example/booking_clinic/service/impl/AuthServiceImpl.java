@@ -24,8 +24,14 @@ import java.time.LocalDateTime;
 import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 import com.example.booking_clinic.dto.auth.CurrentUserResponse;
+import com.example.booking_clinic.dto.auth.ChangePasswordRequest;
+import com.example.booking_clinic.dto.auth.ForgotPasswordRequest;
+import com.example.booking_clinic.dto.auth.ResetPasswordRequest;
+import com.example.booking_clinic.service.EmailService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import java.util.Random;
+import java.time.temporal.ChronoUnit;
 
 
 @Service
@@ -41,6 +47,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
     @Override
     @Transactional //Mỏi phương thức đăng ký và đăng nhập sẽ được thực thi trong một transaction riêng biệt, 
@@ -168,6 +175,76 @@ public class AuthServiceImpl implements AuthService {
                 user.getRole().getName(),
                 user.getStatus()
         );
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
+
+        User user = userRepository.findByEmail(principal.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Incorrect old password");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        refreshTokenRepository.deleteByUserId(user.getId());
+    }
+
+    @Override
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("User with this email not found"));
+
+        if (user.getLastOtpRequestTime() != null && ChronoUnit.MINUTES.between(user.getLastOtpRequestTime(), LocalDateTime.now()) < 1) {
+            throw new IllegalStateException("You are requesting OTP too fast, please try again after 1 minute");
+        }
+
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        user.setResetPasswordOtp(otp);
+        user.setOtpExpirationTime(LocalDateTime.now().plusMinutes(15));
+        user.setOtpFailedAttempts(0);
+        user.setLastOtpRequestTime(LocalDateTime.now());
+
+        userRepository.save(user);
+
+        emailService.sendOtpEmail(user.getEmail(), otp);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        User user = userRepository.findByEmail(request.email())
+                .orElseThrow(() -> new IllegalArgumentException("User with this email not found"));
+
+        if (user.getOtpFailedAttempts() != null && user.getOtpFailedAttempts() >= 5) {
+            user.setResetPasswordOtp(null);
+            userRepository.save(user);
+            throw new IllegalStateException("Maximum OTP attempt limit reached. Please request a new OTP.");
+        }
+
+        if (user.getResetPasswordOtp() == null || !user.getResetPasswordOtp().equals(request.otpCode()) || 
+            user.getOtpExpirationTime() == null || user.getOtpExpirationTime().isBefore(LocalDateTime.now())) {
+            
+            user.setOtpFailedAttempts(user.getOtpFailedAttempts() == null ? 1 : user.getOtpFailedAttempts() + 1);
+            userRepository.save(user);
+            throw new IllegalArgumentException("Invalid or expired OTP");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        user.setResetPasswordOtp(null);
+        user.setOtpExpirationTime(null);
+        user.setLastOtpRequestTime(null);
+        user.setOtpFailedAttempts(0);
+        userRepository.save(user);
+
+        refreshTokenRepository.deleteByUserId(user.getId());
     }
 
 }
