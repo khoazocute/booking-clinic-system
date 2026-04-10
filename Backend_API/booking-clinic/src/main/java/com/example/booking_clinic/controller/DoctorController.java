@@ -5,6 +5,9 @@ import com.example.booking_clinic.dto.doctor.CreateDoctorRequest;
 import com.example.booking_clinic.dto.doctor.DoctorResponse;
 import com.example.booking_clinic.dto.doctor.UpdateDoctorRequest;
 import com.example.booking_clinic.dto.doctor.UpdateDoctorStatusRequest;
+import com.example.booking_clinic.dto.doctor_schedule.CreateDoctorScheduleRequest;
+import com.example.booking_clinic.dto.doctor_schedule.DoctorScheduleResponse;
+import com.example.booking_clinic.service.DoctorScheduleService;
 import com.example.booking_clinic.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -28,6 +32,7 @@ import java.util.List;
 public class DoctorController {
 
     private final DoctorService doctorService;
+    private final DoctorScheduleService doctorScheduleService;
     // Gộp các chức năng xem danh sách, tìm kiếm, lọc vào đây
     // Trả về HTTP Response,  data là DoctorResponse
     @GetMapping
@@ -66,5 +71,32 @@ public class DoctorController {
             @Valid @RequestBody UpdateDoctorStatusRequest request) {
         DoctorResponse doctor = doctorService.updateDoctorStatus(id, request);
         return ResponseEntity.ok(ApiResponse.success("Doctor status updated successfully", doctor));
+    }
+
+    // Lấy danh sách lịch của bác sĩ (có thể truyền thêm query ?workDate=2024-05-20)
+    @GetMapping("/{id}/schedules")
+    public ResponseEntity<ApiResponse<List<DoctorScheduleResponse>>> getSchedules(
+            @PathVariable("id") Long doctorId,
+            @RequestParam(required = false) LocalDate workDate) {
+        List<DoctorScheduleResponse> schedules = doctorScheduleService.getSchedulesByDoctor(doctorId, workDate);
+        return ResponseEntity.ok(ApiResponse.success("Schedules fetched successfully", schedules));
+    }
+    //Tạo lịch làm cho bác sĩ với Id
+    @PostMapping("/{id}/schedules")
+    public ResponseEntity<ApiResponse<DoctorScheduleResponse>> createSchedule(
+            @PathVariable("id") Long doctorId,
+            @Valid @RequestBody CreateDoctorScheduleRequest request) {
+        
+        // Gắn doctorId từ URL path vào request (để đảm bảo đúng bác sĩ)
+        CreateDoctorScheduleRequest scheduleRequest = new CreateDoctorScheduleRequest(
+                doctorId,
+                request.workDate(),
+                request.startTime(),
+                request.endTime()
+        );
+        
+        DoctorScheduleResponse schedule = doctorScheduleService.createSchedule(scheduleRequest);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Schedule created successfully", schedule));
     }
 }
