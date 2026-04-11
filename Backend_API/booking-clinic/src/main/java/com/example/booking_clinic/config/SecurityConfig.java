@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").hasRole("ADMIN")
                         // Chỉ ADMIN hoặc DOCTOR mới được tạo/sửa lịch làm việc
                         .requestMatchers(HttpMethod.POST, "/api/v1/doctors/*/schedules").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers("/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
                         .anyRequest().authenticated()
 
 

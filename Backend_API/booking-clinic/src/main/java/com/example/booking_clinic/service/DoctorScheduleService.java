@@ -4,6 +4,8 @@ import com.example.booking_clinic.dto.doctor_schedule.CreateDoctorScheduleReques
 import com.example.booking_clinic.dto.doctor_schedule.DoctorScheduleResponse;
 import com.example.booking_clinic.dto.doctor_schedule.UpdateDoctorScheduleRequest;
 
+import com.example.booking_clinic.dto.doctor_schedule.UpdateStatusDoctorScheduleRequest;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -19,4 +21,7 @@ public interface DoctorScheduleService {
 
     // Xoá/Huỷ lịch làm việc
     void deleteSchedule(Long id);
+
+    // Cập nhật trạng thái lịch làm việc
+    DoctorScheduleResponse updateScheduleStatus(Long id, UpdateStatusDoctorScheduleRequest request);
 }

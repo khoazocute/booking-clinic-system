@@ -4,6 +4,7 @@ import com.example.booking_clinic.common.api.ApiResponse;
 import com.example.booking_clinic.dto.doctor_schedule.CreateDoctorScheduleRequest;
 import com.example.booking_clinic.dto.doctor_schedule.DoctorScheduleResponse;
 import com.example.booking_clinic.dto.doctor_schedule.UpdateDoctorScheduleRequest;
+import com.example.booking_clinic.dto.doctor_schedule.UpdateStatusDoctorScheduleRequest;
 import com.example.booking_clinic.service.DoctorScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -45,5 +46,14 @@ public class DoctorScheduleController {
     public ResponseEntity<ApiResponse<Void>> deleteSchedule(@PathVariable Long id) {
         scheduleService.deleteSchedule(id);
         return ResponseEntity.ok(ApiResponse.success("Schedule deleted successfully", null));
+    }
+
+    // Sửa trạng thái lịch làm việc
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<DoctorScheduleResponse>> updateScheduleStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateStatusDoctorScheduleRequest request) {
+        DoctorScheduleResponse schedule = scheduleService.updateScheduleStatus(id, request);
+        return ResponseEntity.ok(ApiResponse.success("Schedule status updated successfully", schedule));
     }
 }

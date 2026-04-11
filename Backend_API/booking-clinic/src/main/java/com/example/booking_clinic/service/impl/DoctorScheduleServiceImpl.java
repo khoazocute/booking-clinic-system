@@ -4,6 +4,7 @@ import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.dto.doctor_schedule.CreateDoctorScheduleRequest;
 import com.example.booking_clinic.dto.doctor_schedule.DoctorScheduleResponse;
 import com.example.booking_clinic.dto.doctor_schedule.UpdateDoctorScheduleRequest;
+import com.example.booking_clinic.dto.doctor_schedule.UpdateStatusDoctorScheduleRequest;
 import com.example.booking_clinic.entity.Doctor;
 import com.example.booking_clinic.entity.DoctorSchedule;
 import com.example.booking_clinic.repository.DoctorRepository;
@@ -89,6 +90,16 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
             throw new ResourceNotFoundException("Schedule not found");
         }
         scheduleRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional
+    public DoctorScheduleResponse updateScheduleStatus(Long id, UpdateStatusDoctorScheduleRequest request) {
+        DoctorSchedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+
+        schedule.setStatus(request.status());
+        return toResponse(scheduleRepository.save(schedule));
     }
 
     private DoctorScheduleResponse toResponse(DoctorSchedule schedule) {
