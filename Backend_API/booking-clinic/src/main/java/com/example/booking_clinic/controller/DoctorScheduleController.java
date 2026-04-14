@@ -22,6 +22,13 @@ public class DoctorScheduleController {
 
     private final DoctorScheduleService scheduleService;
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<DoctorScheduleResponse>>> getSchedulesByDoctor(
+            @RequestParam Long doctorId, //lọc theo id
+            @RequestParam(required = false) LocalDate workDate) {//lọc theo workdate
+        List<DoctorScheduleResponse> schedules = scheduleService.getSchedulesByDoctor(doctorId, workDate);
+        return ResponseEntity.ok(ApiResponse.success("Schedules fetched successfully", schedules));
+    }
 
     // Tạo lịch mới
     @PostMapping
