@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -23,6 +24,17 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
 
     private final DoctorScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
+
+    //Validate dữ liệu
+    private void validateScheduleTime(LocalDate workDate, LocalTime startTime, LocalTime endTime) {
+        if (workDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Work date cannot be in the past");
+        }
+
+        if (!startTime.isBefore(endTime)) {
+            throw new IllegalArgumentException("Start time must be before end time");
+        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -43,7 +55,12 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         Doctor doctor = doctorRepository.findById(request.doctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
 
-        // Kiểm tra xem lịch đã tồn tại chưa (chống trùng lịch giao lấn thời gian)
+        validateScheduleTime(request.workDate(), request.startTime(), request.endTime());
+
+        if (!"ACTIVE".equalsIgnoreCase(doctor.getStatus())) {
+            throw new IllegalArgumentException("Cannot create schedule for an inactive doctor");
+        }
+
         if (scheduleRepository.existsOverlappingSchedule(
                 request.doctorId(), request.workDate(), request.startTime(), request.endTime())) {
             throw new IllegalArgumentException("Schedule overlaps with an existing schedule for this doctor on the selected date");
@@ -54,7 +71,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
                 .workDate(request.workDate())
                 .startTime(request.startTime())
                 .endTime(request.endTime())
-                .status("AVAILABLE") // Trạng thái mặc định khi tạo lịch
+                .status("AVAILABLE")
                 .build();
 
         return toResponse(scheduleRepository.save(schedule));
@@ -69,7 +86,12 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         Doctor doctor = doctorRepository.findById(request.doctorId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found"));
 
-        // Kiểm tra xem lịch sau khi cập nhật có bị trùng lấn với các lịch đã có (ngoại trừ chính nó) hay không
+        validateScheduleTime(request.workDate(), request.startTime(), request.endTime());
+
+        if (!"ACTIVE".equalsIgnoreCase(doctor.getStatus())) {
+            throw new IllegalArgumentException("Cannot update schedule for an inactive doctor");
+        }
+
         if (scheduleRepository.existsOverlappingScheduleExcluding(
                 request.doctorId(), id, request.workDate(), request.startTime(), request.endTime())) {
             throw new IllegalArgumentException("Schedule overlaps with an existing schedule for this doctor on the selected date");
@@ -98,7 +120,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         DoctorSchedule schedule = scheduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
 
-        schedule.setStatus(request.status());
+        schedule.setStatus(request.status().trim().toUpperCase());
         return toResponse(scheduleRepository.save(schedule));
     }
 

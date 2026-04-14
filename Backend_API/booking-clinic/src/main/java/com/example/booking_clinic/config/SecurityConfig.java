@@ -47,8 +47,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").hasRole("ADMIN")
                         // Chỉ ADMIN hoặc DOCTOR mới được tạo/sửa lịch làm việc
-                        .requestMatchers(HttpMethod.POST, "/api/v1/doctors/*/schedules").hasAnyRole("ADMIN", "DOCTOR")
-                        .requestMatchers("/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/doctor-schedules", "/api/v1/doctor-schedules/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/doctor-schedules").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
                         .anyRequest().authenticated()
 
 
