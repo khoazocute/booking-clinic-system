@@ -190,6 +190,13 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Incorrect old password");
         }
 
+        if ("DOCTOR".equalsIgnoreCase(user.getRole().getName())) {
+            String strongPasswordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+            if (!request.newPassword().matches(strongPasswordRegex)) {
+                throw new IllegalArgumentException("Doctor password must be strong (at least 8 characters, including upper case, lower case, number and special character)");
+            }
+        }
+
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
@@ -235,6 +242,13 @@ public class AuthServiceImpl implements AuthService {
             user.setOtpFailedAttempts(user.getOtpFailedAttempts() == null ? 1 : user.getOtpFailedAttempts() + 1);
             userRepository.save(user);
             throw new IllegalArgumentException("Invalid or expired OTP");
+        }
+
+        if ("DOCTOR".equalsIgnoreCase(user.getRole().getName())) {
+            String strongPasswordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+            if (!request.newPassword().matches(strongPasswordRegex)) {
+                throw new IllegalArgumentException("Doctor password must be strong (at least 8 characters, including upper case, lower case, number and special character)");
+            }
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
