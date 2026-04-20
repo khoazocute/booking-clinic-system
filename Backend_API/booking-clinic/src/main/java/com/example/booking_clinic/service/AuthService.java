@@ -8,7 +8,7 @@ import com.example.booking_clinic.dto.auth.RefreshTokenRequest;
 import com.example.booking_clinic.dto.auth.RefreshTokenResponse;
 import com.example.booking_clinic.dto.auth.RegisterRequest;
 import com.example.booking_clinic.dto.auth.RegisterResponse;
-import com.example.booking_clinic.dto.auth.CurrentUserResponse;
+import com.example.booking_clinic.dto.auth.CurrentUserResponse; 
 import com.example.booking_clinic.dto.auth.ChangePasswordRequest;
 import com.example.booking_clinic.dto.auth.ForgotPasswordRequest;
 import com.example.booking_clinic.dto.auth.ResetPasswordRequest;

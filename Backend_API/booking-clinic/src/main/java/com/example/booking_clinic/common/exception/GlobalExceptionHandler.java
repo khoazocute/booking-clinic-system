@@ -19,9 +19,20 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(exception.getMessage(), null));
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    @ExceptionHandler({
+            IllegalArgumentException.class, 
+            IllegalStateException.class,
+            InvalidAppointmentStateException.class,
+            MedicineInactiveException.class
+    })
     public ResponseEntity<ApiResponse<Object>> handleBadRequest(RuntimeException exception) {
         return ResponseEntity.badRequest()
+                .body(ApiResponse.error(exception.getMessage(), null));
+    }
+
+    @ExceptionHandler(PrescriptionAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleConflict(PrescriptionAlreadyExistsException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.error(exception.getMessage(), null));
     }
 
