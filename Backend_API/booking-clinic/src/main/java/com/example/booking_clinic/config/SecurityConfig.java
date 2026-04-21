@@ -28,37 +28,51 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                // Sau này khi vào project sẽ sửa lại API thật 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**", "/api/v1/health").permitAll()
                         .requestMatchers("/api/v1/test/admin").hasRole("ADMIN")
                         .requestMatchers("/api/v1/test/doctor").hasRole("DOCTOR")
                         .requestMatchers("/api/v1/test/patient").hasRole("PATIENT")
+
                         // Specialty: GET public, POST/PATCH/DELETE chỉ ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/v1/specialties", "/api/v1/specialties/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/specialties").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/specialties/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/specialties/**").hasRole("ADMIN")
 
-
-                        //Doctor : GET pulic , POST/PATCH/DELETE chỉ ADMIN
+                        // Doctor: GET public, POST/PATCH/PUT chỉ ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/v1/doctors", "/api/v1/doctors/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/doctors").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/doctors/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctors/**").hasRole("ADMIN")
-                        // Chỉ ADMIN hoặc DOCTOR mới được tạo/sửa lịch làm việc
+
+                        // DoctorSchedule: GET public, POST/PATCH/PUT/DELETE chỉ ADMIN hoặc DOCTOR
                         .requestMatchers(HttpMethod.GET, "/api/v1/doctor-schedules", "/api/v1/doctor-schedules/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/doctor-schedules").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/doctor-schedules/**").hasAnyRole("ADMIN", "DOCTOR")
+
+                        // Patient profile: chỉ PATIENT
+                        .requestMatchers(HttpMethod.GET, "/api/v1/patients/me").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/patients/me").hasRole("PATIENT")
+
+                        // Appointment: PATIENT đặt lịch, xem lịch của mình (/me), huỷ lịch
+                        .requestMatchers(HttpMethod.POST, "/api/v1/appointments").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/appointments/me").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/appointments/**").hasRole("PATIENT")
+                        // DOCTOR/ADMIN xem lịch theo bác sĩ, cập nhật trạng thái
+                        .requestMatchers(HttpMethod.GET, "/api/v1/appointments/doctor/**").hasAnyRole("DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/appointments/**").hasAnyRole("DOCTOR", "ADMIN")
+                        // ADMIN xem tất cả
+                        .requestMatchers(HttpMethod.GET, "/api/v1/appointments").hasRole("ADMIN")
+                        // Xem chi tiết 1 lịch hẹn (patient/doctor/admin)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/appointments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+
                         .anyRequest().authenticated()
-
-
                 )
-
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-}               
+}
