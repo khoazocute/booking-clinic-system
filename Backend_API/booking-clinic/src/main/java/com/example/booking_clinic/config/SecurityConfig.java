@@ -69,6 +69,11 @@ public class SecurityConfig {
                         // Xem chi tiết 1 lịch hẹn (patient/doctor/admin)
                         .requestMatchers(HttpMethod.GET, "/api/v1/appointments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
 
+                        // Medical Record: DOCTOR tạo/cập nhật, DOCTOR/PATIENT/ADMIN xem
+                        .requestMatchers(HttpMethod.POST, "/api/v1/medical-records").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/medical-records/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/medical-records/**").hasRole("DOCTOR")
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
