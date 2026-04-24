@@ -5,7 +5,7 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity 
+@Entity
 @Table(name = "doctors")
 @Getter
 @Setter
@@ -23,7 +23,7 @@ public class Doctor {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "specialty_id") 
+    @JoinColumn(name = "specialty_id")
     private Specialty specialty;
 
     @Column(name = "experience_years")
