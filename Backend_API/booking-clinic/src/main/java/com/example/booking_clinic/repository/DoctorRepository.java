@@ -11,6 +11,7 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     boolean existsByUser_Id(Long userId);
 
+
     List<Doctor> findBySpecialty_Id(Long specialtyId);
 
     List<Doctor> findByUser_FullNameContainingIgnoreCase(String keyword);
