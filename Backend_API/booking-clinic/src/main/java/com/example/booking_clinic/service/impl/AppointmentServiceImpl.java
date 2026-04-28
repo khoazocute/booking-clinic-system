@@ -167,9 +167,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         if ("DOCTOR".equals(role)) {
             Doctor currentDoctor = doctorRepository.findByUser_Id(currentUser.getId())
                     .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found"));
-            if (!appointment.getDoctor().getId().equals(currentDoctor.getId())) {
-                throw new IllegalArgumentException("You are not allowed to update this appointment");
-            }
+                    System.out.println("=== DEBUG CHECK XÁC NHẬN LỊCH ===");
+System.out.println("1. ID Bác sĩ của ca khám: " + appointment.getDoctor().getId());
+System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
+         if (appointment.getDoctor().getId().longValue() != currentDoctor.getId().longValue()) {
+    throw new IllegalArgumentException("You are not allowed to update this appointment");
+}
         } else if (!"ADMIN".equals(role)) {
             throw new IllegalArgumentException("Invalid role");
         }

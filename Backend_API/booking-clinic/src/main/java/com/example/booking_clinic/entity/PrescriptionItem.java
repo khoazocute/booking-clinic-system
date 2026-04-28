@@ -3,6 +3,8 @@ package com.example.booking_clinic.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "prescription_items")
 @Getter
@@ -35,6 +37,12 @@ public class PrescriptionItem {
 
     @Column(name = "quantity")
     private Integer quantity; // dosePerTime * timesPerDay * durationDays
+
+    @Column(name = "unit_price", precision = 12, scale = 2)
+    private BigDecimal unitPrice; // Snapshot giá thuốc tại thời điểm kê đơn
+
+    @Column(name = "line_total", precision = 12, scale = 2)
+    private BigDecimal lineTotal; // unitPrice * quantity (auto-calculated)
 
     @Column(name = "dosage_text")
     private String dosageText;

@@ -74,8 +74,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/medical-records").hasRole("DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/medical-records/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/medical-records/**").hasRole("DOCTOR")
-                        // Prescription: DOCTOR tạo đơn thuốc
+                        // Prescription: DOCTOR tạo đơn thuốc, GET cho DOCTOR/PATIENT/ADMIN, PATCH cho DOCTOR
                         .requestMatchers(HttpMethod.POST, "/api/v1/prescriptions").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/prescriptions/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/prescriptions/**").hasRole("DOCTOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
