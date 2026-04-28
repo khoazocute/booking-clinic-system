@@ -9,6 +9,7 @@ import com.example.booking_clinic.entity.Doctor;
 import com.example.booking_clinic.entity.DoctorSchedule;
 import com.example.booking_clinic.entity.Patient;
 import com.example.booking_clinic.entity.User;
+import com.example.booking_clinic.entity.enums.AppointmentStatus;
 import com.example.booking_clinic.repository.AppointmentRepository;
 import com.example.booking_clinic.repository.DoctorRepository;
 import com.example.booking_clinic.repository.DoctorScheduleRepository;
@@ -57,8 +58,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalArgumentException("You have already booked this schedule slot");
         }
 
-        // Lấy Doctor từ schedule (denormalize để lưu doctor_id trực tiếp vào
-        // appointments)
+        // Lấy Doctor từ schedule (denormalize để lưu doctor_id trực tiếp vào appointments)
         Doctor doctor = schedule.getDoctor();
 
         // Tạo Appointment
@@ -68,7 +68,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .schedule(schedule)
                 .appointmentDate(schedule.getWorkDate()) // lấy ngày từ khung giờ
                 .reason(request.reason())
-                .status("PENDING")
+                .status(AppointmentStatus.PENDING)
                 .build();
 
         // Đánh dấu khung giờ là BOOKED để người khác không đặt được
@@ -78,10 +78,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         return toResponse(appointmentRepository.save(appointment));
     }
 
-   @Override
+    @Override
     @Transactional(readOnly = true)
     public AppointmentResponse getAppointmentById(Long id) {
-        User currentUser = getCurrentUser(); //Lấy user hiện tại
+        User currentUser = getCurrentUser(); // Lấy user hiện tại
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
@@ -90,6 +90,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         if ("ADMIN".equals(role)) {
             return toResponse(appointment);
         }
+
         // Bệnh nhân chỉ được xem lịch của mình
         if ("PATIENT".equals(role)) {
             Long ownerUserId = appointment.getPatient().getUser().getId();
@@ -98,7 +99,8 @@ public class AppointmentServiceImpl implements AppointmentService {
             }
             return toResponse(appointment);
         }
-        //Doctor chỉ được xem lịch của mình
+
+        // Doctor chỉ được xem lịch của mình
         if ("DOCTOR".equals(role)) {
             Long doctorUserId = appointment.getDoctor().getUser().getId();
             if (!doctorUserId.equals(currentUser.getId())) {
@@ -110,15 +112,17 @@ public class AppointmentServiceImpl implements AppointmentService {
         throw new IllegalArgumentException("Invalid role");
     }
 
-
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getMyAppointments() {
         User currentUser = getCurrentUser();
         Patient patient = patientRepository.findByUser_Id(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
+
         return appointmentRepository.findByPatient_Id(patient.getId())
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
@@ -138,14 +142,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         return appointmentRepository.findByDoctor_Id(doctorId)
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAllAppointments() {
         return appointmentRepository.findAll()
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Override
@@ -166,19 +174,30 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalArgumentException("Invalid role");
         }
 
-        String newStatus = request.status().trim().toUpperCase();
+        AppointmentStatus newStatus;
+        try {
+            newStatus = AppointmentStatus.valueOf(request.status().trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status. Allowed: CONFIRMED, CANCELLED, COMPLETED");
+        }
 
         // Validate status nhập vào hợp lệ
-        if (!List.of("CONFIRMED", "CANCELLED", "COMPLETED").contains(newStatus)) {
+        if (!List.of(
+                AppointmentStatus.CONFIRMED,
+                AppointmentStatus.CANCELLED,
+                AppointmentStatus.COMPLETED
+        ).contains(newStatus)) {
             throw new IllegalArgumentException("Invalid status. Allowed: CONFIRMED, CANCELLED, COMPLETED");
         }
 
         // Nếu huỷ → lưu cancelReason và trả lại khung giờ về AVAILABLE
-        if ("CANCELLED".equals(newStatus)) {
-            if (!List.of("PENDING", "CONFIRMED").contains(appointment.getStatus())) {
+        if (AppointmentStatus.CANCELLED == newStatus) {
+            if (!List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED).contains(appointment.getStatus())) {
                 throw new IllegalArgumentException("Cannot cancel appointment with status: " + appointment.getStatus());
             }
+
             appointment.setCancelReason(request.cancelReason());
+
             DoctorSchedule schedule = appointment.getSchedule();
             if (schedule != null) {
                 schedule.setStatus("AVAILABLE");
@@ -204,7 +223,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         // Chỉ huỷ được khi còn PENDING hoặc CONFIRMED
-        if (!List.of("PENDING", "CONFIRMED").contains(appointment.getStatus())) {
+        if (!List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED).contains(appointment.getStatus())) {
             throw new IllegalArgumentException("Cannot cancel appointment with status: " + appointment.getStatus());
         }
 
@@ -215,12 +234,12 @@ public class AppointmentServiceImpl implements AppointmentService {
             doctorScheduleRepository.save(schedule);
         }
 
-        appointment.setStatus("CANCELLED");
+        appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
     }
 
     private User getCurrentUser() {
-        //lấy thông tin xác thực của người dùng hiện tại, lấy ra user đang đăng nhập
+        // lấy thông tin xác thực của người dùng hiện tại, lấy ra user đang đăng nhập
         // gán user đó vào principal
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User principal = (User) authentication.getPrincipal();
@@ -229,9 +248,10 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
     }
 
-// Helper: convert Appointment entity → AppointmentResponse DTO
+    // Helper: convert Appointment entity → AppointmentResponse DTO
     private AppointmentResponse toResponse(Appointment a) {
         DoctorSchedule schedule = a.getSchedule();
+
         return new AppointmentResponse(
                 a.getId(),
                 a.getPatient().getId(),
@@ -243,7 +263,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 schedule != null ? schedule.getStartTime() : null,
                 schedule != null ? schedule.getEndTime() : null,
                 a.getReason(),
-                a.getStatus(),
+                a.getStatus() != null ? a.getStatus().name() : null,
                 a.getCancelReason(),
                 a.getCreatedAt()
         );

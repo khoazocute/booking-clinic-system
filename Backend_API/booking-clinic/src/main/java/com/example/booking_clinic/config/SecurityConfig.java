@@ -11,9 +11,10 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 @Configuration
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -73,7 +74,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/medical-records").hasRole("DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/medical-records/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/medical-records/**").hasRole("DOCTOR")
-
+                        // Prescription: DOCTOR tạo đơn thuốc
+                        .requestMatchers(HttpMethod.POST, "/api/v1/prescriptions").hasRole("DOCTOR")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

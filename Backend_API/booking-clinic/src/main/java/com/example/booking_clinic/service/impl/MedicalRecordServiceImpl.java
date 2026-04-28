@@ -17,7 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.example.booking_clinic.entity.enums.AppointmentStatus;
 @Service
 @RequiredArgsConstructor
 public class MedicalRecordServiceImpl implements MedicalRecordService {
@@ -41,7 +41,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             throw new IllegalArgumentException("You are not the doctor of this appointment");
         }
 
-        if (!"CONFIRMED".equalsIgnoreCase(appointment.getStatus())) {
+        if (appointment.getStatus() != AppointmentStatus.CONFIRMED) {
             throw new IllegalArgumentException(
                     "Appointment must be CONFIRMED to create a medical record. Current status: " + appointment.getStatus());
         }
@@ -61,7 +61,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .followUpDate(request.followUpDate())
                 .build();
 
-        appointment.setStatus("COMPLETED");
+        appointment.setStatus(AppointmentStatus.COMPLETED);
         appointmentRepository.save(appointment);
 
         return toResponse(medicalRecordRepository.save(record));

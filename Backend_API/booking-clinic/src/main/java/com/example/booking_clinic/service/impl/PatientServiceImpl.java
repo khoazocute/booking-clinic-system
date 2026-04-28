@@ -54,15 +54,15 @@ public class PatientServiceImpl implements PatientService {
         return toResponse(patientRepository.save(patient));
     }
 
-     private User getCurrentUser() {
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    User principal = (User) authentication.getPrincipal();
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
 
-    return userRepository.findByEmail(principal.getEmail())
-            .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
-}
+        return userRepository.findByEmail(principal.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+    }
 
-     private PatientResponse toResponse(Patient patient) {
+    private PatientResponse toResponse(Patient patient) {
         return new PatientResponse(
                 patient.getId(),
                 patient.getUser().getId(),

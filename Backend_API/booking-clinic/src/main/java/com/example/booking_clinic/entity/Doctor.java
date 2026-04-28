@@ -1,30 +1,12 @@
 package com.example.booking_clinic.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import jakarta.persistence.*;
+import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-//JPA / Hibernate (Quản lý Cơ sở dữ liệu)
-@Entity 
+@Entity
 @Table(name = "doctors")
-// Lombok (Annotation)
 @Getter
 @Setter
 @Builder
@@ -36,36 +18,36 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY) //mối quan hệ 1-1 với table user
-    @JoinColumn(name = "user_id", nullable = false, unique = true) //cột trong users sẽ nối với doctors
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY) // Specialty 1 - N Doctor
-    @JoinColumn(name = "specialty_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "specialty_id")
     private Specialty specialty;
 
-    @Column(name = "experience_years", nullable = false)
+    @Column(name = "experience_years")
     private Integer experienceYears;
 
-    @Column(nullable = false, length = 255)
+    @Column(length = 255)
     private String qualification;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String biography;
 
-    @Column(name = "clinic_room", nullable = false, length = 50)
+    @Column(name = "clinic_room", length = 50)
     private String clinicRoom;
 
-    @Column(name = "average_rating", nullable = false, precision = 3, scale = 2)
+    @Column(name = "average_rating", precision = 3, scale = 2)
     private BigDecimal averageRating;
 
-    @Column(nullable = false, length = 20)
+    @Column(length = 20)
     private String status;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist

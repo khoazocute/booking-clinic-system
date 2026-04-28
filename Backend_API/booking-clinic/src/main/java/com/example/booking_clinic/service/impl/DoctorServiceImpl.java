@@ -3,6 +3,7 @@ package com.example.booking_clinic.service.impl;
 import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.dto.doctor.CreateDoctorRequest;
 import com.example.booking_clinic.dto.doctor.DoctorResponse;
+import com.example.booking_clinic.dto.doctor.UpdateDoctorProfileRequest;
 import com.example.booking_clinic.dto.doctor.UpdateDoctorRequest;
 import com.example.booking_clinic.dto.doctor.UpdateDoctorStatusRequest;
 import com.example.booking_clinic.entity.Doctor;
@@ -15,6 +16,8 @@ import com.example.booking_clinic.repository.SpecialtyRepository;
 import com.example.booking_clinic.repository.UserRepository;
 import com.example.booking_clinic.service.DoctorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +33,47 @@ public class DoctorServiceImpl implements DoctorService {
     private final RoleRepository roleRepository;
     private final SpecialtyRepository specialtyRepository;
 
+    // --- API CỦA BẠN (Cập nhật hồ sơ cá nhân) ---
+    @Override
+    @Transactional
+    public DoctorResponse updateMyProfile(UpdateDoctorProfileRequest request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
+
+        User user = userRepository.findByEmail(principal.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!"DOCTOR".equalsIgnoreCase(user.getRole().getName())) {
+            throw new IllegalArgumentException("Only doctors can update doctor profile");
+        }
+
+        Doctor doctor = doctorRepository.findByUser_Id(user.getId())
+                .orElseGet(() -> {
+                    Doctor newDoctor = new Doctor();
+                    newDoctor.setUser(user);
+                    newDoctor.setAverageRating(BigDecimal.ZERO);
+                    newDoctor.setStatus("ACTIVE");
+                    return newDoctor;
+                });
+
+        if (request.specialtyId() != null) {
+            Specialty specialty = specialtyRepository.findById(request.specialtyId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Specialty not found"));
+            doctor.setSpecialty(specialty);
+        }
+
+        if (request.experienceYears() != null) doctor.setExperienceYears(request.experienceYears());
+        if (request.qualification() != null) doctor.setQualification(request.qualification());
+        if (request.biography() != null) doctor.setBiography(request.biography());
+        if (request.clinicRoom() != null) doctor.setClinicRoom(request.clinicRoom());
+        if (request.averageRating() != null) doctor.setAverageRating(BigDecimal.valueOf(request.averageRating()));
+        if (request.status() != null) doctor.setStatus(request.status());
+
+        doctor = doctorRepository.save(doctor);
+        return toResponse(doctor);
+    }
+
+    // --- API CỦA NHÓM (Dành cho Admin) ---
     @Override
     @Transactional(readOnly = true)
     public List<DoctorResponse> getAllDoctors(Long specialtyId, String keyword) {
@@ -65,16 +109,16 @@ public class DoctorServiceImpl implements DoctorService {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.userId()));
 
-        String roleName = user.getRole().getName().trim().toUpperCase();// Lấy role hiện tại
+        String roleName = user.getRole().getName().trim().toUpperCase();
 
         if (doctorRepository.existsByUser_Id(request.userId())) {
             throw new IllegalArgumentException("Doctor profile already exists for user id: " + request.userId());
         }
-// Nếu role là ADMin thì k dc phép sửa 
+
         if ("ADMIN".equals(roleName)) {
             throw new IllegalArgumentException("Admin account cannot be converted to doctor");
         }
-// Nếu role khác doctor thì đổi role thành doctor
+
         if (!"DOCTOR".equals(roleName)) {
             Role doctorRole = roleRepository.findByName("DOCTOR")
                     .orElseThrow(() -> new IllegalStateException("Role DOCTOR was not found"));
@@ -142,7 +186,7 @@ public class DoctorServiceImpl implements DoctorService {
         return toResponse(doctorRepository.save(doctor));
     }
 
-    private DoctorResponse toResponse(Doctor doctor) {//Map dữ liệu Entity sang DTO
+    private DoctorResponse toResponse(Doctor doctor) {
         return new DoctorResponse(
                 doctor.getId(),
                 doctor.getUser().getId(),
@@ -150,8 +194,8 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getUser().getEmail(),
                 doctor.getUser().getPhone(),
                 doctor.getUser().getAvatarUrl(),
-                doctor.getSpecialty().getId(),
-                doctor.getSpecialty().getName(),
+                doctor.getSpecialty() != null ? doctor.getSpecialty().getId() : null,
+                doctor.getSpecialty() != null ? doctor.getSpecialty().getName() : null,
                 doctor.getExperienceYears(),
                 doctor.getQualification(),
                 doctor.getBiography(),
