@@ -41,6 +41,9 @@ public class Doctor {
     @Column(name = "average_rating", precision = 3, scale = 2)
     private BigDecimal averageRating;
 
+    @Column(name = "consultation_fee", nullable = false, precision = 12, scale = 2)
+    private BigDecimal consultationFee;
+
     @Column(length = 20)
     private String status;
 

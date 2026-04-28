@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
+
 public record CreateDoctorRequest(
         @NotNull(message = "User ID is required")
         Long userId,
@@ -22,6 +24,10 @@ public record CreateDoctorRequest(
         String biography,
 
         @NotBlank(message = "Clinic room is required")
-        String clinicRoom
+        String clinicRoom,
+
+        @NotNull(message = "Consultation fee is required")
+        @Min(value = 0, message = "Consultation fee must be greater than or equal to 0")
+        BigDecimal consultationFee
 ) {
 }

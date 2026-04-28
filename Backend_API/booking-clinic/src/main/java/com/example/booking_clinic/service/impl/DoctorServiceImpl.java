@@ -138,6 +138,7 @@ public class DoctorServiceImpl implements DoctorService {
                         .biography(request.biography())
                         .clinicRoom(request.clinicRoom())
                         .averageRating(BigDecimal.ZERO.setScale(2))
+                        .consultationFee(request.consultationFee())
                         .status("ACTIVE")
                         .build()
         );
@@ -173,6 +174,10 @@ public class DoctorServiceImpl implements DoctorService {
             doctor.setClinicRoom(request.clinicRoom());
         }
 
+        if (request.consultationFee() != null) {
+            doctor.setConsultationFee(request.consultationFee());
+        }
+
         return toResponse(doctorRepository.save(doctor));
     }
 
@@ -201,6 +206,7 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getBiography(),
                 doctor.getClinicRoom(),
                 doctor.getAverageRating(),
+                doctor.getConsultationFee(),
                 doctor.getStatus(),
                 doctor.getCreatedAt(),
                 doctor.getUpdatedAt()
