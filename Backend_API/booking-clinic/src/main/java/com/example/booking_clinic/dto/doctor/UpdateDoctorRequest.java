@@ -2,6 +2,8 @@ package com.example.booking_clinic.dto.doctor;
 
 import jakarta.validation.constraints.Min;
 
+import java.math.BigDecimal;
+
 public record UpdateDoctorRequest(
         Long specialtyId,
 
@@ -10,6 +12,9 @@ public record UpdateDoctorRequest(
 
         String qualification,
         String biography,
-        String clinicRoom
+        String clinicRoom,
+
+        @Min(value = 0, message = "Consultation fee must be greater than or equal to 0")
+        BigDecimal consultationFee
 ) {
 }

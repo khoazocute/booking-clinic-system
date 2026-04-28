@@ -17,6 +17,7 @@ public record DoctorResponse(
         String biography,
         String clinicRoom,
         BigDecimal averageRating,
+        BigDecimal consultationFee,
         String status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
