@@ -78,6 +78,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/prescriptions").hasRole("DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/prescriptions/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/prescriptions/**").hasRole("DOCTOR")
+                        // Payment
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments").hasAnyRole("PATIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/payments/**").hasRole("ADMIN")
+                        
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

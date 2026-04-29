@@ -37,8 +37,8 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(exception.getMessage(), null));
     }
 
-    @ExceptionHandler(PrescriptionAlreadyExistsException.class)
-    public ResponseEntity<ApiResponse<Object>> handleConflict(PrescriptionAlreadyExistsException exception) {
+    @ExceptionHandler({PrescriptionAlreadyExistsException.class, PaymentAlreadyExistsException.class})
+    public ResponseEntity<ApiResponse<Object>> handleConflict(RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.error(exception.getMessage(), null));
     }
