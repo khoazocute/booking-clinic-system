@@ -3,6 +3,7 @@ package com.example.booking_clinic.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +48,9 @@ public class Prescription {
 
     private String status; // ACTIVE, CANCELLED
 
+    @Column(name = "total_price", precision = 12, scale = 2)
+    private BigDecimal totalPrice;
+
     @PrePersist
     void onCreate() {
         createdAt = LocalDateTime.now();
@@ -54,10 +58,22 @@ public class Prescription {
         if (status == null) {
             status = "ACTIVE";
         }
+        calculateTotalPrice();
     }
 
     @PreUpdate
     void onUpdate() {
         updatedAt = LocalDateTime.now();
+        calculateTotalPrice();
+    }
+
+    public void calculateTotalPrice() {
+        if (items != null && !items.isEmpty()) {
+            this.totalPrice = items.stream()
+                    .map(item -> item.getLineTotal() != null ? item.getLineTotal() : BigDecimal.ZERO)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        } else {
+            this.totalPrice = BigDecimal.ZERO;
+        }
     }
 }
