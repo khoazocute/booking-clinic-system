@@ -20,6 +20,7 @@ import com.example.booking_clinic.repository.AppointmentRepository;
 import com.example.booking_clinic.repository.MedicalRecordRepository;
 import com.example.booking_clinic.repository.PaymentRepository;
 import com.example.booking_clinic.repository.PrescriptionRepository;
+import com.example.booking_clinic.repository.UserRepository;
 import com.example.booking_clinic.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
         private final AppointmentRepository appointmentRepository;
         private final MedicalRecordRepository medicalRecordRepository;
         private final PrescriptionRepository prescriptionRepository;
+        private final UserRepository userRepository;
 
         @Override
         @Transactional
@@ -51,8 +53,7 @@ public class PaymentServiceImpl implements PaymentService {
                                                         + appointment.getStatus());
                 }
 
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                User currentUser = (User) authentication.getPrincipal();
+                User currentUser = getCurrentUser();
                 String role = currentUser.getRole().getName().trim().toUpperCase();
 
                 if ("PATIENT".equals(role)) {
@@ -100,8 +101,7 @@ public class PaymentServiceImpl implements PaymentService {
                 Payment payment = paymentRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
 
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                User currentUser = (User) authentication.getPrincipal();
+                User currentUser = getCurrentUser();
                 String role = currentUser.getRole().getName().trim().toUpperCase();
 
                 if ("PATIENT".equals(role)) {
@@ -126,8 +126,7 @@ public class PaymentServiceImpl implements PaymentService {
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Payment not found for appointment id: " + appointmentId));
 
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                User currentUser = (User) authentication.getPrincipal();
+                User currentUser = getCurrentUser();
                 String role = currentUser.getRole().getName().trim().toUpperCase();
 
                 if ("PATIENT".equals(role)) {
@@ -154,9 +153,9 @@ public class PaymentServiceImpl implements PaymentService {
                 String newStatus = request.status().trim().toUpperCase();
 
                 // Validate allowed statuses
-                if (!java.util.List.of("COMPLETED", "FAILED", "CANCELLED", "PENDING").contains(newStatus)) {
+                if (!java.util.List.of("PAID", "FAILED", "CANCELLED", "PENDING").contains(newStatus)) {
                         throw new IllegalArgumentException(
-                                        "Invalid status. Allowed statuses are: COMPLETED, FAILED, CANCELLED, PENDING");
+                                        "Invalid status. Allowed statuses are: PAID, FAILED, CANCELLED, PENDING");
                 }
 
                 payment.setStatus(newStatus);
@@ -175,5 +174,13 @@ public class PaymentServiceImpl implements PaymentService {
                                 payment.getStatus(),
                                 payment.getCreatedAt(),
                                 payment.getUpdatedAt());
+        }
+
+        private User getCurrentUser() {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                User principal = (User) authentication.getPrincipal();
+
+                return userRepository.findByEmail(principal.getEmail())
+                                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
         }
 }
