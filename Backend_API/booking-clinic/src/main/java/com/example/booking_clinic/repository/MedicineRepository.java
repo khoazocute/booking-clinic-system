@@ -9,4 +9,8 @@ import java.util.List;
 @Repository
 public interface MedicineRepository extends JpaRepository<Medicine, Long> {
     List<Medicine> findByIdIn(List<Long> ids);
+
+    boolean existsByNameIgnoreCase(String name);
+
+    boolean existsByNameIgnoreCaseAndIdNot(String name, Long id);
 }

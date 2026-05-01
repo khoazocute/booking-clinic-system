@@ -96,6 +96,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/prescriptions").hasRole("DOCTOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/prescriptions/**").hasAnyRole("DOCTOR", "PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/prescriptions/**").hasRole("DOCTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/medicines", "/api/v1/medicines/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/medicines").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/medicines/**").hasRole("ADMIN")
                         // Payment
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments").hasAnyRole("PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/payments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
