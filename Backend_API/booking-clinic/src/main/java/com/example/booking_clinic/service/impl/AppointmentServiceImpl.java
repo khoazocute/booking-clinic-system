@@ -16,6 +16,7 @@ import com.example.booking_clinic.repository.DoctorScheduleRepository;
 import com.example.booking_clinic.repository.PatientRepository;
 import com.example.booking_clinic.repository.UserRepository;
 import com.example.booking_clinic.service.AppointmentService;
+import com.example.booking_clinic.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +34,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DoctorScheduleRepository doctorScheduleRepository;
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -75,7 +77,18 @@ public class AppointmentServiceImpl implements AppointmentService {
         schedule.setStatus("BOOKED");
         doctorScheduleRepository.save(schedule);
 
-        return toResponse(appointmentRepository.save(appointment));
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        notificationService.createNotification(
+                patient.getUser(),
+                "Dat lich thanh cong",
+                "Ban da dat lich kham thanh cong voi bac si " + doctor.getUser().getFullName(),
+                "APPOINTMENT_CREATED",
+                "APPOINTMENT",
+                savedAppointment.getId()
+        );
+
+        return toResponse(savedAppointment);
     }
 
     @Override
@@ -209,7 +222,29 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
         }
 
         appointment.setStatus(newStatus);
-        return toResponse(appointmentRepository.save(appointment));
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+
+        if (AppointmentStatus.CONFIRMED == newStatus) {
+            notificationService.createNotification(
+                    savedAppointment.getPatient().getUser(),
+                    "Lich kham da duoc xac nhan",
+                    "Lich kham cua ban da duoc bac si xac nhan",
+                    "APPOINTMENT_CONFIRMED",
+                    "APPOINTMENT",
+                    savedAppointment.getId()
+            );
+        } else if (AppointmentStatus.CANCELLED == newStatus) {
+            notificationService.createNotification(
+                    savedAppointment.getPatient().getUser(),
+                    "Lich kham da bi huy",
+                    "Lich kham cua ban da bi huy",
+                    "APPOINTMENT_CANCELLED",
+                    "APPOINTMENT",
+                    savedAppointment.getId()
+            );
+        }
+
+        return toResponse(savedAppointment);
     }
 
     @Override
@@ -239,6 +274,15 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
         appointmentRepository.save(appointment);
+
+        notificationService.createNotification(
+                appointment.getDoctor().getUser(),
+                "Benh nhan da huy lich",
+                "Benh nhan " + appointment.getPatient().getUser().getFullName() + " da huy lich kham",
+                "APPOINTMENT_CANCELLED",
+                "APPOINTMENT",
+                appointment.getId()
+        );
     }
 
     private User getCurrentUser() {

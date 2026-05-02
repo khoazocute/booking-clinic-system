@@ -14,6 +14,7 @@ import com.example.booking_clinic.dto.prescription.UpdatePrescriptionRequest;
 import com.example.booking_clinic.entity.*;
 import com.example.booking_clinic.entity.enums.MedicineStatus;
 import com.example.booking_clinic.repository.*;
+import com.example.booking_clinic.service.NotificationService;
 import com.example.booking_clinic.service.PrescriptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -36,6 +37,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final MedicineRepository medicineRepository;
+    private final NotificationService notificationService;
 
     // ==================== CREATE ====================
 
@@ -137,6 +139,15 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         prescription.getItems().addAll(items);
         
         Prescription savedPrescription = prescriptionRepository.save(prescription);
+
+        notificationService.createNotification(
+                appointment.getPatient().getUser(),
+                "Don thuoc da duoc tao",
+                "Bac si da tao don thuoc cho lich kham cua ban",
+                "PRESCRIPTION_CREATED",
+                "PRESCRIPTION",
+                savedPrescription.getId()
+        );
 
         return toResponse(savedPrescription);
     }
