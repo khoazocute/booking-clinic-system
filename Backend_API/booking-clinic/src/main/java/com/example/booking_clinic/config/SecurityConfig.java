@@ -105,6 +105,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/reviews/**").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.GET, "/api/v1/reviews/doctor/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/reviews/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        //notification: GET/PATCH chỉ PATIENT/DOCTOR/ADMIN, GET của mình hoặc GET theo id đều phải là PATIENT/DOCTOR/ADMIN
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/me").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/notifications/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/notifications/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         // Payment
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments").hasAnyRole("PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/payments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")

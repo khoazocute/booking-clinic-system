@@ -21,6 +21,7 @@ import com.example.booking_clinic.repository.MedicalRecordRepository;
 import com.example.booking_clinic.repository.PaymentRepository;
 import com.example.booking_clinic.repository.PrescriptionRepository;
 import com.example.booking_clinic.repository.UserRepository;
+import com.example.booking_clinic.service.NotificationService;
 import com.example.booking_clinic.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
         private final MedicalRecordRepository medicalRecordRepository;
         private final PrescriptionRepository prescriptionRepository;
         private final UserRepository userRepository;
+        private final NotificationService notificationService;
 
         @Override
         @Transactional
@@ -91,6 +93,14 @@ public class PaymentServiceImpl implements PaymentService {
                                 .build();
 
                 Payment savedPayment = paymentRepository.save(payment);
+
+                notificationService.createNotification(
+                                patient.getUser(),
+                                "Hoa don thanh toan da duoc tao",
+                                "He thong da tao hoa don thanh toan cho lich kham cua ban",
+                                "PAYMENT_CREATED",
+                                "PAYMENT",
+                                savedPayment.getId());
 
                 return toResponse(savedPayment);
         }
@@ -160,6 +170,24 @@ public class PaymentServiceImpl implements PaymentService {
 
                 payment.setStatus(newStatus);
                 Payment savedPayment = paymentRepository.save(payment);
+
+                if ("PAID".equals(newStatus)) {
+                        notificationService.createNotification(
+                                        savedPayment.getPatient().getUser(),
+                                        "Thanh toan thanh cong",
+                                        "Khoan thanh toan cua ban da duoc xac nhan thanh cong",
+                                        "PAYMENT_COMPLETED",
+                                        "PAYMENT",
+                                        savedPayment.getId());
+                } else if ("FAILED".equals(newStatus) || "CANCELLED".equals(newStatus)) {
+                        notificationService.createNotification(
+                                        savedPayment.getPatient().getUser(),
+                                        "Thanh toan da thay doi trang thai",
+                                        "Trang thai thanh toan cua ban da duoc cap nhat thanh " + newStatus,
+                                        "PAYMENT_UPDATED",
+                                        "PAYMENT",
+                                        savedPayment.getId());
+                }
 
                 return toResponse(savedPayment);
         }
