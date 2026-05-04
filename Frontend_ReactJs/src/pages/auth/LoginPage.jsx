@@ -13,6 +13,14 @@ import {
   setAccessToken,
 } from "../../services/authService";
 
+const copy = {
+  tokenError:
+    "\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng nh\u01b0ng kh\u00f4ng nh\u1eadn \u0111\u01b0\u1ee3c access token.",
+  registerSuccess:
+    "\u0110\u0103ng k\u00fd th\u00e0nh c\u00f4ng. B\u1ea1n c\u00f3 th\u1ec3 \u0111\u0103ng nh\u1eadp ngay b\u00e2y gi\u1edd.",
+  passwordPlaceholder: "********",
+};
+
 function LoginIcon({ src, alt }) {
   return <img className="auth-field__icon" src={src} alt={alt} />;
 }
@@ -54,7 +62,7 @@ export function LoginPage() {
 
       const accessToken = extractAccessToken(response);
       if (!accessToken) {
-        throw new Error("ÄÄƒng nháº­p thÃ nh cÃ´ng nhÆ°ng khÃ´ng nháº­n Ä‘Æ°á»£c access token.");
+        throw new Error(copy.tokenError);
       }
 
       setAccessToken(accessToken);
@@ -93,7 +101,7 @@ export function LoginPage() {
             <form className="auth-form auth-form--login" onSubmit={handleSubmit}>
               {location.state?.registered ? (
                 <p className="auth-form__message auth-form__message--success">
-                  ÄÄƒng kÃ½ thÃ nh cÃ´ng. Báº¡n cÃ³ thá»ƒ Ä‘Äƒng nháº­p ngay bÃ¢y giá».
+                  {copy.registerSuccess}
                 </p>
               ) : null}
               {error ? (
@@ -129,7 +137,7 @@ export function LoginPage() {
                     id="loginPassword"
                     name="password"
                     type="password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder={copy.passwordPlaceholder}
                     value={form.password}
                     onChange={handleChange}
                     required

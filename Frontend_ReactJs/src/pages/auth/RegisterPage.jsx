@@ -10,6 +10,15 @@ import {
 } from "../../assets/icons/auth";
 import { register } from "../../services/authService";
 
+const copy = {
+  confirmPasswordError: "M\u1eadt kh\u1ea9u x\u00e1c nh\u1eadn kh\u00f4ng kh\u1edbp.",
+  agreementError:
+    "B\u1ea1n c\u1ea7n \u0111\u1ed3ng \u00fd v\u1edbi \u0111i\u1ec1u kho\u1ea3n tr\u01b0\u1edbc khi \u0111\u0103ng k\u00fd.",
+  registerSuccess:
+    "\u0110\u0103ng k\u00fd th\u00e0nh c\u00f4ng. \u0110ang chuy\u1ec3n sang trang \u0111\u0103ng nh\u1eadp...",
+  passwordPlaceholder: "********",
+};
+
 function FieldIcon({ src, alt }) {
   return <img className="auth-field__icon" src={src} alt={alt} />;
 }
@@ -40,13 +49,13 @@ export function RegisterPage() {
     event.preventDefault();
 
     if (form.password !== form.confirmPassword) {
-      setError("Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p.");
+      setError(copy.confirmPasswordError);
       setSuccess("");
       return;
     }
 
     if (!form.agreement) {
-      setError("Báº¡n cáº§n Ä‘á»“ng Ã½ vá»›i Ä‘iá»u khoáº£n trÆ°á»›c khi Ä‘Äƒng kÃ½.");
+      setError(copy.agreementError);
       setSuccess("");
       return;
     }
@@ -63,7 +72,7 @@ export function RegisterPage() {
         password: form.password,
       });
 
-      setSuccess("ÄÄƒng kÃ½ thÃ nh cÃ´ng. Äang chuyá»ƒn sang trang Ä‘Äƒng nháº­p...");
+      setSuccess(copy.registerSuccess);
 
       setTimeout(() => {
         navigate("/login", {
@@ -175,7 +184,7 @@ export function RegisterPage() {
                     id="password"
                     name="password"
                     type="password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder={copy.passwordPlaceholder}
                     value={form.password}
                     onChange={handleChange}
                     required
@@ -191,7 +200,7 @@ export function RegisterPage() {
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder={copy.passwordPlaceholder}
                     value={form.confirmPassword}
                     onChange={handleChange}
                     required
