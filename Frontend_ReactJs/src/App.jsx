@@ -3,6 +3,7 @@ import { AuthLayout } from "./layouts/AuthLayout";
 import { MainLayout } from "./layouts/MainLayout";
 import { LoginPage } from "./pages/auth/LoginPage";
 import { RegisterPage } from "./pages/auth/RegisterPage";
+import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { CreateMedicalRecordPage } from "./pages/doctor/CreateMedicalRecordPage";
 import { CreatePrescriptionPage } from "./pages/doctor/CreatePrescriptionPage";
 import { CreateDoctorSchedulePage } from "./pages/doctor/CreateDoctorSchedulePage";
@@ -23,9 +24,11 @@ import { SpecialtyDetailPage } from "./pages/patient/browsing/SpecialtyDetailPag
 import { DoctorsPage } from "./pages/patient/browsing/DoctorsPage";
 import { DoctorDetailPage } from "./pages/patient/browsing/DoctorDetailPage";
 import { BookingPage } from "./pages/patient/browsing/BookingPage";
-import { PatientProfilePage } from "./pages/patient/profile/PatientProfilePage";
 import { HomePage } from "./pages/public/HomePage";
 import { UsersPage } from "./pages/public/UsersPage";
+import { PatientProfilePage } from "./pages/patient/account/PatientProfilePage";
+import { PatientProfileUpdate } from "./pages/patient/account/PatientProfileUpdate";
+import { ChangePassword } from "./pages/patient/account/ChangePassword";
 
 export default function App() {
   return (
@@ -34,6 +37,7 @@ export default function App() {
         <Route element={<AuthLayout />}>
           <Route path="register" element={<RegisterPage />} />
           <Route path="login" element={<LoginPage />} />
+          <Route path="forgot-password" element={<ForgotPasswordPage />} />
         </Route>
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
@@ -44,6 +48,8 @@ export default function App() {
           <Route path="doctors/:id" element={<DoctorDetailPage />} />
           <Route path="booking" element={<BookingPage />} />
           <Route path="profile" element={<PatientProfilePage />} />
+          <Route path="profile/edit" element={<PatientProfileUpdate />} />
+          <Route path="change-password" element={<ChangePassword />} />
         </Route>
         <Route path="/doctor" element={<DoctorDashboardPage />} />
         <Route path="/doctor/profile" element={<DoctorProfilePage />} />

@@ -22,7 +22,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import com.example.booking_clinic.dto.auth.ChangePasswordRequest;
 import com.example.booking_clinic.dto.auth.ForgotPasswordRequest;
-import com.example.booking_clinic.dto.auth.ResetPasswordRequest;@RestController
+import com.example.booking_clinic.dto.auth.ResetPasswordRequest;
+import com.example.booking_clinic.dto.auth.GoogleLoginRequest;
+import com.example.booking_clinic.dto.auth.FacebookLoginRequest;
+
+@RestController
 @RequestMapping("/api/v1/auth") //Nhận tất cả request bắt đầu bằng /api/v1/auth
 @RequiredArgsConstructor
 public class AuthController {
@@ -110,6 +114,26 @@ public class AuthController {
         authService.resetPassword(request);
         return ResponseEntity.ok(
                 ApiResponse.success("Password reset successfully", null)
+        );
+    }
+
+    @PostMapping("/google")
+    public ResponseEntity<ApiResponse<LoginResponse>> loginWithGoogle(
+            @Valid @RequestBody GoogleLoginRequest request) {
+
+        LoginResponse response = authService.loginWithGoogle(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("Google login successfully", response)
+        );
+    }
+
+    @PostMapping("/facebook")
+    public ResponseEntity<ApiResponse<LoginResponse>> loginWithFacebook(
+            @Valid @RequestBody FacebookLoginRequest request) {
+
+        LoginResponse response = authService.loginWithFacebook(request);
+        return ResponseEntity.ok(
+                ApiResponse.success("Facebook login successfully", response)
         );
     }
 }

@@ -1,12 +1,12 @@
 import { apiClient } from "./apiClient";
 
-export function getMyProfile() {
-  return apiClient("/patients/me");
+export async function getPatientProfile() {
+  return apiClient("/patients/me", { method: "GET" });
 }
 
-export function updateMyProfile(payload) {
+export async function updatePatientProfile(data) {
   return apiClient("/patients/me", {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    body: JSON.stringify(data),
   });
 }

@@ -1,0 +1,346 @@
+.pp-page {
+  background: var(--surface);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+.pp-header {
+  background: var(--surface-lowest);
+  border-bottom: 1px solid var(--surface-variant);
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.pp-header-inner {
+  max-width: var(--container-width);
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pp-back-btn {
+  padding: 8px;
+  color: var(--text);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pp-back-btn:hover {
+  background: var(--surface-highest);
+}
+
+.pp-page-title {
+  font-family: "Manrope", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+}
+
+/* ── Main layout ── */
+.pp-main {
+  flex: 1;
+  max-width: var(--container-width);
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-md) 24px;
+  display: flex;
+  gap: var(--space-md);
+}
+
+@media (max-width: 1024px) {
+  .pp-main { flex-direction: column; }
+}
+
+/* ── Sidebar ── */
+.pp-sidebar {
+  width: 25%;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
+  .pp-sidebar { width: 100%; }
+}
+
+.pp-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pp-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-decoration: none;
+  transition: background 0.2s ease;
+}
+
+.pp-nav-link:hover:not(.active) {
+  background: var(--surface-container);
+}
+
+.pp-nav-link.active {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* ── Content card ── */
+.pp-content {
+  flex: 1;
+  background: var(--surface-lowest);
+  border-radius: 16px;
+  box-shadow: var(--shadow-1);
+  padding: var(--space-lg);
+  position: relative;
+}
+
+/* ── Edit button (top-right) ── */
+.pp-edit-btn {
+  position: absolute;
+  top: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--outline);
+  background: transparent;
+  color: var(--primary);
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.pp-edit-btn:hover {
+  background: var(--surface-container);
+}
+
+.pp-edit-btn .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* ── Hero: avatar + name + chip ── */
+.pp-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-lg);
+}
+
+.pp-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius-full);
+  border: 4px solid var(--surface-lowest);
+  box-shadow: var(--shadow-1);
+  object-fit: cover;
+  background: var(--surface-high);
+}
+
+.pp-user-name {
+  font-family: "Manrope", sans-serif;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  text-align: center;
+}
+
+.pp-role-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 16px;
+  border-radius: var(--radius-full);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.pp-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--surface-variant);
+  margin-bottom: var(--space-lg);
+}
+
+/* ── Sections ── */
+.pp-section {
+  margin-bottom: var(--space-lg);
+}
+
+.pp-section-title {
+  font-family: "Manrope", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pp-section-title::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 24px;
+  background: var(--primary);
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* ── Basic info: 3-column grid of cards ── */
+.pp-basic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+@media (max-width: 900px) {
+  .pp-basic-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .pp-basic-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Info card (for basic section + full-width) ── */
+.pp-info-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+
+.pp-info-card .material-symbols-outlined {
+  font-size: 22px;
+  color: var(--outline);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Medical info: 2-column grid ── */
+.pp-medical-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  column-gap: 32px;
+  row-gap: 0;
+}
+
+@media (max-width: 768px) {
+  .pp-medical-grid { grid-template-columns: 1fr; }
+}
+
+.pp-medical-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Medical row (border-b separator) ── */
+.pp-medical-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--surface-variant);
+}
+
+.pp-medical-row .material-symbols-outlined {
+  font-size: 22px;
+  color: var(--outline);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Emergency contact (special red highlight) ── */
+.pp-medical-row--emergency {
+  background: rgba(255, 218, 214, 0.2);
+  border-bottom: 1px solid var(--error-container, #ffdad6);
+  padding: 12px;
+  border-radius: var(--radius-md);
+  margin-bottom: 0;
+}
+
+.pp-medical-row--emergency .material-symbols-outlined {
+  color: var(--error);
+}
+
+/* ── Full-width bottom fields ── */
+.pp-full-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* ── Shared label / value typography ── */
+.pp-label {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 4px;
+}
+
+.pp-label--error {
+  color: var(--error);
+}
+
+.pp-value {
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  margin: 0;
+  word-break: break-word;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.pp-value--empty {
+  color: var(--outline);
+  font-style: italic;
+}
+
+/* ── Loading ── */
+.pp-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-soft);
+  font-family: "Inter", sans-serif;
+}

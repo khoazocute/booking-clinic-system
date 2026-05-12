@@ -12,6 +12,8 @@ import com.example.booking_clinic.dto.auth.CurrentUserResponse;
 import com.example.booking_clinic.dto.auth.ChangePasswordRequest;
 import com.example.booking_clinic.dto.auth.ForgotPasswordRequest;
 import com.example.booking_clinic.dto.auth.ResetPasswordRequest;
+import com.example.booking_clinic.dto.auth.GoogleLoginRequest;
+import com.example.booking_clinic.dto.auth.FacebookLoginRequest;
 
 public interface AuthService {
 //Đây là tính trừu tượng trong OOP, 
@@ -33,6 +35,10 @@ public interface AuthService {
     void forgotPassword(ForgotPasswordRequest request);
 
     void resetPassword(ResetPasswordRequest request);
+
+    LoginResponse loginWithGoogle(GoogleLoginRequest request);
+
+    LoginResponse loginWithFacebook(FacebookLoginRequest request);
 
 }
 //Đây là interface định nghĩa phương thức register để xử lý logic đăng ký người dùng. 
