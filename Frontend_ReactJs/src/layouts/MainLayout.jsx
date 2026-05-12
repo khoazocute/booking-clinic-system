@@ -7,10 +7,9 @@ import {
 } from "../services/authService";
 
 const publicNavigation = [
-  { to: "/", label: "Home", end: true },
-  { to: "/#doctors", label: "Doctors" },
-  { to: "/#specialties", label: "Specialties" },
-  { to: "/#booking", label: "Booking" },
+  { to: "/", label: "Trang chủ", end: true },
+  { to: "/specialties", label: "Chuyên khoa" },
+  { to: "/doctors", label: "Bác sĩ" },
 ];
 
 export function MainLayout() {
@@ -64,9 +63,16 @@ export function MainLayout() {
 
           <nav className="site-nav" aria-label="Primary">
             {publicNavigation.map((item) => (
-              <a key={item.label} href={item.to} className="site-nav__link">
+              <NavLink
+                key={item.label}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) =>
+                  "site-nav__link" + (isActive ? " site-nav__link--active" : "")
+                }
+              >
                 {item.label}
-              </a>
+              </NavLink>
             ))}
           </nav>
 
@@ -77,12 +83,15 @@ export function MainLayout() {
                   <span className="site-user__label">Xin chào</span>
                   <strong>{currentUser.fullName ?? currentUser.email}</strong>
                 </div>
+                <Link className="button button--soft" to="/profile">
+                  Hồ sơ
+                </Link>
                 <button
                   className="button button--ghost"
                   type="button"
                   onClick={handleLogout}
                 >
-                  Logout
+                  Đăng xuất
                 </button>
               </>
             ) : (
