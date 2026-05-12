@@ -10,16 +10,19 @@ import {
 import { useGoogleLogin } from "@react-oauth/google";
 import {
   extractAccessToken,
+  extractRefreshToken,
+  getCurrentUser,
   login,
   loginWithGoogle,
   setAccessToken,
+  setAuthSession,
 } from "../../services/authService";
 
 const copy = {
   tokenError:
-    "\u0110\u0103ng nh\u1eadp th\u00e0nh c\u00f4ng nh\u01b0ng kh\u00f4ng nh\u1eadn \u0111\u01b0\u1ee3c access token.",
+    "Đăng nhập thành công nhưng không nhận được access token.",
   registerSuccess:
-    "\u0110\u0103ng k\u00fd th\u00e0nh c\u00f4ng. B\u1ea1n c\u00f3 th\u1ec3 \u0111\u0103ng nh\u1eadp ngay b\u00e2y gi\u1edd.",
+    "Đăng ký thành công. Bạn có thể đăng nhập ngay bây giờ.",
   passwordPlaceholder: "********",
 };
 
@@ -63,12 +66,18 @@ export function LoginPage() {
       });
 
       const accessToken = extractAccessToken(response);
+      const refreshToken = extractRefreshToken(response);
       if (!accessToken) {
         throw new Error(copy.tokenError);
       }
 
-      setAccessToken(accessToken);
-      navigate("/");
+      setAuthSession({ accessToken, refreshToken });
+      const currentUserResponse = await getCurrentUser();
+      const currentUser = currentUserResponse?.data;
+      const destination =
+        currentUser?.role === "DOCTOR" ? "/doctor" : "/";
+
+      navigate(destination);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -82,7 +91,6 @@ export function LoginPage() {
         setSubmitting(true);
         setError("");
 
-        // Pass the access_token to the backend
         const response = await loginWithGoogle(tokenResponse.access_token);
 
         const accessToken = extractAccessToken(response);
