@@ -16,6 +16,34 @@ export function login(payload) {
   });
 }
 
+export function loginWithGoogle(credential) {
+  return apiClient("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+}
+
+export function forgotPassword(payload) {
+  return apiClient("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function resetPassword(payload) {
+  return apiClient("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function changePassword(payload) {
+  return apiClient("/auth/change-password", {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+}
+
 export function getCurrentUser() {
   return apiClient("/auth/me");
 }

@@ -22,12 +22,14 @@ public class PatientServiceImpl implements PatientService {
     private final UserRepository userRepository;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PatientResponse getMyProfile() {
         User currentUser = getCurrentUser();
 
         Patient patient = patientRepository.findByUser_Id(currentUser.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
+                .orElseGet(() -> patientRepository.save(
+                        Patient.builder().user(currentUser).build()
+                ));
 
         return toResponse(patient);
     }
@@ -37,21 +39,40 @@ public class PatientServiceImpl implements PatientService {
     public PatientResponse updateMyProfile(UpdatePatientRequest request) {
         User currentUser = getCurrentUser();
 
-        Patient patient = patientRepository.findByUser_Id(currentUser.getId())
-                .orElse(Patient.builder()
-                        .user(currentUser)
-                        .build());
+        // Core locked field: only write if currently blank (first-time entry)
+        if (!hasValue(currentUser.getFullName()) && hasValue(request.fullName())) {
+            currentUser.setFullName(request.fullName());
+        }
+        // Phone is always updatable
+        currentUser.setPhone(request.phone());
+        userRepository.save(currentUser);
 
-        patient.setDateOfBirth(request.dateOfBirth());
+        Patient patient = patientRepository.findByUser_Id(currentUser.getId())
+                .orElseGet(() -> Patient.builder().user(currentUser).build());
+
+        // Core locked fields: only write if currently null/blank
+        if (patient.getDateOfBirth() == null && request.dateOfBirth() != null) {
+            patient.setDateOfBirth(request.dateOfBirth());
+        }
+        if (!hasValue(patient.getIdentityNumber()) && hasValue(request.identityNumber())) {
+            patient.setIdentityNumber(request.identityNumber());
+        }
+        if (!hasValue(patient.getInsuranceNumber()) && hasValue(request.insuranceNumber())) {
+            patient.setInsuranceNumber(request.insuranceNumber());
+        }
+
+        // Always updatable fields
         patient.setGender(request.gender());
-        patient.setAddress(request.address());
         patient.setBloodType(request.bloodType());
-        patient.setIdentityNumber(request.identityNumber());
-        patient.setInsuranceNumber(request.insuranceNumber());
+        patient.setAddress(request.address());
         patient.setEmergencyContactPhone(request.emergencyContactPhone());
         patient.setMedicalHistoryNote(request.medicalHistoryNote());
 
         return toResponse(patientRepository.save(patient));
+    }
+
+    private static boolean hasValue(String value) {
+        return value != null && !value.isBlank();
     }
 
     private User getCurrentUser() {

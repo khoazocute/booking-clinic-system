@@ -27,10 +27,17 @@ import com.example.booking_clinic.dto.auth.CurrentUserResponse;
 import com.example.booking_clinic.dto.auth.ChangePasswordRequest;
 import com.example.booking_clinic.dto.auth.ForgotPasswordRequest;
 import com.example.booking_clinic.dto.auth.ResetPasswordRequest;
+import com.example.booking_clinic.dto.auth.GoogleLoginRequest;
+import com.example.booking_clinic.dto.auth.FacebookLoginRequest;
 import com.example.booking_clinic.service.EmailService;
+import com.example.booking_clinic.service.GoogleTokenVerifierService;
+import com.example.booking_clinic.service.GoogleTokenVerifierService.GoogleUserInfo;
+import com.example.booking_clinic.service.FacebookTokenVerifierService;
+import com.example.booking_clinic.service.FacebookTokenVerifierService.FacebookUserInfo;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.Random;
+import java.util.UUID;
 import java.time.temporal.ChronoUnit;
 
 
@@ -48,6 +55,8 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtService jwtService;
     private final EmailService emailService;
+    private final GoogleTokenVerifierService googleTokenVerifierService;
+    private final FacebookTokenVerifierService facebookTokenVerifierService;
 
     @Override
     @Transactional //Mỏi phương thức đăng ký và đăng nhập sẽ được thực thi trong một transaction riêng biệt, 
@@ -186,6 +195,11 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(principal.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        // Chặn đổi mật khẩu cho tài khoản đăng nhập qua OAuth2
+        if ("GOOGLE".equals(user.getAuthProvider()) || "FACEBOOK".equals(user.getAuthProvider())) {
+            throw new IllegalArgumentException("Social accounts cannot change password. Please manage your account via the original provider.");
+        }
+
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Incorrect old password");
         }
@@ -208,6 +222,11 @@ public class AuthServiceImpl implements AuthService {
     public void forgotPassword(ForgotPasswordRequest request) {
         User user = userRepository.findByEmail(request.email())
                 .orElseThrow(() -> new IllegalArgumentException("User with this email not found"));
+
+        // Chặn quên mật khẩu cho tài khoản đăng nhập qua OAuth2
+        if ("GOOGLE".equals(user.getAuthProvider()) || "FACEBOOK".equals(user.getAuthProvider())) {
+            throw new IllegalArgumentException("Social accounts cannot reset password. Please manage your account via the original provider.");
+        }
 
         if (user.getLastOtpRequestTime() != null && ChronoUnit.MINUTES.between(user.getLastOtpRequestTime(), LocalDateTime.now()) < 1) {
             throw new IllegalStateException("You are requesting OTP too fast, please try again after 1 minute");
@@ -259,6 +278,157 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         refreshTokenRepository.deleteByUserId(user.getId());
+    }
+
+    @Override
+    @Transactional
+    public LoginResponse loginWithGoogle(GoogleLoginRequest request) {
+        // 1. Verify Google ID Token
+        GoogleUserInfo googleUser = googleTokenVerifierService.verify(request.credential());
+
+        // 2. Tìm User theo email
+        User user = userRepository.findByEmail(googleUser.email()).orElse(null);
+
+        if (user == null) {
+            // === User chưa tồn tại → Tạo mới (auto-register) ===
+            Role patientRole = roleRepository.findByName(DEFAULT_ROLE)
+                    .orElseThrow(() -> new ResourceNotFoundException("Role PATIENT was not found"));
+
+            // Password = random UUID encoded (không bao giờ dùng)
+            String randomPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+
+            user = userRepository.save(
+                    User.builder()
+                            .role(patientRole)
+                            .fullName(googleUser.name() != null ? googleUser.name() : "Google User")
+                            .email(googleUser.email())
+                            .phone("")
+                            .password(randomPassword)
+                            .avatarUrl(googleUser.picture() != null ? googleUser.picture() : "default-avatar.png")
+                            .status(DEFAULT_STATUS)
+                            .authProvider("GOOGLE")
+                            .googleId(googleUser.googleId())
+                            .build()
+            );
+            // KHÔNG tạo Patient entity — user phải tự cập nhật qua PATCH /patients/me
+        } else {
+            // === User đã tồn tại → Cho phép liên kết ===
+            if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+                throw new IllegalStateException("Account is not active");
+            }
+
+            // Cập nhật thông tin Google nếu chưa liên kết
+            if (user.getGoogleId() == null) {
+                user.setGoogleId(googleUser.googleId());
+            }
+
+            // Nếu trước đó là LOCAL, giờ cho phép cả Google
+            // Giữ nguyên authProvider = LOCAL nếu đã có, cho phép login cả 2 cách
+            // Chỉ cập nhật avatar nếu chưa có hoặc là default
+            if (googleUser.picture() != null &&
+                (user.getAvatarUrl() == null || user.getAvatarUrl().isEmpty() || "default-avatar.png".equals(user.getAvatarUrl()))) {
+                user.setAvatarUrl(googleUser.picture());
+            }
+
+            userRepository.save(user);
+        }
+
+        // 3. Sinh JWT tokens (y hệt login thường)
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshTokenValue = jwtService.generateRefreshToken(user);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .refreshToken(refreshTokenValue)
+                .expiredAt(LocalDateTime.now().plusDays(7))
+                .revoked(false)
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
+
+        // 4. Trả về LoginResponse (cùng format với login thường)
+        return new LoginResponse(
+                accessToken,
+                refreshTokenValue,
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getName(),
+                user.getStatus()
+        );
+    }
+
+    @Override
+    @Transactional
+    public LoginResponse loginWithFacebook(FacebookLoginRequest request) {
+        // 1. Gọi Facebook Graph API để verify accessToken và lấy user info
+        //    Ném OAuth2EmailRequiredException nếu tài khoản không có email
+        FacebookUserInfo facebookUser = facebookTokenVerifierService.verify(request.credential());
+
+        // 2. Tìm User theo email
+        User user = userRepository.findByEmail(facebookUser.email()).orElse(null);
+
+        if (user == null) {
+            // === User chưa tồn tại → Tạo mới (auto-register) ===
+            Role patientRole = roleRepository.findByName(DEFAULT_ROLE)
+                    .orElseThrow(() -> new ResourceNotFoundException("Role PATIENT was not found"));
+
+            user = userRepository.save(
+                    User.builder()
+                            .role(patientRole)
+                            .fullName(facebookUser.name() != null ? facebookUser.name() : "Facebook User")
+                            .email(facebookUser.email())
+                            .phone("")
+                            .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .avatarUrl(facebookUser.picture() != null ? facebookUser.picture() : "default-avatar.png")
+                            .status(DEFAULT_STATUS)
+                            .authProvider("FACEBOOK")
+                            .facebookId(facebookUser.facebookId())
+                            .build()
+            );
+        } else {
+            // === User đã tồn tại → Liên kết tài khoản ===
+            if (!"ACTIVE".equalsIgnoreCase(user.getStatus())) {
+                throw new IllegalStateException("Account is not active");
+            }
+
+            if (user.getFacebookId() == null) {
+                user.setFacebookId(facebookUser.facebookId());
+            }
+
+            if (facebookUser.picture() != null &&
+                (user.getAvatarUrl() == null || user.getAvatarUrl().isEmpty() || "default-avatar.png".equals(user.getAvatarUrl()))) {
+                user.setAvatarUrl(facebookUser.picture());
+            }
+
+            userRepository.save(user);
+        }
+
+        // 3. Sinh JWT tokens
+        String accessToken = jwtService.generateAccessToken(user);
+        String refreshTokenValue = jwtService.generateRefreshToken(user);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .refreshToken(refreshTokenValue)
+                .expiredAt(LocalDateTime.now().plusDays(7))
+                .revoked(false)
+                .build();
+
+        refreshTokenRepository.save(refreshToken);
+
+        // 4. Trả về LoginResponse (cùng format với login thường)
+        return new LoginResponse(
+                accessToken,
+                refreshTokenValue,
+                user.getId(),
+                user.getFullName(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getRole().getName(),
+                user.getStatus()
+        );
     }
 
 }

@@ -11,8 +11,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.HashMap;
 import java.util.Map;
 
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    // HTTP 422: Frontend dùng errorCode "OAUTH2_EMAIL_REQUIRED" để hiện popup nhập email bổ sung
+    @ExceptionHandler(OAuth2EmailRequiredException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleOAuth2EmailRequired(OAuth2EmailRequiredException exception) {
+        Map<String, String> data = Map.of("errorCode", "OAUTH2_EMAIL_REQUIRED");
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ApiResponse.error(exception.getMessage(), data));
+    }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Object>> handleAccessDenied(AccessDeniedException exception) {

@@ -73,10 +73,10 @@ export function MainLayout() {
           <div className="site-actions">
             {currentUser ? (
               <>
-                <div className="site-user">
+                <Link to="/profile" className="site-user" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <span className="site-user__label">Xin chào</span>
                   <strong>{currentUser.fullName ?? currentUser.email}</strong>
-                </div>
+                </Link>
                 <button
                   className="button button--ghost"
                   type="button"

@@ -62,6 +62,16 @@ public class User {
 
     @Column(name = "last_otp_request_time")
     private LocalDateTime lastOtpRequestTime;
+
+    @Builder.Default
+    @Column(name = "auth_provider", length = 20)
+    private String authProvider = "LOCAL"; // LOCAL, GOOGLE, hoặc FACEBOOK
+
+    @Column(name = "google_id", length = 100)
+    private String googleId;
+
+    @Column(name = "facebook_id", length = 100)
+    private String facebookId;
     
     @Builder.Default
     @Column(name = "otp_failed_attempts")

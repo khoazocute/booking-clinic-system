@@ -7,9 +7,11 @@ import {
   lockIcon,
   mailIcon,
 } from "../../assets/icons/auth";
+import { useGoogleLogin } from "@react-oauth/google";
 import {
   extractAccessToken,
   login,
+  loginWithGoogle,
   setAccessToken,
 } from "../../services/authService";
 
@@ -74,6 +76,33 @@ export function LoginPage() {
     }
   }
 
+  const loginWithGoogleHook = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setSubmitting(true);
+        setError("");
+
+        // Pass the access_token to the backend
+        const response = await loginWithGoogle(tokenResponse.access_token);
+
+        const accessToken = extractAccessToken(response);
+        if (!accessToken) {
+          throw new Error(copy.tokenError);
+        }
+
+        setAccessToken(accessToken);
+        navigate("/");
+      } catch (requestError) {
+        setError(requestError.message || "Google login failed");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    onError: () => {
+      setError("Đăng nhập Google thất bại. Vui lòng thử lại.");
+    }
+  });
+
   return (
     <div className="login-page">
       <div className="login-card">
@@ -127,9 +156,9 @@ export function LoginPage() {
               <div className="auth-field">
                 <div className="auth-field__row">
                   <label htmlFor="loginPassword">Password</label>
-                  <a className="auth-field__link" href="/">
+                  <Link className="auth-field__link" to="/forgot-password">
                     Forgot Password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="auth-field__input-wrap">
                   <LoginIcon src={lockIcon} alt="" />
@@ -169,7 +198,7 @@ export function LoginPage() {
               </div>
 
               <div className="auth-social">
-                <button className="auth-social__button" type="button">
+                <button className="auth-social__button" type="button" onClick={() => loginWithGoogleHook()}>
                   <SocialIcon src={googleIcon} alt="Google" />
                   Google
                 </button>
