@@ -9,8 +9,10 @@ import {
 } from "../../assets/icons/auth";
 import {
   extractAccessToken,
+  extractRefreshToken,
+  getCurrentUser,
   login,
-  setAccessToken,
+  setAuthSession,
 } from "../../services/authService";
 
 const copy = {
@@ -61,12 +63,18 @@ export function LoginPage() {
       });
 
       const accessToken = extractAccessToken(response);
+      const refreshToken = extractRefreshToken(response);
       if (!accessToken) {
         throw new Error(copy.tokenError);
       }
 
-      setAccessToken(accessToken);
-      navigate("/");
+      setAuthSession({ accessToken, refreshToken });
+      const currentUserResponse = await getCurrentUser();
+      const currentUser = currentUserResponse?.data;
+      const destination =
+        currentUser?.role === "DOCTOR" ? "/doctor" : "/";
+
+      navigate(destination);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
