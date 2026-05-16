@@ -29,6 +29,7 @@ import { UsersPage } from "./pages/public/UsersPage";
 import { PatientProfilePage } from "./pages/patient/account/PatientProfilePage";
 import { PatientProfileUpdate } from "./pages/patient/account/PatientProfileUpdate";
 import { ChangePassword } from "./pages/patient/account/ChangePassword";
+import { VNPayReturnPage } from "./pages/payment/VNPayReturnPage";
 
 export default function App() {
   return (
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="profile" element={<PatientProfilePage />} />
           <Route path="profile/edit" element={<PatientProfileUpdate />} />
           <Route path="change-password" element={<ChangePassword />} />
+          <Route path="payment/return" element={<VNPayReturnPage />} />
         </Route>
         <Route path="/doctor" element={<DoctorDashboardPage />} />
         <Route path="/doctor/profile" element={<DoctorProfilePage />} />
