@@ -5,6 +5,7 @@ import {
   getAccessToken,
   getCurrentUser,
 } from "../services/authService";
+import { getMyNotifications } from "../services/patientPortalService";
 
 const publicNavigation = [
   { to: "/", label: "Trang chủ", end: true },
@@ -15,6 +16,7 @@ const publicNavigation = [
 export function MainLayout() {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -47,9 +49,38 @@ export function MainLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadUnreadNotifications() {
+      if (!currentUser) {
+        setUnreadCount(0);
+        return;
+      }
+
+      try {
+        const notifications = await getMyNotifications();
+        if (active) {
+          setUnreadCount(notifications.filter((item) => !item.isRead).length);
+        }
+      } catch {
+        if (active) {
+          setUnreadCount(0);
+        }
+      }
+    }
+
+    loadUnreadNotifications();
+
+    return () => {
+      active = false;
+    };
+  }, [currentUser]);
+
   function handleLogout() {
     clearAccessToken();
     setCurrentUser(null);
+    setUnreadCount(0);
     navigate("/");
   }
 
@@ -74,20 +105,36 @@ export function MainLayout() {
                 {item.label}
               </NavLink>
             ))}
+            {currentUser ? (
+              <NavLink
+                to="/my-appointments"
+                className={({ isActive }) =>
+                  "site-nav__link" + (isActive ? " site-nav__link--active" : "")
+                }
+              >
+                Lich hen cua toi
+              </NavLink>
+            ) : null}
           </nav>
 
           <div className="site-actions">
             {currentUser ? (
               <>
+                <Link className="site-icon-link" to="/notifications" aria-label="Thong bao">
+                  <span className="material-symbols-outlined">notifications</span>
+                  {unreadCount > 0 ? (
+                    <span className="site-icon-link__badge">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  ) : null}
+                </Link>
                 {currentUser.role?.toUpperCase() === "ADMIN" && (
                   <Link className="button button--ghost" to="/admin" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>admin_panel_settings</span>
                     Quản trị
                   </Link>
                 )}
-                <button className="site-bell" type="button" title="Thông báo" aria-label="Thông báo">
-                  <span className="material-symbols-outlined">notifications</span>
-                </button>
+             
                 <Link to="/profile" className="site-user" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <span className="site-user__label">Xin chào</span>
                   <strong>{currentUser.fullName ?? currentUser.email}</strong>

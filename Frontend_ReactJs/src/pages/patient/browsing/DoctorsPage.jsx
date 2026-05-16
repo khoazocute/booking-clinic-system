@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
+import { SafeAvatar } from "../../../components/common/SafeAvatar";
 import { getDoctors } from "../../../services/doctorService";
 import { getSpecialties } from "../../../services/specialtyService";
 
@@ -132,11 +133,13 @@ function DoctorCard({ doc }) {
     <article className="mc-doc-card">
       <div className="mc-doc-card__inner">
         <div className="mc-doc-card__avatar">
-          {doc.avatarUrl ? (
-            <img src={doc.avatarUrl} alt={doc.fullName} />
-          ) : (
-            <span className="mc-avatar-initial">{doc.fullName?.[0] ?? "B"}</span>
-          )}
+          <SafeAvatar
+            src={doc.avatarUrl}
+            alt={doc.fullName}
+            name={doc.fullName}
+            imageClassName=""
+            fallbackClassName="mc-avatar-initial"
+          />
         </div>
         <div className="mc-doc-card__info">
           <div className="mc-doc-card__header">

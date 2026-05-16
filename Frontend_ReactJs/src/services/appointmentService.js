@@ -13,7 +13,7 @@ export function getMyAppointments(params = {}) {
   if (params.page != null) q.set("page", params.page);
   if (params.size != null) q.set("size", params.size);
   const qs = q.toString();
-  return apiClient(`/appointments/my${qs ? `?${qs}` : ""}`);
+  return apiClient(`/appointments/me${qs ? `?${qs}` : ""}`);
 }
 
 export function getAppointmentById(id) {
@@ -21,8 +21,7 @@ export function getAppointmentById(id) {
 }
 
 export function cancelAppointment(id, cancelReason = "") {
-  return apiClient(`/appointments/${id}/cancel`, {
-    method: "PATCH",
-    body: JSON.stringify({ cancelReason }),
+  return apiClient(`/appointments/${id}`, {
+    method: "DELETE",
   });
 }

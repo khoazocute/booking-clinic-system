@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { SafeAvatar } from "../../../components/common/SafeAvatar";
 import { getDoctorById, getDoctorSchedules } from "../../../services/doctorService";
 import { createAppointment } from "../../../services/appointmentService";
 import { getAccessToken } from "../../../services/authService";
@@ -658,11 +659,13 @@ export function BookingPage() {
 
                 <div className="pay-summary-doctor">
                   <div className="mc-summary-avatar">
-                    {doctor.avatarUrl ? (
-                      <img src={doctor.avatarUrl} alt={doctor.fullName} />
-                    ) : (
-                      <span className="mc-summary-avatar-initial">{doctor.fullName?.[0] ?? "B"}</span>
-                    )}
+                    <SafeAvatar
+                      src={doctor.avatarUrl}
+                      alt={doctor.fullName}
+                      name={doctor.fullName}
+                      imageClassName=""
+                      fallbackClassName="mc-summary-avatar-initial"
+                    />
                   </div>
                   <div>
                     <p className="mc-summary-doc-name">{doctor.fullName}</p>

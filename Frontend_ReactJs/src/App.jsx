@@ -29,6 +29,15 @@ import { UsersPage } from "./pages/public/UsersPage";
 import { PatientProfilePage } from "./pages/patient/account/PatientProfilePage";
 import { PatientProfileUpdate } from "./pages/patient/account/PatientProfileUpdate";
 import { ChangePassword } from "./pages/patient/account/ChangePassword";
+import { MyAppointmentsPage } from "./pages/patient/appointments/MyAppointmentsPage";
+import { AppointmentDetailPage } from "./pages/patient/appointments/AppointmentDetailPage";
+import { PatientMedicalRecordDetailPage } from "./pages/patient/medical/MedicalRecordDetailPage";
+import { MyPrescriptionsPage } from "./pages/patient/prescriptions/MyPrescriptionsPage";
+import { PatientPrescriptionDetailPage } from "./pages/patient/prescriptions/PrescriptionDetailPage";
+import { MyReviewsPage } from "./pages/patient/reviews/MyReviewsPage";
+import { CreateReviewPage } from "./pages/patient/reviews/CreateReviewPage";
+import { EditReviewPage } from "./pages/patient/reviews/EditReviewPage";
+import { MyNotificationsPage } from "./pages/patient/notifications/MyNotificationsPage";
 import { VNPayReturnPage } from "./pages/payment/VNPayReturnPage";
 import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
@@ -57,6 +66,15 @@ export default function App() {
           <Route path="doctors" element={<DoctorsPage />} />
           <Route path="doctors/:id" element={<DoctorDetailPage />} />
           <Route path="booking" element={<BookingPage />} />
+          <Route path="my-appointments" element={<MyAppointmentsPage />} />
+          <Route path="my-appointments/:appointmentId" element={<AppointmentDetailPage />} />
+          <Route path="medical-records/:medicalRecordId" element={<PatientMedicalRecordDetailPage />} />
+          <Route path="prescriptions" element={<MyPrescriptionsPage />} />
+          <Route path="prescriptions/:prescriptionId" element={<PatientPrescriptionDetailPage />} />
+          <Route path="reviews" element={<MyReviewsPage />} />
+          <Route path="reviews/create/:appointmentId" element={<CreateReviewPage />} />
+          <Route path="reviews/:reviewId/edit" element={<EditReviewPage />} />
+          <Route path="notifications" element={<MyNotificationsPage />} />
           <Route path="profile" element={<PatientProfilePage />} />
           <Route path="profile/edit" element={<PatientProfileUpdate />} />
           <Route path="change-password" element={<ChangePassword />} />

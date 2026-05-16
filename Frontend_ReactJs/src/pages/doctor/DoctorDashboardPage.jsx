@@ -97,7 +97,15 @@ export function DoctorDashboardPage() {
     },
   ];
 
-  const upcomingAppointments = useMemo(() => appointments.slice(0, 4), [appointments]);
+  const upcomingAppointments = useMemo(() => {
+    return [...appointments]
+      .sort((a, b) => {
+        const aDateTime = new Date(`${a.appointmentDate}T${a.startTime ?? "00:00:00"}`).getTime();
+        const bDateTime = new Date(`${b.appointmentDate}T${b.startTime ?? "00:00:00"}`).getTime();
+        return bDateTime - aDateTime;
+      })
+      .slice(0, 4);
+  }, [appointments]);
 
   const quickActions = [
     {
