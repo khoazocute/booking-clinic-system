@@ -2,6 +2,7 @@ package com.example.booking_clinic.repository;
 
 import com.example.booking_clinic.entity.DoctorSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -38,7 +39,17 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
            "AND s.endTime > :startTime")
     boolean existsOverlappingScheduleExcluding(@Param("doctorId") Long doctorId,
                                                @Param("excludeId") Long excludeId,
-                                               @Param("workDate") LocalDate workDate, 
-                                               @Param("startTime") LocalTime startTime, 
+                                               @Param("workDate") LocalDate workDate,
+                                               @Param("startTime") LocalTime startTime,
                                                @Param("endTime") LocalTime endTime);
+
+    // Atomic booking: chỉ cập nhật nếu vẫn còn AVAILABLE, trả về số row bị ảnh hưởng
+    @Modifying
+    @Query("UPDATE DoctorSchedule s SET s.status = 'BOOKED' WHERE s.id = :id AND s.status = 'AVAILABLE'")
+    int tryBookSchedule(@Param("id") Long id);
+
+    // Trả lại AVAILABLE cho các slot bị giữ bởi lịch hẹn hết hạn
+    @Modifying
+    @Query("UPDATE DoctorSchedule s SET s.status = 'AVAILABLE' WHERE s.id = :id AND s.status = 'BOOKED'")
+    int releaseSchedule(@Param("id") Long id);
 }

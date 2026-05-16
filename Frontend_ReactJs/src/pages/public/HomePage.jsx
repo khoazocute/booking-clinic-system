@@ -310,38 +310,6 @@ export function HomePage() {
           </div>
         </div>
       </section>
-
-      <footer className="site-footer">
-        <div className="site-container footer-shell">
-          <div className="footer-brand">
-            <span className="footer-logo">MediCare</span>
-            <div className="footer-contact">
-              <p>
-                <IconImage alt="" src={locationOnIcon} />
-                123 Healthcare Ave, Medical District
-              </p>
-              <p>
-                <IconImage alt="" src={mailIcon} />
-                contact@medicare.vn
-              </p>
-              <p>
-                <IconImage alt="" src={phoneIcon} />
-                1900 1234
-              </p>
-            </div>
-          </div>
-
-          <div className="footer-links">
-            <a href="/">Privacy Policy</a>
-            <a href="/">Terms of Service</a>
-            <a href="/">Contact Support</a>
-            <a href="/">Careers</a>
-            <a href="/">Help Center</a>
-          </div>
-        </div>
-
-        <div className="site-container footer-bottom">{copy.copyright}</div>
-      </footer>
     </div>
   );
 }

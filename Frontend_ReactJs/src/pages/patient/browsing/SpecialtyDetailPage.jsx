@@ -69,26 +69,75 @@ export function SpecialtyDetailPage() {
 
   return (
     <div className="browse-page">
-      <div className="page-hero page-hero--light">
+
+      {/* ── Breadcrumb ── */}
+      <div className="spec-breadcrumb-bar">
         <div className="site-container">
           <nav className="breadcrumb">
             <Link to="/specialties">Chuyên khoa</Link>
             <span>/</span>
             <span>{specialty?.name ?? "Chi tiết"}</span>
           </nav>
-          <h1>{specialty?.name}</h1>
-          {specialty?.description ? (
-            <p>{specialty.description}</p>
-          ) : null}
         </div>
       </div>
 
-      <div className="site-container browse-content">
-        <div className="browse-section-header">
-          <h2>
-            Bác sĩ chuyên khoa {specialty?.name}
-            <span className="count-badge">{doctors.length}</span>
-          </h2>
+      {/* ══════════════════════════════════════
+          PHẦN 1 — Thông tin chuyên khoa
+          ══════════════════════════════════════ */}
+      <div className="site-container">
+        <div className="spec-info-card">
+          <div className="spec-info-card__icon-wrap">
+            <span className="spec-info-card__initial">
+              {specialty?.name?.[0] ?? "K"}
+            </span>
+          </div>
+
+          <div className="spec-info-card__body">
+            <div className="spec-info-card__badge">Chuyên khoa</div>
+            <h1 className="spec-info-card__name">{specialty?.name}</h1>
+            {specialty?.description ? (
+              <p className="spec-info-card__desc">{specialty.description}</p>
+            ) : null}
+
+            <div className="spec-info-card__stats">
+              <div className="spec-stat">
+                <span className="material-symbols-outlined spec-stat__icon">groups</span>
+                <div>
+                  <span className="spec-stat__value">{doctors.length}</span>
+                  <span className="spec-stat__label">Bác sĩ</span>
+                </div>
+              </div>
+              <div className="spec-stat">
+                <span className="material-symbols-outlined spec-stat__icon">verified</span>
+                <div>
+                  <span className="spec-stat__value">100%</span>
+                  <span className="spec-stat__label">Được xác minh</span>
+                </div>
+              </div>
+              <div className="spec-stat">
+                <span className="material-symbols-outlined spec-stat__icon">schedule</span>
+                <div>
+                  <span className="spec-stat__value">Linh hoạt</span>
+                  <span className="spec-stat__label">Lịch khám</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════
+          PHẦN 2 — Danh sách bác sĩ
+          ══════════════════════════════════════ */}
+      <div className="site-container spec-doctors-section">
+        <div className="spec-section-header">
+          <div className="spec-section-header__left">
+            <span className="spec-section-header__label">Đội ngũ bác sĩ</span>
+            <h2 className="spec-section-header__title">
+              Bác sĩ chuyên khoa {specialty?.name}
+              <span className="count-badge">{doctors.length}</span>
+            </h2>
+          </div>
           <Link className="text-link" to={`/doctors?specialtyId=${id}`}>
             Xem tất cả →
           </Link>
@@ -108,6 +157,7 @@ export function SpecialtyDetailPage() {
           </div>
         )}
       </div>
+
     </div>
   );
 }
@@ -141,10 +191,20 @@ function DoctorCard({ doctor }) {
           {doctor.qualification ? (
             <p className="doctor-fee-label">{doctor.qualification}</p>
           ) : null}
+          {doctor.consultationFee != null && doctor.consultationFee > 0 ? (
+            <p style={{ margin: "4px 0 0", fontSize: "13px", fontWeight: 700, color: "var(--primary)" }}>
+              {Number(doctor.consultationFee).toLocaleString("vi-VN")} ₫
+            </p>
+          ) : null}
         </div>
-        <Link className="button button--soft" to={`/doctors/${doctor.id}`}>
-          Đặt lịch
-        </Link>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Link className="button button--ghost" to={`/doctors/${doctor.id}`}>
+            Hồ sơ
+          </Link>
+          <Link className="button button--soft" to={`/booking?doctorId=${doctor.id}`}>
+            Đặt lịch
+          </Link>
+        </div>
       </div>
     </article>
   );

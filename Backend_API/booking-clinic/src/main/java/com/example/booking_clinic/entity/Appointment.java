@@ -45,6 +45,9 @@ public class Appointment {
     @Column(name = "cancel_reason", columnDefinition = "MEDIUMTEXT")
     private String cancelReason;
 
+    @Column(name = "payment_deadline")
+    private LocalDateTime paymentDeadline;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
