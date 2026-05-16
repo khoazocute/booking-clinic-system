@@ -79,6 +79,12 @@ export function MainLayout() {
           <div className="site-actions">
             {currentUser ? (
               <>
+                {currentUser.role?.toUpperCase() === "ADMIN" && (
+                  <Link className="button button--ghost" to="/admin" style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <span className="material-symbols-outlined" style={{ fontSize: "17px" }}>admin_panel_settings</span>
+                    Quản trị
+                  </Link>
+                )}
                 <button className="site-bell" type="button" title="Thông báo" aria-label="Thông báo">
                   <span className="material-symbols-outlined">notifications</span>
                 </button>

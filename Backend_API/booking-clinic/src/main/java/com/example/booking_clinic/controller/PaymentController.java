@@ -26,6 +26,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PaymentController {
     private final PaymentService paymentService;
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<java.util.List<PaymentResponse>>> getAllPayments() {
+        return ResponseEntity.ok(ApiResponse.success("Payments fetched successfully", paymentService.getAllPayments()));
+    }
+
     @PostMapping
     public ResponseEntity<ApiResponse<PaymentResponse>> createPayment(
             @Valid @RequestBody CreatePaymentRequest request) {

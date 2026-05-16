@@ -30,6 +30,15 @@ import { PatientProfilePage } from "./pages/patient/account/PatientProfilePage";
 import { PatientProfileUpdate } from "./pages/patient/account/PatientProfileUpdate";
 import { ChangePassword } from "./pages/patient/account/ChangePassword";
 import { VNPayReturnPage } from "./pages/payment/VNPayReturnPage";
+import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
+import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { AdminDoctorsPage } from "./pages/admin/AdminDoctorsPage";
+import { AdminSpecialtiesPage } from "./pages/admin/AdminSpecialtiesPage";
+import { AdminReviewsPage } from "./pages/admin/AdminReviewsPage";
+import { AdminMedicinesPage } from "./pages/admin/AdminMedicinesPage";
+import { AdminAppointmentsPage } from "./pages/admin/AdminAppointmentsPage";
+import { AdminNotificationsPage } from "./pages/admin/AdminNotificationsPage";
+import { AdminPaymentsPage } from "./pages/admin/AdminPaymentsPage";
 
 export default function App() {
   return (
@@ -92,6 +101,16 @@ export default function App() {
           path="/doctor/notifications"
           element={<DoctorNotificationsPage />}
         />
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/doctors" element={<AdminDoctorsPage />} />
+        <Route path="/admin/specialties" element={<AdminSpecialtiesPage />} />
+        <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+        <Route path="/admin/medicines" element={<AdminMedicinesPage />} />
+        <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />
+        <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
+        <Route path="/admin/payments" element={<AdminPaymentsPage />} />
       </Routes>
     </BrowserRouter>
   );
