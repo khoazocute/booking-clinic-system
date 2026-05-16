@@ -88,6 +88,15 @@ public class AppointmentServiceImpl implements AppointmentService {
                 savedAppointment.getId()
         );
 
+        notificationService.createNotification(
+                doctor.getUser(),
+                "Co lich kham moi",
+                "Benh nhan " + patient.getUser().getFullName() + " vua dat lich kham moi",
+                "APPOINTMENT_CREATED",
+                "APPOINTMENT",
+                savedAppointment.getId()
+        );
+
         return toResponse(savedAppointment);
     }
 
