@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useGoogleLogin } from "@react-oauth/google";
 import {
   arrowRightIcon,
   facebookIcon,
@@ -7,23 +8,22 @@ import {
   lockIcon,
   mailIcon,
 } from "../../assets/icons/auth";
-import { useGoogleLogin } from "@react-oauth/google";
 import {
   extractAccessToken,
   extractRefreshToken,
   getCurrentUser,
   login,
   loginWithGoogle,
-  setAccessToken,
   setAuthSession,
 } from "../../services/authService";
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 const copy = {
-  tokenError:
-    "Đăng nhập thành công nhưng không nhận được access token.",
-  registerSuccess:
-    "Đăng ký thành công. Bạn có thể đăng nhập ngay bây giờ.",
+  tokenError: "Dang nhap thanh cong nhung khong nhan duoc access token.",
+  registerSuccess: "Dang ky thanh cong. Ban co the dang nhap ngay bay gio.",
   passwordPlaceholder: "********",
+  googleUnavailable: "Google login is unavailable right now.",
 };
 
 function LoginIcon({ src, alt }) {
@@ -32,6 +32,25 @@ function LoginIcon({ src, alt }) {
 
 function SocialIcon({ src, alt }) {
   return <img className="auth-social__icon" src={src} alt={alt} />;
+}
+
+function GoogleLoginButton({ disabled, onError, onSuccess }) {
+  const loginWithGoogleHook = useGoogleLogin({
+    onSuccess,
+    onError,
+  });
+
+  return (
+    <button
+      className="auth-social__button"
+      type="button"
+      disabled={disabled}
+      onClick={() => loginWithGoogleHook()}
+    >
+      <SocialIcon src={googleIcon} alt="Google" />
+      Google
+    </button>
+  );
 }
 
 export function LoginPage() {
@@ -53,6 +72,13 @@ export function LoginPage() {
     }));
   }
 
+  async function redirectAfterLogin() {
+    const currentUserResponse = await getCurrentUser();
+    const currentUser = currentUserResponse?.data;
+    const destination = currentUser?.role === "DOCTOR" ? "/doctor" : "/";
+    navigate(destination);
+  }
+
   async function handleSubmit(event) {
     event.preventDefault();
 
@@ -67,17 +93,13 @@ export function LoginPage() {
 
       const accessToken = extractAccessToken(response);
       const refreshToken = extractRefreshToken(response);
+
       if (!accessToken) {
         throw new Error(copy.tokenError);
       }
 
       setAuthSession({ accessToken, refreshToken });
-      const currentUserResponse = await getCurrentUser();
-      const currentUser = currentUserResponse?.data;
-      const destination =
-        currentUser?.role === "DOCTOR" ? "/doctor" : "/";
-
-      navigate(destination);
+      await redirectAfterLogin();
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -85,31 +107,31 @@ export function LoginPage() {
     }
   }
 
-  const loginWithGoogleHook = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      try {
-        setSubmitting(true);
-        setError("");
+  async function handleGoogleSuccess(tokenResponse) {
+    try {
+      setSubmitting(true);
+      setError("");
 
-        const response = await loginWithGoogle(tokenResponse.access_token);
+      const response = await loginWithGoogle(tokenResponse.access_token);
+      const accessToken = extractAccessToken(response);
+      const refreshToken = extractRefreshToken(response);
 
-        const accessToken = extractAccessToken(response);
-        if (!accessToken) {
-          throw new Error(copy.tokenError);
-        }
-
-        setAccessToken(accessToken);
-        navigate("/");
-      } catch (requestError) {
-        setError(requestError.message || "Google login failed");
-      } finally {
-        setSubmitting(false);
+      if (!accessToken) {
+        throw new Error(copy.tokenError);
       }
-    },
-    onError: () => {
-      setError("Đăng nhập Google thất bại. Vui lòng thử lại.");
+
+      setAuthSession({ accessToken, refreshToken });
+      await redirectAfterLogin();
+    } catch (requestError) {
+      setError(requestError.message || "Google login failed");
+    } finally {
+      setSubmitting(false);
     }
-  });
+  }
+
+  function handleGoogleError() {
+    setError("Google login failed. Please try email login.");
+  }
 
   return (
     <div className="login-page">
@@ -141,8 +163,11 @@ export function LoginPage() {
                   {copy.registerSuccess}
                 </p>
               ) : null}
+
               {error ? (
-                <p className="auth-form__message auth-form__message--error">{error}</p>
+                <p className="auth-form__message auth-form__message--error">
+                  {error}
+                </p>
               ) : null}
 
               <div className="auth-field">
@@ -206,10 +231,19 @@ export function LoginPage() {
               </div>
 
               <div className="auth-social">
-                <button className="auth-social__button" type="button" onClick={() => loginWithGoogleHook()}>
-                  <SocialIcon src={googleIcon} alt="Google" />
-                  Google
-                </button>
+                {GOOGLE_CLIENT_ID ? (
+                  <GoogleLoginButton
+                    disabled={submitting}
+                    onError={handleGoogleError}
+                    onSuccess={handleGoogleSuccess}
+                  />
+                ) : (
+                  <button className="auth-social__button" type="button" disabled>
+                    <SocialIcon src={googleIcon} alt="Google" />
+                    {copy.googleUnavailable}
+                  </button>
+                )}
+
                 <button className="auth-social__button" type="button">
                   <SocialIcon src={facebookIcon} alt="Facebook" />
                   Facebook

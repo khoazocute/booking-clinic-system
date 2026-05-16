@@ -165,6 +165,17 @@
   background: var(--surface-high);
 }
 
+.pp-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Manrope", sans-serif;
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--primary);
+  background: linear-gradient(135deg, rgba(31, 111, 235, 0.14), rgba(31, 143, 85, 0.12));
+}
+
 .pp-user-name {
   font-family: "Manrope", sans-serif;
   font-size: 32px;

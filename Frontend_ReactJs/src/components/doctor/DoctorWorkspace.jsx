@@ -1,9 +1,18 @@
-import { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import {
   clearAccessToken,
   getCurrentUser,
 } from "../../services/authService";
+import {
+  getDoctorNotifications,
+  markNotificationAsRead,
+} from "../../services/doctorPortalService";
+import {
+  formatDateTime,
+  getNotificationReferencePath,
+  getStatusLabel,
+} from "../../utils/doctorHelpers";
 
 const doctorNavItems = [
   { to: "/doctor", label: "Dashboard", icon: "dashboard", end: true },
@@ -35,7 +44,12 @@ export function DoctorWorkspace({
   children,
 }) {
   const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
   const [currentUser, setCurrentUser] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(true);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const notificationRef = useRef(null);
 
   useEffect(() => {
     let active = true;
@@ -60,9 +74,79 @@ export function DoctorWorkspace({
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+
+    async function loadNotifications() {
+      try {
+        const items = await getDoctorNotifications();
+        if (active) {
+          setNotifications(items);
+        }
+      } catch {
+        if (active) {
+          setNotifications([]);
+        }
+      } finally {
+        if (active) {
+          setNotificationsLoading(false);
+        }
+      }
+    }
+
+    loadNotifications();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    function handleOutsideClick(event) {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setIsNotificationOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const unreadCount = notifications.filter((item) => !item.isRead).length;
+  const popupNotifications = notifications.slice(0, 5);
+
   function handleLogout() {
     clearAccessToken();
     navigate("/login");
+  }
+
+  async function handleNotificationClick(notification) {
+    try {
+      if (!notification.isRead) {
+        const updated = await markNotificationAsRead(notification.id);
+        setNotifications((current) =>
+          current.map((item) => (item.id === notification.id ? updated : item)),
+        );
+      }
+    } catch {
+      // Keep popup usable even if mark-as-read fails.
+    } finally {
+      setIsNotificationOpen(false);
+    }
+
+    const referencePath = getNotificationReferencePath(notification);
+    navigate(referencePath || "/doctor/notifications");
   }
 
   return (
@@ -116,13 +200,66 @@ export function DoctorWorkspace({
             </label>
 
             <div className="doctor-topbar__actions">
-              <NavLink
-                className="doctor-topbar__icon-button"
-                to="/doctor/notifications"
-                aria-label="Notifications"
-              >
-                <span className="material-symbols-outlined">notifications</span>
-              </NavLink>
+              <div className="doctor-topbar__notification" ref={notificationRef}>
+                <button
+                  className="doctor-topbar__icon-button"
+                  type="button"
+                  aria-label="Notifications"
+                  aria-expanded={isNotificationOpen}
+                  onClick={() => setIsNotificationOpen((current) => !current)}
+                >
+                  <span className="material-symbols-outlined">notifications</span>
+                  {unreadCount > 0 ? (
+                    <span className="doctor-topbar__notification-badge">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  ) : null}
+                </button>
+
+                {isNotificationOpen ? (
+                  <div className="doctor-notification-popup">
+                    <div className="doctor-notification-popup__head">
+                      <div>
+                        <strong>Notifications</strong>
+                        <span>
+                          {unreadCount > 0
+                            ? `${unreadCount} unread update${unreadCount > 1 ? "s" : ""}`
+                            : "You are all caught up"}
+                        </span>
+                      </div>
+                      <Link to="/doctor/notifications" onClick={() => setIsNotificationOpen(false)}>
+                        View all
+                      </Link>
+                    </div>
+
+                    <div className="doctor-notification-popup__list">
+                      {notificationsLoading ? (
+                        <p className="doctor-notification-popup__empty">Loading notifications...</p>
+                      ) : popupNotifications.length === 0 ? (
+                        <p className="doctor-notification-popup__empty">No notifications yet.</p>
+                      ) : (
+                        popupNotifications.map((notification) => (
+                          <button
+                            key={notification.id}
+                            className={`doctor-notification-popup__item${
+                              notification.isRead ? "" : " doctor-notification-popup__item--unread"
+                            }`}
+                            type="button"
+                            onClick={() => handleNotificationClick(notification)}
+                          >
+                            <div className="doctor-notification-popup__item-head">
+                              <strong>{notification.title}</strong>
+                              <span>{getStatusLabel(notification.type)}</span>
+                            </div>
+                            <p>{notification.message}</p>
+                            <small>{formatDateTime(notification.createdAt)}</small>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
               <NavLink
                 className="doctor-topbar__icon-button"
                 to="/doctor/settings"
@@ -154,6 +291,31 @@ export function DoctorWorkspace({
           </header>
 
           <div className="doctor-page-body">{children}</div>
+
+          <footer className="site-footer">
+            <div className="site-container footer-shell">
+              <div className="footer-brand">
+                <span className="footer-logo">MediCare</span>
+                <div className="footer-contact">
+                  <p>Doctor portal workspace for appointments, schedules, prescriptions, and follow-up care.</p>
+                  <p>support@medicare.vn</p>
+                  <p>1900 1234</p>
+                </div>
+              </div>
+
+              <div className="footer-links">
+                <NavLink to="/doctor/notifications">Notifications</NavLink>
+                <NavLink to="/doctor/settings">Settings</NavLink>
+                <NavLink to="/doctor/profile">Profile</NavLink>
+                <a href="mailto:support@medicare.vn">Contact Support</a>
+                <a href="/">Help Center</a>
+              </div>
+            </div>
+
+            <div className="site-container footer-bottom">
+              © {currentYear} MediCare. All rights reserved.
+            </div>
+          </footer>
         </section>
       </div>
     </div>
