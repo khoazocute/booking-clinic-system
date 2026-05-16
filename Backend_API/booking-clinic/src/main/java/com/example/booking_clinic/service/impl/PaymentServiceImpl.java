@@ -192,6 +192,20 @@ public class PaymentServiceImpl implements PaymentService {
                 return toResponse(savedPayment);
         }
 
+        @Override
+        @Transactional(readOnly = true)
+        public java.util.List<PaymentResponse> getAllPayments() {
+                User currentUser = getCurrentUser();
+                String role = currentUser.getRole().getName().trim().toUpperCase();
+                if (!"ADMIN".equals(role)) {
+                        throw new AccessDeniedException("Only ADMIN can view all payments");
+                }
+                return paymentRepository.findAll()
+                        .stream()
+                        .map(this::toResponse)
+                        .toList();
+        }
+
         private PaymentResponse toResponse(Payment payment) {
                 return new PaymentResponse(
                                 payment.getId(),

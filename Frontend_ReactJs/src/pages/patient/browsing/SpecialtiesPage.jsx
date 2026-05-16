@@ -98,7 +98,7 @@ export function SpecialtiesPage() {
                     className="button button--soft"
                     to={`/specialties/${s.id}`}
                   >
-                    Xem bác sĩ
+                    Xem chi tiết
                   </Link>
                 </div>
               </article>

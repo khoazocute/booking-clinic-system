@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -50,32 +51,31 @@ public class AppointmentServiceImpl implements AppointmentService {
         DoctorSchedule schedule = doctorScheduleRepository.findById(request.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found"));
 
-        // Kiểm tra khung giờ còn AVAILABLE không
-        if (!"AVAILABLE".equalsIgnoreCase(schedule.getStatus())) {
-            throw new IllegalArgumentException("This schedule slot is not available for booking");
-        }
-
         // Kiểm tra bệnh nhân chưa đặt đúng khung giờ này (tránh đặt 2 lần)
         if (appointmentRepository.existsByPatient_IdAndSchedule_Id(patient.getId(), schedule.getId())) {
             throw new IllegalArgumentException("You have already booked this schedule slot");
         }
 
-        // Lấy Doctor từ schedule (denormalize để lưu doctor_id trực tiếp vào appointments)
+        // Atomic booking: chỉ cập nhật được nếu slot vẫn AVAILABLE tại thời điểm này
+        int booked = doctorScheduleRepository.tryBookSchedule(schedule.getId());
+        if (booked == 0) {
+            throw new IllegalArgumentException("This schedule slot is not available for booking");
+        }
+
+        // Lấy Doctor từ schedule
         Doctor doctor = schedule.getDoctor();
 
-        // Tạo Appointment
+        // Tạo Appointment với deadline thanh toán 10 phút
+        LocalDateTime deadline = LocalDateTime.now().plusMinutes(10);
         Appointment appointment = Appointment.builder()
                 .patient(patient)
                 .doctor(doctor)
                 .schedule(schedule)
-                .appointmentDate(schedule.getWorkDate()) // lấy ngày từ khung giờ
+                .appointmentDate(schedule.getWorkDate())
                 .reason(request.reason())
                 .status(AppointmentStatus.PENDING)
+                .paymentDeadline(deadline)
                 .build();
-
-        // Đánh dấu khung giờ là BOOKED để người khác không đặt được
-        schedule.setStatus("BOOKED");
-        doctorScheduleRepository.save(schedule);
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
@@ -312,7 +312,8 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                 a.getReason(),
                 a.getStatus() != null ? a.getStatus().name() : null,
                 a.getCancelReason(),
-                a.getCreatedAt()
+                a.getCreatedAt(),
+                a.getPaymentDeadline()
         );
     }
 }
