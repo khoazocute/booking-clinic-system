@@ -29,6 +29,11 @@ import { UsersPage } from "./pages/public/UsersPage";
 import { PatientProfilePage } from "./pages/patient/account/PatientProfilePage";
 import { PatientProfileUpdate } from "./pages/patient/account/PatientProfileUpdate";
 import { ChangePassword } from "./pages/patient/account/ChangePassword";
+import { AdminLayout } from "./layouts/AdminLayout";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import MedicineManagementPage from "./pages/admin/MedicineManagementPage";
+import AdminAppointmentManagementPage from "./pages/admin/AdminAppointmentManagementPage";
+import AdminNotificationManagementPage from "./pages/admin/AdminNotificationManagementPage";
 
 export default function App() {
   return (
@@ -90,6 +95,12 @@ export default function App() {
           path="/doctor/notifications"
           element={<DoctorNotificationsPage />}
         />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="medicines" element={<MedicineManagementPage />} />
+          <Route path="appointments" element={<AdminAppointmentManagementPage />} />
+          <Route path="notifications" element={<AdminNotificationManagementPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

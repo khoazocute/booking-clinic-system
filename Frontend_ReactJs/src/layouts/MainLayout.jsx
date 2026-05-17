@@ -79,7 +79,7 @@ export function MainLayout() {
           <div className="site-actions">
             {currentUser ? (
               <>
-                <Link to="/profile" className="site-user" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Link to={currentUser.role === "ADMIN" ? "/admin" : "/profile"} className="site-user" style={{ textDecoration: 'none', color: 'inherit' }}>
                   <span className="site-user__label">Xin chào</span>
                   <strong>{currentUser.fullName ?? currentUser.email}</strong>
                 </Link>
