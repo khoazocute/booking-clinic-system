@@ -4,6 +4,24 @@ import { apiClient } from "../../services/apiClient";
 
 const STATUS_LIST = ["ALL", "PENDING", "PAID", "FAILED", "CANCELLED"];
 
+const DATE_RANGES = [
+  { key: "ALL",   label: "Tất cả thời gian" },
+  { key: "TODAY", label: "Hôm nay" },
+  { key: "WEEK",  label: "7 ngày qua" },
+  { key: "MONTH", label: "30 ngày qua" },
+];
+
+function isInRange(dateStr, rangeKey) {
+  if (rangeKey === "ALL" || !dateStr) return true;
+  const d = new Date(dateStr);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (rangeKey === "TODAY") return d >= startOfToday;
+  if (rangeKey === "WEEK")  return d >= new Date(now - 7  * 86400000);
+  if (rangeKey === "MONTH") return d >= new Date(now - 30 * 86400000);
+  return true;
+}
+
 const STATUS_META = {
   PENDING:   { label: "Chờ thanh toán", color: "#d97706", bg: "rgba(217,119,6,0.1)" },
   PAID:      { label: "Đã thanh toán",  color: "#16a34a", bg: "rgba(22,163,74,0.1)" },
@@ -50,11 +68,26 @@ const METHOD_LABEL = {
   E_WALLET: "Ví điện tử",
 };
 
+const TYPE_META = {
+  BOOKING:      { label: "Đặt lịch",  color: "#3b82f6", bg: "rgba(59,130,246,0.1)" },
+  PRESCRIPTION: { label: "Đơn thuốc", color: "#8b5cf6", bg: "rgba(139,92,246,0.1)" },
+};
+
+function TypeBadge({ type }) {
+  const meta = TYPE_META[type] ?? { label: type ?? "—", color: "#6b7280", bg: "#f3f4f6" };
+  return (
+    <span style={{ padding: "3px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 600, color: meta.color, background: meta.bg, whiteSpace: "nowrap" }}>
+      {meta.label}
+    </span>
+  );
+}
+
 export function AdminPaymentsPage() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filterStatus, setFilterStatus] = useState("ALL");
+  const [dateRange, setDateRange] = useState("ALL");
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState(null); // payment id đang cập nhật
   const [selected, setSelected] = useState(null); // payment đang xem detail
@@ -97,15 +130,18 @@ export function AdminPaymentsPage() {
     }
   }
 
-  const filtered = payments.filter((p) => {
-    const matchStatus = filterStatus === "ALL" || p.status === filterStatus;
-    const matchSearch =
-      !search ||
-      String(p.id).includes(search) ||
-      String(p.appointmentId).includes(search) ||
-      String(p.patientId).includes(search);
-    return matchStatus && matchSearch;
-  });
+  const filtered = payments
+    .filter((p) => {
+      const matchStatus = filterStatus === "ALL" || p.status === filterStatus;
+      const matchDate = isInRange(p.createdAt, dateRange);
+      const matchSearch =
+        !search ||
+        String(p.id).includes(search) ||
+        String(p.appointmentId).includes(search) ||
+        String(p.patientId).includes(search);
+      return matchStatus && matchDate && matchSearch;
+    })
+    .sort((a, b) => b.appointmentId - a.appointmentId);
 
   const stats = {
     total: payments.length,
@@ -174,15 +210,26 @@ export function AdminPaymentsPage() {
               </button>
             ))}
           </div>
-          <label className="admin-search-box">
-            <span className="material-symbols-outlined">search</span>
-            <input
-              type="search"
-              placeholder="Tìm theo ID, appointment, bệnh nhân..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <select
+              value={dateRange}
+              onChange={(e) => setDateRange(e.target.value)}
+              style={{ padding: "7px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "13px", background: "#fff", cursor: "pointer" }}
+            >
+              {DATE_RANGES.map((r) => (
+                <option key={r.key} value={r.key}>{r.label}</option>
+              ))}
+            </select>
+            <label className="admin-search-box">
+              <span className="material-symbols-outlined">search</span>
+              <input
+                type="search"
+                placeholder="Tìm theo ID, appointment, bệnh nhân..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </label>
+          </div>
         </div>
 
         {/* Table */}
@@ -200,6 +247,7 @@ export function AdminPaymentsPage() {
                   <th>#ID</th>
                   <th>Lịch hẹn</th>
                   <th>Bệnh nhân</th>
+                  <th>Loại</th>
                   <th>Phương thức</th>
                   <th>Số tiền</th>
                   <th>Trạng thái</th>
@@ -213,6 +261,7 @@ export function AdminPaymentsPage() {
                     <td className="admin-table__id">#{p.id}</td>
                     <td>#{p.appointmentId}</td>
                     <td>#{p.patientId}</td>
+                    <td><TypeBadge type={p.paymentType} /></td>
                     <td>{METHOD_LABEL[p.paymentMethod] ?? p.paymentMethod ?? "—"}</td>
                     <td style={{ fontWeight: 600 }}>{formatVND(p.amount)}</td>
                     <td><StatusBadge status={p.status} /></td>
@@ -284,6 +333,10 @@ export function AdminPaymentsPage() {
                 <div className="admin-detail-row">
                   <span>Bệnh nhân</span>
                   <strong>#{selected.patientId}</strong>
+                </div>
+                <div className="admin-detail-row">
+                  <span>Loại thanh toán</span>
+                  <TypeBadge type={selected.paymentType} />
                 </div>
                 <div className="admin-detail-row">
                   <span>Phương thức</span>

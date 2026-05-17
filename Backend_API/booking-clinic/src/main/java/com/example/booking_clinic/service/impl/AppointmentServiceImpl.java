@@ -2,18 +2,21 @@ package com.example.booking_clinic.service.impl;
 
 import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.dto.appointment.AppointmentResponse;
+import com.example.booking_clinic.dto.appointment.CancelAppointmentResponse;
 import com.example.booking_clinic.dto.appointment.CreateAppointmentRequest;
 import com.example.booking_clinic.dto.appointment.UpdateAppointmentStatusRequest;
 import com.example.booking_clinic.entity.Appointment;
 import com.example.booking_clinic.entity.Doctor;
 import com.example.booking_clinic.entity.DoctorSchedule;
 import com.example.booking_clinic.entity.Patient;
+import com.example.booking_clinic.entity.Payment;
 import com.example.booking_clinic.entity.User;
 import com.example.booking_clinic.entity.enums.AppointmentStatus;
 import com.example.booking_clinic.repository.AppointmentRepository;
 import com.example.booking_clinic.repository.DoctorRepository;
 import com.example.booking_clinic.repository.DoctorScheduleRepository;
 import com.example.booking_clinic.repository.PatientRepository;
+import com.example.booking_clinic.repository.PaymentRepository;
 import com.example.booking_clinic.repository.UserRepository;
 import com.example.booking_clinic.service.AppointmentService;
 import com.example.booking_clinic.service.NotificationService;
@@ -23,7 +26,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -35,6 +40,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private final DoctorScheduleRepository doctorScheduleRepository;
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
+    private final PaymentRepository paymentRepository;
     private final NotificationService notificationService;
 
     @Override
@@ -51,8 +57,10 @@ public class AppointmentServiceImpl implements AppointmentService {
         DoctorSchedule schedule = doctorScheduleRepository.findById(request.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found"));
 
-        // Kiểm tra bệnh nhân chưa đặt đúng khung giờ này (tránh đặt 2 lần)
-        if (appointmentRepository.existsByPatient_IdAndSchedule_Id(patient.getId(), schedule.getId())) {
+        // Kiểm tra bệnh nhân chưa có lịch ACTIVE trên khung giờ này
+        if (appointmentRepository.existsByPatient_IdAndSchedule_IdAndStatusIn(
+                patient.getId(), schedule.getId(),
+                List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED))) {
             throw new IllegalArgumentException("You have already booked this schedule slot");
         }
 
@@ -249,30 +257,63 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
 
     @Override
     @Transactional
-    public void cancelAppointment(Long id) {
+    public CancelAppointmentResponse cancelAppointment(Long id) {
         User currentUser = getCurrentUser();
         Appointment appointment = appointmentRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Appointment not found"));
 
-        // Chỉ cho phép bệnh nhân chủ sở hữu lịch hẹn mới được huỷ
         Long ownerUserId = appointment.getPatient().getUser().getId();
         if (!ownerUserId.equals(currentUser.getId())) {
             throw new IllegalArgumentException("You are not allowed to cancel this appointment");
         }
 
-        // Chỉ huỷ được khi còn PENDING hoặc CONFIRMED
         if (!List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED).contains(appointment.getStatus())) {
             throw new IllegalArgumentException("Cannot cancel appointment with status: " + appointment.getStatus());
         }
 
-        // Trả lại khung giờ về AVAILABLE
+        // Tính hoàn tiền dựa vào giờ còn lại trước lịch khám
         DoctorSchedule schedule = appointment.getSchedule();
+        int refundPercent = 0;
+        BigDecimal refundAmount = BigDecimal.ZERO;
+        String refundNote;
+
+        if (schedule != null && appointment.getAppointmentDate() != null) {
+            LocalDateTime appointmentDateTime = LocalDateTime.of(
+                    appointment.getAppointmentDate(), schedule.getStartTime());
+            long hoursUntil = ChronoUnit.HOURS.between(LocalDateTime.now(), appointmentDateTime);
+
+            if (hoursUntil > 24) {
+                refundPercent = 100;
+                refundNote = "Huy truoc 24h - hoan 100%";
+            } else if (hoursUntil >= 6) {
+                refundPercent = 40;
+                refundNote = "Huy trong 6-24h - hoan 40%";
+            } else {
+                refundPercent = 0;
+                refundNote = "Huy trong vong 6h - khong duoc hoan tien";
+            }
+
+            // Tìm BOOKING payment đã PAID để tính số tiền hoàn
+            List<Payment> bookingPayments = paymentRepository.findByAppointment_Id(appointment.getId());
+            BigDecimal paidAmount = bookingPayments.stream()
+                    .filter(p -> "BOOKING".equals(p.getPaymentType()) && "PAID".equals(p.getStatus()))
+                    .map(Payment::getAmount)
+                    .findFirst()
+                    .orElse(BigDecimal.ZERO);
+
+            refundAmount = paidAmount.multiply(BigDecimal.valueOf(refundPercent)).divide(BigDecimal.valueOf(100));
+        } else {
+            refundNote = "Khong co thong tin lich - khong hoan tien";
+        }
+
+        // Trả lại khung giờ
         if (schedule != null) {
             schedule.setStatus("AVAILABLE");
             doctorScheduleRepository.save(schedule);
         }
 
         appointment.setStatus(AppointmentStatus.CANCELLED);
+        appointment.setCancelReason("Benh nhan tu huy");
         appointmentRepository.save(appointment);
 
         notificationService.createNotification(
@@ -283,6 +324,8 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                 "APPOINTMENT",
                 appointment.getId()
         );
+
+        return new CancelAppointmentResponse(appointment.getId(), refundPercent, refundAmount, refundNote);
     }
 
     private User getCurrentUser() {

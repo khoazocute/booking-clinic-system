@@ -1,9 +1,25 @@
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { parseVNPayReturn } from "../../services/vnpayService";
+import { createPayment } from "../../services/paymentService";
 
 export function VNPayReturnPage() {
   const [searchParams] = useSearchParams();
   const result = parseVNPayReturn(searchParams);
+  const [paymentCreated, setPaymentCreated] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+  const calledRef = useRef(false);
+
+  useEffect(() => {
+    if (!result.success || calledRef.current) return;
+    calledRef.current = true;
+    const appointmentId = sessionStorage.getItem("pendingAppointmentId");
+    sessionStorage.removeItem("pendingAppointmentId");
+    if (!appointmentId) { setPaymentCreated(true); return; }
+    createPayment({ appointmentId: Number(appointmentId), paymentMethod: "E_WALLET", paymentType: "BOOKING" })
+      .then(() => setPaymentCreated(true))
+      .catch((err) => setPaymentError(err.message));
+  }, [result.success]);
 
   const formattedAmount = result.amount != null
     ? Number(result.amount).toLocaleString("vi-VN") + " ₫"
@@ -24,7 +40,13 @@ export function VNPayReturnPage() {
           </div>
 
           <h2 className="vnpay-return-title">Thanh toán thành công!</h2>
-          <p className="vnpay-return-sub">Giao dịch VNPay của bạn đã được xác nhận.</p>
+          <p className="vnpay-return-sub">
+            {!paymentCreated && !paymentError
+              ? "Đang ghi nhận lịch hẹn..."
+              : paymentError
+              ? `Lưu ý: ${paymentError}`
+              : "Giao dịch VNPay của bạn đã được xác nhận."}
+          </p>
 
           <div className="vnpay-return-info">
             <div className="vnpay-info-row">
