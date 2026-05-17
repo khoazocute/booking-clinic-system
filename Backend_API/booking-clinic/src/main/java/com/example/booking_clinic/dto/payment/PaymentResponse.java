@@ -9,6 +9,7 @@ public record PaymentResponse(
         Long patientId,
         BigDecimal amount,
         String paymentMethod,
+        String paymentType,
         String status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

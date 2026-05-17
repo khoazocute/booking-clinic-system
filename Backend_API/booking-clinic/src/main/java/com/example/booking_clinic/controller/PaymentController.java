@@ -45,9 +45,9 @@ public class PaymentController {
     }
 
     @GetMapping("/appointment/{appointmentId}")
-    public ResponseEntity<ApiResponse<PaymentResponse>> getPaymentByAppointmentId(@PathVariable Long appointmentId) {
-        return ResponseEntity.ok(ApiResponse.success("Payment fetched successfully",
-                paymentService.getPaymentByAppointmentId(appointmentId)));
+    public ResponseEntity<ApiResponse<java.util.List<PaymentResponse>>> getPaymentsByAppointmentId(@PathVariable Long appointmentId) {
+        return ResponseEntity.ok(ApiResponse.success("Payments fetched successfully",
+                paymentService.getPaymentsByAppointmentId(appointmentId)));
     }
 
     @PatchMapping("/{id}/status")

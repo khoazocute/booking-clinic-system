@@ -8,10 +8,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +22,13 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "payments")
+@Table(
+    name = "payments",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uk_appointment_payment_type",
+        columnNames = {"appointment_id", "payment_type"}
+    )
+)
 @Getter
 @Setter
 @Builder
@@ -34,8 +40,8 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "appointment_id", unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment_id")
     private Appointment appointment;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,6 +53,10 @@ public class Payment {
 
     @Column(name = "payment_method", length = 30)
     private String paymentMethod;
+
+    // BOOKING = phí đặt lịch | PRESCRIPTION = phí thuốc/đơn
+    @Column(name = "payment_type", length = 20, nullable = false)
+    private String paymentType;
 
     @Column(length = 20)
     private String status;
