@@ -9482,3 +9482,141 @@ a {
   .admin-stats-row { grid-template-columns: 1fr 1fr; }
   .admin-payment-status { grid-template-columns: 1fr; }
 }
+
+/* Doctor admin table overflow fixes */
+.admin-doctor-table-card {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.admin-doctor-table-toolbar {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-doctor-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.admin-doctor-table {
+  width: 100%;
+  min-width: 1180px;
+  table-layout: fixed;
+}
+
+.admin-doctor-table th,
+.admin-doctor-table td {
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.admin-doctor-table th:nth-child(1),
+.admin-doctor-table td:nth-child(1) { width: 27%; } /* Doctor Name */
+.admin-doctor-table th:nth-child(2),
+.admin-doctor-table td:nth-child(2) { width: 19%; } /* Specialty */
+.admin-doctor-table th:nth-child(3),
+.admin-doctor-table td:nth-child(3) { width: 18%; } /* Contact */
+.admin-doctor-table th:nth-child(4),
+.admin-doctor-table td:nth-child(4) { width: 10%; } /* Experience */
+.admin-doctor-table th:nth-child(5),
+.admin-doctor-table td:nth-child(5) { width: 6%; }  /* Rating */
+.admin-doctor-table th:nth-child(6),
+.admin-doctor-table td:nth-child(6) { width: 7%; }  /* Fee */
+.admin-doctor-table th:nth-child(7),
+.admin-doctor-table td:nth-child(7) { width: 9%; }  /* Status */
+.admin-doctor-table th:nth-child(8),
+.admin-doctor-table td:nth-child(8) { width: 4%; }  /* Actions */
+
+.admin-doctor-col-name,
+.admin-doctor-col-specialty,
+.admin-doctor-col-contact {
+  overflow: hidden;
+}
+
+.admin-doctor-col-name strong,
+.admin-doctor-col-name div,
+.admin-doctor-col-contact span,
+.admin-doctor-col-contact div {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-doctor-col-name strong,
+.admin-doctor-col-specialty {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-doctor-col-contact span,
+.admin-doctor-col-contact div {
+  max-width: 100%;
+}
+
+.admin-doctor-table tr,
+.admin-doctor-table td,
+.admin-doctor-table th {
+  background-clip: padding-box;
+}
+
+.admin-doctor-col-status .patient-badge {
+  padding: 2px 8px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.admin-doctor-col-actions .admin-table__actions {
+  gap: 4px;
+}
+
+.admin-doctor-col-actions .admin-action-btn {
+  width: 28px;
+  height: 28px;
+}
+
+@media (max-width: 1024px) {
+  .admin-doctor-col-rating,
+  .admin-doctor-col-fee {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-doctor-col-exp {
+    display: none;
+  }
+}
+
+/* Admin alerts */
+.admin-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+
+.admin-alert .material-symbols-outlined {
+  font-size: 18px;
+  flex: 0 0 auto;
+}
+
+.admin-alert--success {
+  background: #ecfdf3;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.admin-alert--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
