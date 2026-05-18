@@ -64,6 +64,13 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalArgumentException("You have already booked this schedule slot");
         }
 
+        boolean hasActiveAppointmentForSlot = appointmentRepository.existsBySchedule_IdAndStatusIn(
+                schedule.getId(),
+                List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED));
+        if (!hasActiveAppointmentForSlot && "BOOKED".equalsIgnoreCase(schedule.getStatus())) {
+            doctorScheduleRepository.releaseSchedule(schedule.getId());
+        }
+
         // Atomic booking: chỉ cập nhật được nếu slot vẫn AVAILABLE tại thời điểm này
         int booked = doctorScheduleRepository.tryBookSchedule(schedule.getId());
         if (booked == 0) {

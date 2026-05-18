@@ -19,6 +19,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     boolean existsByPatient_IdAndSchedule_IdAndStatusIn(Long patientId, Long scheduleId, List<AppointmentStatus> statuses);
 
+    boolean existsBySchedule_IdAndStatusIn(Long scheduleId, List<AppointmentStatus> statuses);
+
     @Query("SELECT a FROM Appointment a WHERE a.status = :status AND a.paymentDeadline IS NOT NULL AND a.paymentDeadline < :now")
     List<Appointment> findExpiredPendingAppointments(
             @Param("status") AppointmentStatus status,
