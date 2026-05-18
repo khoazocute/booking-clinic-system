@@ -141,7 +141,7 @@ export function AdminPaymentsPage() {
         String(p.patientId).includes(search);
       return matchStatus && matchDate && matchSearch;
     })
-    .sort((a, b) => b.appointmentId - a.appointmentId);
+    .sort((a, b) => b.id - a.id);
 
   const stats = {
     total: payments.length,
