@@ -10,3 +10,23 @@ export function getSpecialties(params = {}) {
 export function getSpecialtyById(id) {
   return apiClient(`/specialties/${id}`);
 }
+
+export function createSpecialty(payload) {
+  return apiClient("/specialties", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateSpecialty(id, payload) {
+  return apiClient(`/specialties/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteSpecialty(id) {
+  return apiClient(`/specialties/${id}`, {
+    method: "DELETE",
+  });
+}
