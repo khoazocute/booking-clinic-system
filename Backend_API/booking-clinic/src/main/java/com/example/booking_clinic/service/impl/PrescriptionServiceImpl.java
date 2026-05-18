@@ -356,9 +356,13 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .map(item -> item.getLineTotal() != null ? item.getLineTotal() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        MedicalRecord mr = prescription.getMedicalRecord();
+        Long appointmentId = mr.getAppointment() != null ? mr.getAppointment().getId() : null;
+
         return new PrescriptionDetailResponse(
                 prescription.getId(),
-                prescription.getMedicalRecord().getId(),
+                mr.getId(),
+                appointmentId,
                 prescription.getDoctor().getId(),
                 prescription.getDoctor().getUser().getFullName(),
                 prescription.getPatient().getId(),
