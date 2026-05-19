@@ -1,5 +1,6 @@
 package com.example.booking_clinic.service.impl;
 
+import com.example.booking_clinic.common.exception.InsufficientStockException;
 import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.common.exception.InvalidAppointmentStateException;
 import com.example.booking_clinic.common.exception.PrescriptionAlreadyExistsException;
@@ -102,6 +103,18 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             Medicine m = medicineMap.get(medId);
             if (!m.getStatus().equals(MedicineStatus.ACTIVE)) {
                 throw new MedicineInactiveException("Medicine is not active: " + m.getName());
+            }
+        }
+
+        // Validate stock availability for each item
+        for (CreatePrescriptionItemRequest reqItem : request.items()) {
+            Medicine m = medicineMap.get(reqItem.medicineId());
+            int needed = reqItem.dosePerTime() * reqItem.timesPerDay() * reqItem.durationDays();
+            if (m.getStockQuantity() < needed) {
+                throw new InsufficientStockException(
+                        "Insufficient stock for: " + m.getName() +
+                        ". Available: " + m.getStockQuantity() + ", Required: " + needed
+                );
             }
         }
 

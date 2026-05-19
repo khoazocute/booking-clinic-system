@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { clearAccessToken, getCurrentUser } from "../services/authService";
+import { AdminNotificationProvider, useAdminNotificationContext } from "../contexts/AdminNotificationContext";
 
 const adminNavItems = [
   { to: "/admin", label: "Dashboard", icon: "dashboard", end: true },
@@ -24,9 +25,11 @@ function getInitials(name) {
     .join("");
 }
 
-export function AdminWorkspace({ eyebrow, title, description, actions, children }) {
+function AdminWorkspaceInner({ eyebrow, title, description, actions, children }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const { notifications } = useAdminNotificationContext();
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   useEffect(() => {
     let active = true;
@@ -87,8 +90,13 @@ export function AdminWorkspace({ eyebrow, title, description, actions, children 
               <input type="search" placeholder="Tìm kiếm..." />
             </label>
             <div className="admin-topbar__actions">
-              <NavLink className="admin-topbar__icon-btn" to="/admin/notifications" aria-label="Thông báo">
+              <NavLink className="admin-topbar__icon-btn relative" to="/admin/notifications" aria-label="Thông báo">
                 <span className="material-symbols-outlined">notifications</span>
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-[3px] bg-error text-on-error text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
               </NavLink>
               <div className="admin-topbar__profile">
                 <div className="admin-topbar__avatar">
@@ -117,5 +125,13 @@ export function AdminWorkspace({ eyebrow, title, description, actions, children 
         </section>
       </div>
     </div>
+  );
+}
+
+export function AdminWorkspace(props) {
+  return (
+    <AdminNotificationProvider>
+      <AdminWorkspaceInner {...props} />
+    </AdminNotificationProvider>
   );
 }

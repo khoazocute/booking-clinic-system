@@ -49,6 +49,7 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**", "/api/v1/health").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/test/admin").hasRole("ADMIN")
                         .requestMatchers("/api/v1/test/doctor").hasRole("DOCTOR")
                         .requestMatchers("/api/v1/test/patient").hasRole("PATIENT")

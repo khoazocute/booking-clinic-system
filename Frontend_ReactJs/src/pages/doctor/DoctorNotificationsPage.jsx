@@ -1,54 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { DoctorStatusBadge } from "../../components/doctor/DoctorStatusBadge";
 import { DoctorWorkspace } from "../../components/doctor/DoctorWorkspace";
 import {
-  getDoctorNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from "../../services/doctorPortalService";
 import { formatDateTime, getNotificationReferencePath } from "../../utils/doctorHelpers";
+import { useNotifications } from "../../hooks/useNotifications";
 
 export function DoctorNotificationsPage() {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { notifications, loading, markOneAsRead, markAllRead } = useNotifications();
   const [error, setError] = useState("");
   const [updating, setUpdating] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadNotifications() {
-      try {
-        const items = await getDoctorNotifications();
-        if (active) {
-          setNotifications(items);
-        }
-      } catch (requestError) {
-        if (active) {
-          setError(requestError.message);
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadNotifications();
-
-    return () => {
-      active = false;
-    };
-  }, []);
 
   async function handleMarkOne(id) {
     try {
       setUpdating(true);
-      const updated = await markNotificationAsRead(id);
-      setNotifications((current) =>
-        current.map((item) => (item.id === id ? updated : item)),
-      );
+      await markNotificationAsRead(id);
+      markOneAsRead(id);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -60,9 +30,7 @@ export function DoctorNotificationsPage() {
     try {
       setUpdating(true);
       await markAllNotificationsAsRead();
-      setNotifications((current) =>
-        current.map((item) => ({ ...item, isRead: true })),
-      );
+      markAllRead();
     } catch (requestError) {
       setError(requestError.message);
     } finally {

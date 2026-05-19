@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  getMyNotifications,
   markAllNotificationsAsRead,
   markNotificationAsRead,
 } from "../../../services/patientPortalService";
+import { useNotifications } from "../../../hooks/useNotifications";
 import {
   EmptyState,
   PatientPageShell,
@@ -23,33 +23,15 @@ function getReferencePath(notification) {
 }
 
 export function MyNotificationsPage() {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { notifications, loading, markOneAsRead, markAllRead } = useNotifications();
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    getMyNotifications()
-      .then((items) => {
-        if (active) setNotifications(items);
-      })
-      .catch((requestError) => {
-        if (active) setError(requestError.message);
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
 
   async function handleMarkOne(id) {
     try {
       setUpdating(true);
-      const updated = await markNotificationAsRead(id);
-      setNotifications((current) => current.map((item) => (item.id === id ? updated : item)));
+      await markNotificationAsRead(id);
+      markOneAsRead(id);
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -61,7 +43,7 @@ export function MyNotificationsPage() {
     try {
       setUpdating(true);
       await markAllNotificationsAsRead();
-      setNotifications((current) => current.map((item) => ({ ...item, isRead: true })));
+      markAllRead();
     } catch (requestError) {
       setError(requestError.message);
     } finally {

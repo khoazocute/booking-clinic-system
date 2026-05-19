@@ -1,6 +1,7 @@
 package com.example.booking_clinic.dto.medicine;
 
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -13,6 +14,9 @@ public record UpdateMedicineRequest(
         BigDecimal unitPrice,
 
         @Size(max = 30, message = "Unit must not exceed 30 characters")
-        String unit
+        String unit,
+
+        @Min(value = 0, message = "Stock quantity must be >= 0")
+        Integer stockQuantity
 ) {
 }

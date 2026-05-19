@@ -19,6 +19,7 @@ import com.example.booking_clinic.repository.MedicalRecordRepository;
 import com.example.booking_clinic.repository.PaymentRepository;
 import com.example.booking_clinic.repository.PrescriptionRepository;
 import com.example.booking_clinic.repository.UserRepository;
+import com.example.booking_clinic.service.MedicineService;
 import com.example.booking_clinic.service.NotificationService;
 import com.example.booking_clinic.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final DoctorScheduleRepository doctorScheduleRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final MedicineService medicineService;
 
     @Override
     @Transactional
@@ -241,6 +243,52 @@ public class PaymentServiceImpl implements PaymentService {
                     doctorScheduleRepository.releaseSchedule(appointment.getSchedule().getId());
                 }
             }
+        }
+
+        // PAID (any type) → trừ kho thuốc từ prescription
+        if ("PAID".equals(newStatus)) {
+            medicalRecordRepository.findByAppointment_Id(saved.getAppointment().getId())
+                    .ifPresent(medicalRecord ->
+                            prescriptionRepository.findByMedicalRecordId(medicalRecord.getId())
+                                    .ifPresent(prescription ->
+                                            prescription.getItems().forEach(item ->
+                                                    medicineService.deductStock(
+                                                            item.getMedicine().getId(),
+                                                            item.getQuantity()
+                                                    )
+                                            )
+                                    )
+                    );
+            notificationService.createNotificationForAdmins(
+                    "Thanh toan thanh cong",
+                    "Hoa don #" + saved.getId() + " cua benh nhan "
+                            + saved.getPatient().getUser().getFullName()
+                            + " da thanh toan thanh cong. So tien: " + saved.getAmount() + " VND",
+                    "PAYMENT_COMPLETED",
+                    "PAYMENT",
+                    saved.getId()
+            );
+        }
+
+        // FAILED/CANCELLED → notify patient + admin
+        if ("FAILED".equals(newStatus) || "CANCELLED".equals(newStatus)) {
+            notificationService.createNotification(
+                    payment.getPatient().getUser(),
+                    "Thanh toan da thay doi trang thai",
+                    "Trang thai thanh toan cua ban da duoc cap nhat thanh " + newStatus,
+                    "PAYMENT_UPDATED",
+                    "PAYMENT",
+                    saved.getId()
+            );
+            notificationService.createNotificationForAdmins(
+                    "Thanh toan " + ("FAILED".equals(newStatus) ? "that bai" : "da huy"),
+                    "Hoa don #" + saved.getId() + " cua benh nhan "
+                            + saved.getPatient().getUser().getFullName()
+                            + " co trang thai: " + newStatus,
+                    "PAYMENT_UPDATED",
+                    "PAYMENT",
+                    saved.getId()
+            );
         }
 
         if ("PAID".equals(newStatus) && "PRESCRIPTION".equals(payment.getPaymentType())) {
