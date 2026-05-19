@@ -44,6 +44,11 @@ export async function getDoctorAppointments() {
   };
 }
 
+export async function getPaymentsByAppointmentId(appointmentId) {
+  const response = await apiClient(`/payments/appointment/${appointmentId}`);
+  return response?.data ?? [];
+}
+
 export async function getAppointmentById(appointmentId) {
   const response = await apiClient(`/appointments/${appointmentId}`);
   return response?.data;

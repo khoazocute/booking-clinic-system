@@ -4,9 +4,6 @@ export function getDoctors(params = {}) {
   const q = new URLSearchParams();
   if (params.keyword) q.set("keyword", params.keyword);
   if (params.specialtyId != null) q.set("specialtyId", params.specialtyId);
-  if (params.status) q.set("status", params.status);
-  if (params.page != null) q.set("page", params.page);
-  if (params.size != null) q.set("size", params.size);
   const qs = q.toString();
   return apiClient(`/doctors${qs ? `?${qs}` : ""}`);
 }
@@ -16,18 +13,33 @@ export function getDoctorById(id) {
 }
 
 export function getDoctorReviews(doctorId, params = {}) {
-  const q = new URLSearchParams();
-  if (params.page != null) q.set("page", params.page);
-  if (params.size != null) q.set("size", params.size);
-  const qs = q.toString();
-  return apiClient(`/doctors/${doctorId}/reviews${qs ? `?${qs}` : ""}`);
+  return apiClient(`/reviews/doctor/${doctorId}`);
 }
 
 export function getDoctorSchedules(doctorId, params = {}) {
   const q = new URLSearchParams();
-  if (params.fromDate) q.set("from_date", params.fromDate);
-  if (params.toDate) q.set("to_date", params.toDate);
-  if (params.status) q.set("status", params.status);
+  if (params.workDate) q.set("workDate", params.workDate);
   const qs = q.toString();
   return apiClient(`/doctors/${doctorId}/schedules${qs ? `?${qs}` : ""}`);
+}
+
+export function createDoctor(payload) {
+  return apiClient("/doctors", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateDoctor(doctorId, payload) {
+  return apiClient(`/doctors/${doctorId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function updateDoctorStatus(doctorId, status) {
+  return apiClient(`/doctors/${doctorId}/status`, {
+    method: "PUT",
+    body: JSON.stringify({ status }),
+  });
 }

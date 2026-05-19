@@ -2,6 +2,7 @@ package com.example.booking_clinic.controller;
 
 import com.example.booking_clinic.common.api.ApiResponse;
 import com.example.booking_clinic.dto.appointment.AppointmentResponse;
+import com.example.booking_clinic.dto.appointment.CancelAppointmentResponse;
 import com.example.booking_clinic.dto.appointment.CreateAppointmentRequest;
 import com.example.booking_clinic.dto.appointment.UpdateAppointmentStatusRequest;
 import com.example.booking_clinic.service.AppointmentService;
@@ -77,10 +78,10 @@ public class AppointmentController {
 
     // PATIENT huỷ lịch hẹn của chính mình
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> cancel(
+    public ResponseEntity<ApiResponse<CancelAppointmentResponse>> cancel(
             @PathVariable Long id) {
 
-        appointmentService.cancelAppointment(id);
-        return ResponseEntity.ok(ApiResponse.success("Appointment cancelled successfully", null));
+        CancelAppointmentResponse response = appointmentService.cancelAppointment(id);
+        return ResponseEntity.ok(ApiResponse.success("Appointment cancelled successfully", response));
     }
 }

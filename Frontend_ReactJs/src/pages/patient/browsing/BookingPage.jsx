@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { SafeAvatar } from "../../../components/common/SafeAvatar";
 import { getDoctorById, getDoctorSchedules } from "../../../services/doctorService";
 import { createAppointment } from "../../../services/appointmentService";
+import { createPayment } from "../../../services/paymentService";
 import { getAccessToken } from "../../../services/authService";
 import { buildVNPayUrl } from "../../../services/vnpayService";
 
@@ -84,12 +85,16 @@ export function BookingPage() {
 
   // 3-step flow: 1 = chọn giờ, 2 = thanh toán, 3 = hoàn tất
   const [step, setStep] = useState(1);
+  const [appointmentId, setAppointmentId] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [showQR, setShowQR] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [paymentDeadline, setPaymentDeadline] = useState(null);
   const [countdown, setCountdown] = useState(null);
   const countdownRef = useRef(null);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundAgreed, setRefundAgreed] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const today = new Date();
   const fromDate = toISODate(today);
@@ -183,8 +188,9 @@ export function BookingPage() {
         appointmentDate: selectedDate,
         reason: reason.trim() || null,
       });
-      const deadline = res?.data?.paymentDeadline ?? res?.paymentDeadline ?? null;
-      setPaymentDeadline(deadline);
+      const appt = res?.data ?? res;
+      setAppointmentId(appt?.id ?? null);
+      setPaymentDeadline(appt?.paymentDeadline ?? null);
       setStep(2);
     } catch (err) {
       if (err.message?.toLowerCase().includes("patient profile")) {
@@ -197,16 +203,32 @@ export function BookingPage() {
     }
   }
 
-  // Step 2 → Step 3: xử lý theo phương thức thanh toán
-  async function handlePaymentConfirm() {
+  // Step 2: bấm xác nhận → hiện modal chính sách hoàn tiền trước
+  function handlePaymentConfirm() {
+    setRefundAgreed(false);
+    setShowRefundModal(true);
+  }
+
+  // Sau khi đồng ý chính sách hoàn tiền → thực hiện thanh toán
+  async function handleRefundConfirm() {
+    setShowRefundModal(false);
     if (paymentMethod === "CASH") {
-      setStep(3);
+      setPaymentLoading(true);
+      try {
+        await createPayment({ appointmentId, paymentMethod: "CASH", paymentType: "BOOKING" });
+        setStep(3);
+      } catch (err) {
+        setSubmitError(err.message);
+      } finally {
+        setPaymentLoading(false);
+      }
     } else if (paymentMethod === "BANK_TRANSFER") {
       setShowQR(true);
     } else if (paymentMethod === "E_WALLET") {
+      sessionStorage.setItem("pendingAppointmentId", String(appointmentId));
       setIsRedirecting(true);
       const fee = Number(doctor?.consultationFee ?? 0);
-      const amount = fee > 0 ? fee : 10000; // min 10k để sandbox có thể xử lý
+      const amount = fee > 0 ? fee : 10000;
       const txnRef = `MC${Date.now()}`.slice(0, 20);
       const returnUrl = `${window.location.origin}/payment/return`;
       try {
@@ -220,6 +242,19 @@ export function BookingPage() {
       } catch {
         setIsRedirecting(false);
       }
+    }
+  }
+
+  // BANK_TRANSFER: người dùng xác nhận đã chuyển khoản → tạo payment
+  async function handleBankTransferDone() {
+    setPaymentLoading(true);
+    try {
+      await createPayment({ appointmentId, paymentMethod: "BANK_TRANSFER", paymentType: "BOOKING" });
+      setStep(3);
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setPaymentLoading(false);
     }
   }
 
@@ -327,6 +362,7 @@ export function BookingPage() {
   ];
 
   return (
+    <>
     <div className="browse-page">
       <div className="mc-container mc-booking-wrap">
 
@@ -631,9 +667,9 @@ export function BookingPage() {
                     </div>
                   </div>
 
-                  <button className="mc-confirm-btn" type="button" onClick={() => setStep(3)}>
-                    Tôi đã chuyển khoản
-                    <span className="material-symbols-outlined">check</span>
+                  <button className="mc-confirm-btn" type="button" onClick={handleBankTransferDone} disabled={paymentLoading}>
+                    {paymentLoading ? "Đang xử lý..." : "Tôi đã chuyển khoản"}
+                    {!paymentLoading && <span className="material-symbols-outlined">check</span>}
                   </button>
                   <button className="pay-back-btn" type="button" onClick={() => setShowQR(false)}>
                     <span className="material-symbols-outlined">arrow_back</span>
@@ -733,5 +769,81 @@ export function BookingPage() {
 
       </div>
     </div>
+
+    {/* ── Modal chính sách hoàn tiền ───────────────────────── */}
+    {showRefundModal && (
+      <div
+        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}
+        onClick={() => setShowRefundModal(false)}
+      >
+        <div
+          style={{ background: "#fff", borderRadius: "16px", padding: "28px 32px", maxWidth: "480px", width: "90%", boxShadow: "0 8px 40px rgba(0,0,0,0.18)" }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Chính sách hoàn tiền</h2>
+            <button type="button" onClick={() => setShowRefundModal(false)} style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}>
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
+
+          <p style={{ fontSize: "14px", color: "var(--text-soft)", marginBottom: "16px" }}>
+            Vui lòng đọc kỹ chính sách hoàn tiền trước khi xác nhận đặt lịch.
+          </p>
+
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px", marginBottom: "20px" }}>
+            <thead>
+              <tr style={{ background: "var(--bg-soft, #f8f9fa)" }}>
+                <th style={{ padding: "10px 12px", textAlign: "left", fontWeight: 600, borderBottom: "1px solid #e5e7eb" }}>Thời điểm huỷ</th>
+                <th style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, borderBottom: "1px solid #e5e7eb" }}>Hoàn tiền</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ padding: "10px 12px", borderBottom: "1px solid #f3f4f6" }}>Trước 24 giờ so với lịch khám</td>
+                <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#16a34a" }}>100%</td>
+              </tr>
+              <tr>
+                <td style={{ padding: "10px 12px", borderBottom: "1px solid #f3f4f6" }}>Từ 6 đến 24 giờ trước lịch khám</td>
+                <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#d97706" }}>40%</td>
+              </tr>
+              <tr>
+                <td style={{ padding: "10px 12px" }}>Dưới 6 giờ trước lịch khám</td>
+                <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 700, color: "#dc2626" }}>0%</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer", marginBottom: "20px", fontSize: "14px" }}>
+            <input
+              type="checkbox"
+              checked={refundAgreed}
+              onChange={(e) => setRefundAgreed(e.target.checked)}
+              style={{ marginTop: "2px", accentColor: "var(--primary)", width: "16px", height: "16px", flexShrink: 0 }}
+            />
+            Tôi đã đọc và đồng ý với chính sách hoàn tiền của phòng khám
+          </label>
+
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button
+              type="button"
+              onClick={() => setShowRefundModal(false)}
+              style={{ flex: 1, padding: "10px", border: "1.5px solid #e5e7eb", borderRadius: "8px", background: "#fff", cursor: "pointer", fontWeight: 600, fontSize: "14px" }}
+            >
+              Huỷ
+            </button>
+            <button
+              type="button"
+              disabled={!refundAgreed}
+              onClick={handleRefundConfirm}
+              style={{ flex: 1, padding: "10px", border: "none", borderRadius: "8px", background: refundAgreed ? "var(--primary)" : "#d1d5db", color: refundAgreed ? "#fff" : "#9ca3af", cursor: refundAgreed ? "pointer" : "not-allowed", fontWeight: 600, fontSize: "14px" }}
+            >
+              Xác nhận &amp; Tiếp tục
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

@@ -54,6 +54,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/test/doctor").hasRole("DOCTOR")
                         .requestMatchers("/api/v1/test/patient").hasRole("PATIENT")
 
+                        // User: ADMIN xem danh sach, user cap nhat thong tin cua minh
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/users/me").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
+
                         // Specialty: GET public, POST/PATCH/DELETE chỉ ADMIN
                         .requestMatchers(HttpMethod.GET, "/api/v1/specialties", "/api/v1/specialties/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/specialties").hasRole("ADMIN")

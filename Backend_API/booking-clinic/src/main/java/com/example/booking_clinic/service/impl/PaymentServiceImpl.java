@@ -1,22 +1,20 @@
 package com.example.booking_clinic.service.impl;
 
-import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.common.exception.InvalidAppointmentStateException;
 import com.example.booking_clinic.common.exception.PaymentAlreadyExistsException;
-import com.example.booking_clinic.entity.enums.AppointmentStatus;
-import com.example.booking_clinic.entity.User;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.dto.payment.CreatePaymentRequest;
-import com.example.booking_clinic.dto.payment.UpdatePaymentStatusRequest;
 import com.example.booking_clinic.dto.payment.PaymentResponse;
+import com.example.booking_clinic.dto.payment.UpdatePaymentStatusRequest;
 import com.example.booking_clinic.entity.Appointment;
 import com.example.booking_clinic.entity.Patient;
 import com.example.booking_clinic.entity.Payment;
-import com.example.booking_clinic.entity.MedicalRecord;
 import com.example.booking_clinic.entity.Prescription;
+import com.example.booking_clinic.entity.MedicalRecord;
+import com.example.booking_clinic.entity.User;
+import com.example.booking_clinic.entity.enums.AppointmentStatus;
 import com.example.booking_clinic.repository.AppointmentRepository;
+import com.example.booking_clinic.repository.DoctorScheduleRepository;
 import com.example.booking_clinic.repository.MedicalRecordRepository;
 import com.example.booking_clinic.repository.PaymentRepository;
 import com.example.booking_clinic.repository.PrescriptionRepository;
@@ -25,235 +23,316 @@ import com.example.booking_clinic.service.MedicineService;
 import com.example.booking_clinic.service.NotificationService;
 import com.example.booking_clinic.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
-        private final PaymentRepository paymentRepository;
-        private final AppointmentRepository appointmentRepository;
-        private final MedicalRecordRepository medicalRecordRepository;
-        private final PrescriptionRepository prescriptionRepository;
-        private final UserRepository userRepository;
-        private final NotificationService notificationService;
-        private final MedicineService medicineService;
+    private final PaymentRepository paymentRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final PrescriptionRepository prescriptionRepository;
+    private final DoctorScheduleRepository doctorScheduleRepository;
+    private final UserRepository userRepository;
+    private final NotificationService notificationService;
+    private final MedicineService medicineService;
 
-        @Override
-        @Transactional
-        public PaymentResponse createPayment(CreatePaymentRequest request) {
-                Appointment appointment = appointmentRepository.findById(request.appointmentId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Appointment not found with id: " + request.appointmentId()));
+    @Override
+    @Transactional
+    public PaymentResponse createPayment(CreatePaymentRequest request) {
+        Appointment appointment = appointmentRepository.findById(request.appointmentId())
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Appointment not found with id: " + request.appointmentId()));
 
-                if (paymentRepository.existsByAppointment_IdAndStatusNot(appointment.getId(), "CANCELLED")) {
-                        throw new PaymentAlreadyExistsException("Payment already exists for this appointment");
-                }
+        User currentUser = getCurrentUser();
+        String role = currentUser.getRole().getName().trim().toUpperCase();
 
-                if (appointment.getStatus() == null || !appointment.getStatus().equals(AppointmentStatus.COMPLETED)) {
-                        throw new InvalidAppointmentStateException(
-                                        "Appointment must be completed before payment. Current status: "
-                                                        + appointment.getStatus());
-                }
+        String paymentType = request.resolvedType(); // BOOKING | PRESCRIPTION
 
-                User currentUser = getCurrentUser();
-                String role = currentUser.getRole().getName().trim().toUpperCase();
-
-                if ("PATIENT".equals(role)) {
-                        if (!appointment.getPatient().getUser().getId().equals(currentUser.getId())) {
-                                throw new AccessDeniedException(
-                                                "You are not allowed to pay for someone else's appointment");
-                        }
-                } else if (!"ADMIN".equals(role)) {
-                        throw new AccessDeniedException("Invalid role for creating payment");
-                }
-
-                Patient patient = appointment.getPatient();
-
-                java.math.BigDecimal totalAmount = appointment.getDoctor().getConsultationFee();
-                if (totalAmount == null) {
-                        totalAmount = java.math.BigDecimal.ZERO;
-                }
-
-                java.util.Optional<MedicalRecord> medicalRecordOpt = medicalRecordRepository
-                                .findByAppointment_Id(appointment.getId());
-                if (medicalRecordOpt.isPresent()) {
-                        java.util.Optional<Prescription> prescriptionOpt = prescriptionRepository
-                                        .findByMedicalRecordId(medicalRecordOpt.get().getId());
-                        if (prescriptionOpt.isPresent() && prescriptionOpt.get().getTotalPrice() != null) {
-                                totalAmount = totalAmount.add(prescriptionOpt.get().getTotalPrice());
-                        }
-                }
-
-                Payment payment = Payment.builder()
-                                .appointment(appointment)
-                                .patient(patient)
-                                .amount(totalAmount)
-                                .paymentMethod(request.paymentMethod())
-                                .status("PENDING")
-                                .build();
-
-                Payment savedPayment = paymentRepository.save(payment);
-
-                notificationService.createNotification(
-                                patient.getUser(),
-                                "Hoa don thanh toan da duoc tao",
-                                "He thong da tao hoa don thanh toan cho lich kham cua ban",
-                                "PAYMENT_CREATED",
-                                "PAYMENT",
-                                savedPayment.getId());
-
-                return toResponse(savedPayment);
+        // ─── Quyền truy cập ────────────────────────────────────────────
+        if ("PATIENT".equals(role)) {
+            if (!appointment.getPatient().getUser().getId().equals(currentUser.getId())) {
+                throw new AccessDeniedException("You are not allowed to pay for someone else's appointment");
+            }
+        } else if (!"ADMIN".equals(role)) {
+            throw new AccessDeniedException("Invalid role for creating payment");
         }
 
-        @Override
-        @Transactional(readOnly = true)
-        public PaymentResponse getPaymentById(Long id) {
-                Payment payment = paymentRepository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
+        // ─── Kiểm tra trùng payment_type cho cùng appointment ─────────
+        if (paymentRepository.existsByAppointment_IdAndPaymentType(appointment.getId(), paymentType)) {
+            throw new PaymentAlreadyExistsException(
+                    "Payment of type " + paymentType + " already exists for this appointment");
+        }
 
-                User currentUser = getCurrentUser();
-                String role = currentUser.getRole().getName().trim().toUpperCase();
+        Patient patient = appointment.getPatient();
+        BigDecimal amount;
 
-                if ("PATIENT".equals(role)) {
-                        if (!payment.getPatient().getUser().getId().equals(currentUser.getId())) {
-                                throw new AccessDeniedException("You are not allowed to view this payment");
-                        }
-                } else if ("DOCTOR".equals(role)) {
-                        if (!payment.getAppointment().getDoctor().getUser().getId().equals(currentUser.getId())) {
-                                throw new AccessDeniedException("You are not allowed to view this payment");
-                        }
-                } else if (!"ADMIN".equals(role)) {
-                        throw new AccessDeniedException("Invalid role for viewing payment");
+        if ("BOOKING".equals(paymentType)) {
+            // ── BOOKING: phí đặt lịch, appointment phải PENDING ──────────
+            if (appointment.getStatus() == null ||
+                    !appointment.getStatus().equals(AppointmentStatus.PENDING)) {
+                throw new InvalidAppointmentStateException(
+                        "Cannot create BOOKING payment. Appointment status: " + appointment.getStatus());
+            }
+            amount = appointment.getDoctor().getConsultationFee();
+            if (amount == null) amount = BigDecimal.ZERO;
+
+        } else if ("PRESCRIPTION".equals(paymentType)) {
+            // ── PRESCRIPTION: phí thuốc, appointment phải COMPLETED ──────
+            if (appointment.getStatus() == null ||
+                    !appointment.getStatus().equals(AppointmentStatus.COMPLETED)) {
+                throw new InvalidAppointmentStateException(
+                        "Cannot create PRESCRIPTION payment. Appointment status: " + appointment.getStatus());
+            }
+            amount = BigDecimal.ZERO;
+            Optional<MedicalRecord> recordOpt = medicalRecordRepository
+                    .findByAppointment_Id(appointment.getId());
+            if (recordOpt.isPresent()) {
+                Optional<Prescription> prescriptionOpt = prescriptionRepository
+                        .findByMedicalRecordId(recordOpt.get().getId());
+                if (prescriptionOpt.isPresent() && prescriptionOpt.get().getTotalPrice() != null) {
+                    amount = prescriptionOpt.get().getTotalPrice();
                 }
-
-                return toResponse(payment);
+            }
+        } else {
+            throw new IllegalArgumentException("Invalid payment type. Allowed: BOOKING, PRESCRIPTION");
         }
 
-        @Override
-        @Transactional(readOnly = true)
-        public PaymentResponse getPaymentByAppointmentId(Long appointmentId) {
-                Payment payment = paymentRepository.findByAppointment_Id(appointmentId)
-                                .orElseThrow(() -> new ResourceNotFoundException(
-                                                "Payment not found for appointment id: " + appointmentId));
+        // ─── Xác định status ban đầu ────────────────────────────────────
+        // VNPay (E_WALLET) → PAID ngay; còn lại → PENDING (admin xác nhận sau)
+        String method = request.paymentMethod().toUpperCase();
+        String initialStatus = "E_WALLET".equals(method) ? "PAID" : "PENDING";
 
-                User currentUser = getCurrentUser();
-                String role = currentUser.getRole().getName().trim().toUpperCase();
+        Payment payment = Payment.builder()
+                .appointment(appointment)
+                .patient(patient)
+                .amount(amount)
+                .paymentMethod(method)
+                .paymentType(paymentType)
+                .status(initialStatus)
+                .build();
 
-                if ("PATIENT".equals(role)) {
-                        if (!payment.getPatient().getUser().getId().equals(currentUser.getId())) {
-                                throw new AccessDeniedException("You are not allowed to view this payment");
-                        }
-                } else if ("DOCTOR".equals(role)) {
-                        if (!payment.getAppointment().getDoctor().getUser().getId().equals(currentUser.getId())) {
-                                throw new AccessDeniedException("You are not allowed to view this payment");
-                        }
-                } else if (!"ADMIN".equals(role)) {
-                        throw new AccessDeniedException("Invalid role for viewing payment");
+        Payment saved = paymentRepository.save(payment);
+
+        // ─── Sau khi tạo BOOKING payment → confirm appointment ─────────
+        if ("BOOKING".equals(paymentType)) {
+            appointment.setStatus(AppointmentStatus.CONFIRMED);
+            appointmentRepository.save(appointment);
+
+            notificationService.createNotification(
+                    patient.getUser(),
+                    "Dat lich thanh cong",
+                    "Lich kham cua ban da duoc xac nhan. Phuong thuc thanh toan: " + method,
+                    "APPOINTMENT_CONFIRMED",
+                    "APPOINTMENT",
+                    appointment.getId()
+            );
+        }
+
+        if ("PAID".equals(initialStatus)) {
+            notificationService.createNotification(
+                    patient.getUser(),
+                    "Thanh toan thanh cong",
+                    "Khoan thanh toan cua ban da duoc ghi nhan",
+                    "PAYMENT_CREATED",
+                    "PAYMENT",
+                    saved.getId()
+            );
+        }
+
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PaymentResponse getPaymentById(Long id) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
+
+        User currentUser = getCurrentUser();
+        String role = currentUser.getRole().getName().trim().toUpperCase();
+
+        if ("PATIENT".equals(role)) {
+            if (!payment.getPatient().getUser().getId().equals(currentUser.getId())) {
+                throw new AccessDeniedException("You are not allowed to view this payment");
+            }
+        } else if ("DOCTOR".equals(role)) {
+            if (!payment.getAppointment().getDoctor().getUser().getId().equals(currentUser.getId())) {
+                throw new AccessDeniedException("You are not allowed to view this payment");
+            }
+        } else if (!"ADMIN".equals(role)) {
+            throw new AccessDeniedException("Invalid role for viewing payment");
+        }
+
+        return toResponse(payment);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> getPaymentsByAppointmentId(Long appointmentId) {
+        User currentUser = getCurrentUser();
+        String role = currentUser.getRole().getName().trim().toUpperCase();
+
+        List<Payment> payments = paymentRepository.findByAppointment_Id(appointmentId);
+
+        if ("PATIENT".equals(role)) {
+            payments.stream().findFirst().ifPresent(p -> {
+                if (!p.getPatient().getUser().getId().equals(currentUser.getId())) {
+                    throw new AccessDeniedException("You are not allowed to view these payments");
                 }
-
-                return toResponse(payment);
+            });
+        } else if (!"ADMIN".equals(role) && !"DOCTOR".equals(role)) {
+            throw new AccessDeniedException("Invalid role for viewing payments");
         }
 
-        @Override
-        @Transactional
-        public PaymentResponse updatePaymentStatus(Long id, UpdatePaymentStatusRequest request) {
-                Payment payment = paymentRepository.findById(id)
-                                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
+        return payments.stream().map(this::toResponse).toList();
+    }
 
-                String newStatus = request.status().trim().toUpperCase();
+    @Override
+    @Transactional
+    public PaymentResponse updatePaymentStatus(Long id, UpdatePaymentStatusRequest request) {
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Payment not found with id: " + id));
 
-                // Validate allowed statuses
-                if (!java.util.List.of("PAID", "FAILED", "CANCELLED", "PENDING").contains(newStatus)) {
-                        throw new IllegalArgumentException(
-                                        "Invalid status. Allowed statuses are: PAID, FAILED, CANCELLED, PENDING");
+        String newStatus = request.status().trim().toUpperCase();
+
+        if (!List.of("PAID", "FAILED", "CANCELLED", "PENDING").contains(newStatus)) {
+            throw new IllegalArgumentException(
+                    "Invalid status. Allowed: PAID, FAILED, CANCELLED, PENDING");
+        }
+
+        payment.setStatus(newStatus);
+        Payment saved = paymentRepository.save(payment);
+
+        Appointment appointment = payment.getAppointment();
+
+        // BOOKING payment → PAID : xác nhận appointment
+        if ("PAID".equals(newStatus) && "BOOKING".equals(payment.getPaymentType())) {
+            if (appointment.getStatus() == AppointmentStatus.PENDING) {
+                appointment.setStatus(AppointmentStatus.CONFIRMED);
+                appointmentRepository.save(appointment);
+            }
+            notificationService.createNotification(
+                    payment.getPatient().getUser(),
+                    "Thanh toan thanh cong",
+                    "Khoan thanh toan dat lich cua ban da duoc xac nhan",
+                    "PAYMENT_COMPLETED",
+                    "PAYMENT",
+                    saved.getId()
+            );
+        }
+
+        // BOOKING payment → CANCELLED/FAILED : trả lại slot
+        if (("CANCELLED".equals(newStatus) || "FAILED".equals(newStatus))
+                && "BOOKING".equals(payment.getPaymentType())) {
+            if (appointment.getStatus() == AppointmentStatus.PENDING
+                    || appointment.getStatus() == AppointmentStatus.CONFIRMED) {
+                appointment.setStatus(AppointmentStatus.CANCELLED);
+                appointment.setCancelReason("Thanh toán thất bại hoặc bị huỷ");
+                appointmentRepository.save(appointment);
+                if (appointment.getSchedule() != null) {
+                    doctorScheduleRepository.releaseSchedule(appointment.getSchedule().getId());
                 }
-
-                payment.setStatus(newStatus);
-                Payment savedPayment = paymentRepository.save(payment);
-
-                if ("PAID".equals(newStatus)) {
-                        medicalRecordRepository.findByAppointment_Id(savedPayment.getAppointment().getId())
-                                .ifPresent(medicalRecord ->
-                                        prescriptionRepository.findByMedicalRecordId(medicalRecord.getId())
-                                                .ifPresent(prescription ->
-                                                        prescription.getItems().forEach(item ->
-                                                                medicineService.deductStock(
-                                                                        item.getMedicine().getId(),
-                                                                        item.getQuantity()
-                                                                )
-                                                        )
-                                                )
-                                );
-
-                        notificationService.createNotification(
-                                        savedPayment.getPatient().getUser(),
-                                        "Thanh toan thanh cong",
-                                        "Khoan thanh toan cua ban da duoc xac nhan thanh cong",
-                                        "PAYMENT_COMPLETED",
-                                        "PAYMENT",
-                                        savedPayment.getId());
-                        notificationService.createNotificationForAdmins(
-                                        "Thanh toan thanh cong",
-                                        "Hoa don #" + savedPayment.getId() + " cua benh nhan "
-                                                + savedPayment.getPatient().getUser().getFullName()
-                                                + " da thanh toan thanh cong. So tien: " + savedPayment.getAmount() + " VND",
-                                        "PAYMENT_COMPLETED",
-                                        "PAYMENT",
-                                        savedPayment.getId());
-                } else if ("FAILED".equals(newStatus) || "CANCELLED".equals(newStatus)) {
-                        notificationService.createNotification(
-                                        savedPayment.getPatient().getUser(),
-                                        "Thanh toan da thay doi trang thai",
-                                        "Trang thai thanh toan cua ban da duoc cap nhat thanh " + newStatus,
-                                        "PAYMENT_UPDATED",
-                                        "PAYMENT",
-                                        savedPayment.getId());
-                        notificationService.createNotificationForAdmins(
-                                        "Thanh toan " + ("FAILED".equals(newStatus) ? "that bai" : "da huy"),
-                                        "Hoa don #" + savedPayment.getId() + " cua benh nhan "
-                                                + savedPayment.getPatient().getUser().getFullName()
-                                                + " co trang thai: " + newStatus,
-                                        "PAYMENT_UPDATED",
-                                        "PAYMENT",
-                                        savedPayment.getId());
-                }
-
-                return toResponse(savedPayment);
+            }
         }
 
-        @Override
-        @Transactional(readOnly = true)
-        public java.util.List<PaymentResponse> getAllPayments() {
-                User currentUser = getCurrentUser();
-                String role = currentUser.getRole().getName().trim().toUpperCase();
-                if (!"ADMIN".equals(role)) {
-                        throw new AccessDeniedException("Only ADMIN can view all payments");
-                }
-                return paymentRepository.findAll()
-                        .stream()
-                        .map(this::toResponse)
-                        .toList();
+        // PAID (any type) → trừ kho thuốc từ prescription
+        if ("PAID".equals(newStatus)) {
+            medicalRecordRepository.findByAppointment_Id(saved.getAppointment().getId())
+                    .ifPresent(medicalRecord ->
+                            prescriptionRepository.findByMedicalRecordId(medicalRecord.getId())
+                                    .ifPresent(prescription ->
+                                            prescription.getItems().forEach(item ->
+                                                    medicineService.deductStock(
+                                                            item.getMedicine().getId(),
+                                                            item.getQuantity()
+                                                    )
+                                            )
+                                    )
+                    );
+            notificationService.createNotificationForAdmins(
+                    "Thanh toan thanh cong",
+                    "Hoa don #" + saved.getId() + " cua benh nhan "
+                            + saved.getPatient().getUser().getFullName()
+                            + " da thanh toan thanh cong. So tien: " + saved.getAmount() + " VND",
+                    "PAYMENT_COMPLETED",
+                    "PAYMENT",
+                    saved.getId()
+            );
         }
 
-        private PaymentResponse toResponse(Payment payment) {
-                return new PaymentResponse(
-                                payment.getId(),
-                                payment.getAppointment().getId(),
-                                payment.getPatient().getId(),
-                                payment.getAmount(),
-                                payment.getPaymentMethod(),
-                                payment.getStatus(),
-                                payment.getCreatedAt(),
-                                payment.getUpdatedAt());
+        // FAILED/CANCELLED → notify patient + admin
+        if ("FAILED".equals(newStatus) || "CANCELLED".equals(newStatus)) {
+            notificationService.createNotification(
+                    payment.getPatient().getUser(),
+                    "Thanh toan da thay doi trang thai",
+                    "Trang thai thanh toan cua ban da duoc cap nhat thanh " + newStatus,
+                    "PAYMENT_UPDATED",
+                    "PAYMENT",
+                    saved.getId()
+            );
+            notificationService.createNotificationForAdmins(
+                    "Thanh toan " + ("FAILED".equals(newStatus) ? "that bai" : "da huy"),
+                    "Hoa don #" + saved.getId() + " cua benh nhan "
+                            + saved.getPatient().getUser().getFullName()
+                            + " co trang thai: " + newStatus,
+                    "PAYMENT_UPDATED",
+                    "PAYMENT",
+                    saved.getId()
+            );
         }
 
-        private User getCurrentUser() {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                User principal = (User) authentication.getPrincipal();
-
-                return userRepository.findByEmail(principal.getEmail())
-                                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+        if ("PAID".equals(newStatus) && "PRESCRIPTION".equals(payment.getPaymentType())) {
+            notificationService.createNotification(
+                    payment.getPatient().getUser(),
+                    "Thanh toan don thuoc thanh cong",
+                    "Khoan thanh toan don thuoc cua ban da duoc xac nhan",
+                    "PAYMENT_COMPLETED",
+                    "PAYMENT",
+                    saved.getId()
+            );
         }
+
+        return toResponse(saved);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PaymentResponse> getAllPayments() {
+        User currentUser = getCurrentUser();
+        String role = currentUser.getRole().getName().trim().toUpperCase();
+        if (!"ADMIN".equals(role)) {
+            throw new AccessDeniedException("Only ADMIN can view all payments");
+        }
+        return paymentRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    private PaymentResponse toResponse(Payment payment) {
+        return new PaymentResponse(
+                payment.getId(),
+                payment.getAppointment().getId(),
+                payment.getPatient().getId(),
+                payment.getAmount(),
+                payment.getPaymentMethod(),
+                payment.getPaymentType(),
+                payment.getStatus(),
+                payment.getCreatedAt(),
+                payment.getUpdatedAt());
+    }
+
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User principal = (User) authentication.getPrincipal();
+        return userRepository.findByEmail(principal.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+    }
 }

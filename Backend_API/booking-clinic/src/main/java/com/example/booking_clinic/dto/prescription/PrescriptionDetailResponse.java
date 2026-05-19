@@ -7,6 +7,7 @@ import java.util.List;
 public record PrescriptionDetailResponse(
         Long id,
         Long medicalRecordId,
+        Long appointmentId,
         Long doctorId,
         String doctorName,
         Long patientId,

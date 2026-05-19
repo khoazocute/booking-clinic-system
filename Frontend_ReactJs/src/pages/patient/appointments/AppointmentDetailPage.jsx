@@ -6,6 +6,7 @@ import {
   getMedicalRecordByAppointmentId,
   getPrescriptionByMedicalRecordId,
 } from "../../../services/patientPortalService";
+import { getPaymentByAppointmentId } from "../../../services/paymentService";
 import {
   PatientPageShell,
   PatientStatusBadge,
@@ -19,6 +20,7 @@ export function AppointmentDetailPage() {
   const [appointment, setAppointment] = useState(null);
   const [medicalRecord, setMedicalRecord] = useState(null);
   const [prescription, setPrescription] = useState(null);
+  const [rxPayStatus, setRxPayStatus] = useState(null); // null|UNPAID|PENDING|PAID
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState("");
@@ -46,10 +48,25 @@ export function AppointmentDetailPage() {
           }
         }
 
+        // Load prescription payment status
+        let rxPay = null;
+        if (prescriptionData && appointmentData?.id) {
+          try {
+            const payRes = await getPaymentByAppointmentId(appointmentData.id);
+            const list = payRes?.data ?? payRes ?? [];
+            const arr = Array.isArray(list) ? list : [list];
+            const rxRec = arr.find((p) => p.paymentType === "PRESCRIPTION");
+            rxPay = rxRec ? rxRec.status : "UNPAID";
+          } catch {
+            rxPay = "UNPAID";
+          }
+        }
+
         if (active) {
           setAppointment(appointmentData);
           setMedicalRecord(medicalRecordData);
           setPrescription(prescriptionData);
+          setRxPayStatus(rxPay);
         }
       } catch (requestError) {
         if (active) setError(requestError.message);
@@ -155,9 +172,32 @@ export function AppointmentDetailPage() {
                 )}
 
                 {prescription ? (
-                  <Link className="mc-btn mc-btn--primary" to={`/prescriptions/${prescription.id}`}>
-                    Xem don thuoc
-                  </Link>
+                  <>
+                    <Link className="mc-btn mc-btn--primary" to={`/prescriptions/${prescription.id}`}>
+                      Xem don thuoc
+                    </Link>
+                    {rxPayStatus === "UNPAID" && (
+                      <Link
+                        to={`/prescriptions/${prescription.id}`}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "rgba(234,88,12,0.08)", border: "1.5px solid rgba(234,88,12,0.3)", color: "#ea580c", fontWeight: 600, fontSize: 13, textDecoration: "none" }}
+                      >
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>warning</span>
+                        Chưa thanh toán tiền thuốc
+                      </Link>
+                    )}
+                    {rxPayStatus === "PENDING" && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "rgba(217,119,6,0.08)", border: "1.5px solid rgba(217,119,6,0.25)", color: "#d97706", fontWeight: 600, fontSize: 13 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>hourglass_top</span>
+                        Tiền thuốc chờ admin xác nhận
+                      </div>
+                    )}
+                    {rxPayStatus === "PAID" && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "rgba(22,163,74,0.08)", border: "1.5px solid rgba(22,163,74,0.25)", color: "#16a34a", fontWeight: 600, fontSize: 13 }}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                        Đã thanh toán tiền thuốc
+                      </div>
+                    )}
+                  </>
                 ) : null}
 
                 {appointment.status === "COMPLETED" ? (

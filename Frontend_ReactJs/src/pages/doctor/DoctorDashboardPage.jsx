@@ -5,7 +5,7 @@ import { DoctorWorkspace } from "../../components/doctor/DoctorWorkspace";
 import {
   getCurrentDoctorProfile,
   getDoctorAppointments,
-  getDoctorNotifications,
+  getPaymentsByAppointmentId,
 } from "../../services/doctorPortalService";
 import { formatCurrency, formatDate, formatTime } from "../../utils/doctorHelpers";
 
@@ -25,7 +25,7 @@ function getInitials(name) {
 export function DoctorDashboardPage() {
   const [doctor, setDoctor] = useState(null);
   const [appointments, setAppointments] = useState([]);
-  const [notifications, setNotifications] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -34,19 +34,26 @@ export function DoctorDashboardPage() {
 
     async function loadDashboard() {
       try {
-        const [doctorProfile, appointmentResult, notificationItems] = await Promise.all([
+        const [doctorProfile, appointmentResult] = await Promise.all([
           getCurrentDoctorProfile(),
           getDoctorAppointments(),
-          getDoctorNotifications(),
         ]);
 
         if (!active) {
           return;
         }
 
+        const appointmentItems = appointmentResult.appointments ?? [];
+        const paymentResults = await Promise.allSettled(
+          appointmentItems.map((appointment) => getPaymentsByAppointmentId(appointment.id)),
+        );
+        const paymentItems = paymentResults
+          .filter((result) => result.status === "fulfilled")
+          .flatMap((result) => result.value ?? []);
+
         setDoctor(doctorProfile);
-        setAppointments(appointmentResult.appointments ?? []);
-        setNotifications(notificationItems ?? []);
+        setAppointments(appointmentItems);
+        setPayments(paymentItems);
       } catch (requestError) {
         if (active) {
           setError(requestError.message);
@@ -66,6 +73,9 @@ export function DoctorDashboardPage() {
   }, []);
 
   const today = new Date().toISOString().slice(0, 10);
+  const paidRevenue = payments
+    .filter((payment) => payment.status === "PAID")
+    .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
   const stats = [
     {
       label: "Appointments",
@@ -89,11 +99,11 @@ export function DoctorDashboardPage() {
       icon: "check_circle",
     },
     {
-      label: "New Notifications",
-      value: notifications.filter((item) => !item.isRead).length,
-      eyebrow: "Inbox",
+      label: "Revenue",
+      value: formatCurrency(paidRevenue),
+      eyebrow: "Paid",
       tone: "secondary",
-      icon: "notifications_active",
+      icon: "payments",
     },
   ];
 
