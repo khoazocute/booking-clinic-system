@@ -15,4 +15,8 @@ public interface NotificationService {
     void markAllAsRead();
 
     void createNotification(User user, String title, String message, String type, String referenceType, Long referenceId);
+
+    void createNotificationForAdmins(String title, String message, String type, String referenceType, Long referenceId);
+
+    List<NotificationResponse> getAllNotifications();
 }

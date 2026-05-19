@@ -1,9 +1,12 @@
 import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { clearAccessToken } from '../services/authService';
+import { AdminNotificationProvider, useAdminNotificationContext } from '../contexts/AdminNotificationContext';
 
-export const AdminLayout = () => {
+function AdminLayoutInner() {
   const navigate = useNavigate();
+  const { notifications } = useAdminNotificationContext();
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleLogout = () => {
     clearAccessToken();
@@ -96,9 +99,16 @@ export const AdminLayout = () => {
             <input className="bg-transparent border-none focus:ring-0 text-body-sm w-full outline-none" placeholder="Search..." type="text" />
           </div>
           <div className="flex items-center space-x-md">
-            <button className="relative p-base hover:bg-surface-container transition-colors rounded-full text-on-surface-variant">
+            <button
+              onClick={() => navigate('/admin/notifications')}
+              className="relative p-base hover:bg-surface-container transition-colors rounded-full text-on-surface-variant"
+            >
               <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-[4px] bg-error text-on-error text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-surface">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
             </button>
             <button className="p-base hover:bg-surface-container transition-colors rounded-full text-on-surface-variant">
               <span className="material-symbols-outlined" data-icon="settings">settings</span>
@@ -126,4 +136,10 @@ export const AdminLayout = () => {
       </main>
     </div>
   );
-};
+}
+
+export const AdminLayout = () => (
+  <AdminNotificationProvider>
+    <AdminLayoutInner />
+  </AdminNotificationProvider>
+);

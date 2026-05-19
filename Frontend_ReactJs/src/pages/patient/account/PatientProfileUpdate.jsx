@@ -18,7 +18,7 @@ const EMPTY_FORM = {
 };
 
 function LockedBadge() {
-  return <span className="profile-locked-badge">Đã khóa</span>;
+  return <span className="profile-locked-badge">ÄÃ£ khÃ³a</span>;
 }
 
 export function PatientProfileUpdate() {
@@ -82,11 +82,11 @@ export function PatientProfileUpdate() {
         phone: phoneNumber || null,
         dateOfBirth: formData.dateOfBirth || null,
       });
-      setMessage("Cập nhật hồ sơ thành công!");
+      setMessage("Cáº­p nháº­t há»“ sÆ¡ thÃ nh cÃ´ng!");
       // Refresh originalData so locks update after first save
       await fetchProfile();
     } catch (err) {
-      setError(err.message || "Có lỗi xảy ra khi cập nhật hồ sơ.");
+      setError(err.message || "CÃ³ lá»—i xáº£y ra khi cáº­p nháº­t há»“ sÆ¡.");
     } finally {
       setSaving(false);
     }
@@ -97,13 +97,13 @@ export function PatientProfileUpdate() {
       <header className="profile-header">
         <div className="profile-header-inner">
           <button
-            aria-label="Quay lại"
+            aria-label="Quay láº¡i"
             className="profile-back-btn"
             onClick={() => navigate(-1)}
           >
             <span className="material-symbols-outlined">arrow_back</span>
           </button>
-          <h1 className="profile-title">Cài đặt tài khoản</h1>
+          <h1 className="profile-title">CÃ i Ä‘áº·t tÃ i khoáº£n</h1>
         </div>
       </header>
 
@@ -117,24 +117,24 @@ export function PatientProfileUpdate() {
               >
                 person
               </span>
-              Hồ sơ cá nhân
+              Há»“ sÆ¡ cÃ¡ nhÃ¢n
             </Link>
             <Link className="profile-nav-link" to="/change-password">
               <span className="material-symbols-outlined">lock</span>
-              Đổi mật khẩu
+              Äá»•i máº­t kháº©u
             </Link>
             <Link className="profile-nav-link" to="/medical-history">
               <span className="material-symbols-outlined">description</span>
-              Tiền sử bệnh lý
+              Tiá»n sá»­ bá»‡nh lÃ½
             </Link>
           </nav>
         </aside>
 
         <section className="profile-content">
           <div className="profile-section-header">
-            <h2>Cập nhật hồ sơ</h2>
+            <h2>Cáº­p nháº­t há»“ sÆ¡</h2>
             <p>
-              Quản lý thông tin cá nhân và liên hệ của bạn để chúng tôi có thể phục vụ tốt nhất.
+              Quáº£n lÃ½ thÃ´ng tin cÃ¡ nhÃ¢n vÃ  liÃªn há»‡ cá»§a báº¡n Ä‘á»ƒ chÃºng tÃ´i cÃ³ thá»ƒ phá»¥c vá»¥ tá»‘t nháº¥t.
             </p>
           </div>
 
@@ -143,12 +143,12 @@ export function PatientProfileUpdate() {
 
           {loading ? (
             <div style={{ padding: "40px", textAlign: "center", color: "var(--text-soft)" }}>
-              Đang tải dữ liệu...
+              Äang táº£i dá»¯ liá»‡u...
             </div>
           ) : (
             <form className="profile-form" onSubmit={handleSubmit}>
               <div className="profile-group">
-                <h3 className="profile-group-title">Thông tin cơ bản</h3>
+                <h3 className="profile-group-title">ThÃ´ng tin cÆ¡ báº£n</h3>
 
                 <div className="profile-avatar-wrap">
                   <div className="profile-avatar">
@@ -160,7 +160,7 @@ export function PatientProfileUpdate() {
                       }}
                     />
                     <button
-                      aria-label="Thay đổi ảnh đại diện"
+                      aria-label="Thay Ä‘á»•i áº£nh Ä‘áº¡i diá»‡n"
                       className="profile-avatar-btn"
                       type="button"
                     >
@@ -174,9 +174,8 @@ export function PatientProfileUpdate() {
                   </div>
                 </div>
 
-                {/* Email — always locked */}
                 <div className="profile-field">
-                  <label>Địa chỉ Email</label>
+                  <label>Äá»‹a chá»‰ Email</label>
                   <div className="profile-input-wrap">
                     <span className="material-symbols-outlined">mail</span>
                     <input
@@ -190,17 +189,16 @@ export function PatientProfileUpdate() {
                   </div>
                 </div>
 
-                {/* Họ và tên — core locked */}
                 <div className="profile-field">
                   <label>
-                    Họ và tên
+                    Há» vÃ  tÃªn
                     {!!originalData.fullName && <LockedBadge />}
                   </label>
                   <div className="profile-input-wrap">
                     <span className="material-symbols-outlined">person</span>
                     <input
                       className="profile-input"
-                      placeholder="Nhập họ và tên"
+                      placeholder="Nháº­p há» vÃ  tÃªn"
                       type="text"
                       name="fullName"
                       value={formData.fullName}
@@ -210,14 +208,13 @@ export function PatientProfileUpdate() {
                   </div>
                 </div>
 
-                {/* Số điện thoại — always editable */}
                 <div className="profile-field">
-                  <label>Số điện thoại</label>
+                  <label>Sá»‘ Ä‘iá»‡n thoáº¡i</label>
                   <div className="profile-input-wrap">
                     <span className="material-symbols-outlined">call</span>
                     <input
                       className="profile-input"
-                      placeholder="Nhập số điện thoại"
+                      placeholder="Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i"
                       type="tel"
                       name="phoneNumber"
                       value={formData.phoneNumber}
@@ -228,15 +225,14 @@ export function PatientProfileUpdate() {
               </div>
 
               <div className="profile-group">
-                <h3 className="profile-group-title">Y tế & Bảo hiểm</h3>
+                <h3 className="profile-group-title">Y táº¿ & Báº£o hiá»ƒm</h3>
 
                 <div className="profile-grid-2">
                   <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
 
-                    {/* Ngày sinh — core locked */}
                     <div className="profile-field">
                       <label>
-                        Ngày sinh
+                        NgÃ y sinh
                         {!!originalData.dateOfBirth && <LockedBadge />}
                       </label>
                       <div className="profile-input-wrap">
@@ -252,7 +248,6 @@ export function PatientProfileUpdate() {
                       </div>
                     </div>
 
-                    {/* CCCD — core locked */}
                     <div className="profile-field">
                       <label>
                         CCCD / CMND
@@ -262,7 +257,7 @@ export function PatientProfileUpdate() {
                         <span className="material-symbols-outlined">badge</span>
                         <input
                           className="profile-input"
-                          placeholder="Nhập số CCCD"
+                          placeholder="Nháº­p sá»‘ CCCD"
                           type="text"
                           name="identityNumber"
                           value={formData.identityNumber}
@@ -272,17 +267,16 @@ export function PatientProfileUpdate() {
                       </div>
                     </div>
 
-                    {/* BHYT — core locked */}
                     <div className="profile-field">
                       <label>
-                        Mã thẻ BHYT
+                        MÃ£ tháº» BHYT
                         {!!originalData.insuranceNumber && <LockedBadge />}
                       </label>
                       <div className="profile-input-wrap">
                         <span className="material-symbols-outlined">health_and_safety</span>
                         <input
                           className="profile-input"
-                          placeholder="Nhập mã bảo hiểm y tế"
+                          placeholder="Nháº­p mÃ£ báº£o hiá»ƒm y táº¿"
                           type="text"
                           name="insuranceNumber"
                           value={formData.insuranceNumber}
@@ -292,9 +286,8 @@ export function PatientProfileUpdate() {
                       </div>
                     </div>
 
-                    {/* Giới tính — always editable */}
                     <div className="profile-field">
-                      <label>Giới tính</label>
+                      <label>Giá»›i tÃ­nh</label>
                       <div className="profile-input-wrap">
                         <span className="material-symbols-outlined">wc</span>
                         <select
@@ -304,8 +297,8 @@ export function PatientProfileUpdate() {
                           onChange={handleChange}
                         >
                           <option value="male">Nam</option>
-                          <option value="female">Nữ</option>
-                          <option value="other">Khác</option>
+                          <option value="female">Ná»¯</option>
+                          <option value="other">KhÃ¡c</option>
                         </select>
                         <span className="material-symbols-outlined icon-right">expand_more</span>
                       </div>
@@ -313,9 +306,8 @@ export function PatientProfileUpdate() {
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-md)" }}>
-                    {/* Nhóm máu — always editable */}
                     <div className="profile-field">
-                      <label>Nhóm máu</label>
+                      <label>NhÃ³m mÃ¡u</label>
                       <div className="profile-input-wrap">
                         <span className="material-symbols-outlined">bloodtype</span>
                         <select
@@ -324,7 +316,7 @@ export function PatientProfileUpdate() {
                           value={formData.bloodType}
                           onChange={handleChange}
                         >
-                          <option value="unknown">Chưa rõ</option>
+                          <option value="unknown">ChÆ°a rÃµ</option>
                           <option value="A">A</option>
                           <option value="B">B</option>
                           <option value="AB">AB</option>
@@ -334,14 +326,13 @@ export function PatientProfileUpdate() {
                       </div>
                     </div>
 
-                    {/* Liên hệ khẩn cấp — always editable */}
                     <div className="profile-field profile-field-error">
-                      <label>Liên hệ khẩn cấp</label>
+                      <label>LiÃªn há»‡ kháº©n cáº¥p</label>
                       <div className="profile-input-wrap">
                         <span className="material-symbols-outlined">warning</span>
                         <input
                           className="profile-input"
-                          placeholder="Tên và Số điện thoại người thân"
+                          placeholder="TÃªn vÃ  Sá»‘ Ä‘iá»‡n thoáº¡i ngÆ°á»i thÃ¢n"
                           type="text"
                           name="emergencyContactPhone"
                           value={formData.emergencyContactPhone}
@@ -352,9 +343,8 @@ export function PatientProfileUpdate() {
                   </div>
                 </div>
 
-                {/* Địa chỉ — always editable */}
                 <div className="profile-field" style={{ marginTop: "var(--space-sm)" }}>
-                  <label>Địa chỉ hiện tại</label>
+                  <label>Äá»‹a chá»‰ hiá»‡n táº¡i</label>
                   <div className="profile-input-wrap">
                     <span className="material-symbols-outlined">location_on</span>
                     <input
@@ -367,12 +357,11 @@ export function PatientProfileUpdate() {
                   </div>
                 </div>
 
-                {/* Ghi chú y tế — always editable */}
                 <div className="profile-field">
-                  <label>Ghi chú y tế (Dị ứng, bệnh lý nền...)</label>
+                  <label>Ghi chÃº y táº¿ (Dá»‹ á»©ng, bá»‡nh lÃ½ ná»n...)</label>
                   <textarea
                     className="profile-textarea"
-                    placeholder="Nhập các thông tin y tế quan trọng cần lưu ý..."
+                    placeholder="Nháº­p cÃ¡c thÃ´ng tin y táº¿ quan trá»ng cáº§n lÆ°u Ã½..."
                     name="medicalHistoryNote"
                     value={formData.medicalHistoryNote}
                     onChange={handleChange}
@@ -386,14 +375,14 @@ export function PatientProfileUpdate() {
                   type="button"
                   onClick={() => navigate(-1)}
                 >
-                  Hủy
+                  Há»§y
                 </button>
                 <button
                   className="btn-primary"
                   type="submit"
                   disabled={saving}
                 >
-                  {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                  {saving ? "Äang lÆ°u..." : "LÆ°u thay Ä‘á»•i"}
                 </button>
               </div>
             </form>

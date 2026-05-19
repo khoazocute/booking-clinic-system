@@ -8,6 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    boolean existsByAppointment_Id(Long appointmentId);
+    boolean existsByAppointment_IdAndStatusNot(Long appointmentId, String status);
     Optional<Payment> findByAppointment_Id(Long appointmentId);
 }

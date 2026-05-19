@@ -21,6 +21,7 @@ import com.example.booking_clinic.repository.MedicalRecordRepository;
 import com.example.booking_clinic.repository.PaymentRepository;
 import com.example.booking_clinic.repository.PrescriptionRepository;
 import com.example.booking_clinic.repository.UserRepository;
+import com.example.booking_clinic.service.MedicineService;
 import com.example.booking_clinic.service.NotificationService;
 import com.example.booking_clinic.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class PaymentServiceImpl implements PaymentService {
         private final PrescriptionRepository prescriptionRepository;
         private final UserRepository userRepository;
         private final NotificationService notificationService;
+        private final MedicineService medicineService;
 
         @Override
         @Transactional
@@ -45,7 +47,7 @@ public class PaymentServiceImpl implements PaymentService {
                                 .orElseThrow(() -> new ResourceNotFoundException(
                                                 "Appointment not found with id: " + request.appointmentId()));
 
-                if (paymentRepository.existsByAppointment_Id(appointment.getId())) {
+                if (paymentRepository.existsByAppointment_IdAndStatusNot(appointment.getId(), "CANCELLED")) {
                         throw new PaymentAlreadyExistsException("Payment already exists for this appointment");
                 }
 
@@ -172,10 +174,31 @@ public class PaymentServiceImpl implements PaymentService {
                 Payment savedPayment = paymentRepository.save(payment);
 
                 if ("PAID".equals(newStatus)) {
+                        medicalRecordRepository.findByAppointment_Id(savedPayment.getAppointment().getId())
+                                .ifPresent(medicalRecord ->
+                                        prescriptionRepository.findByMedicalRecordId(medicalRecord.getId())
+                                                .ifPresent(prescription ->
+                                                        prescription.getItems().forEach(item ->
+                                                                medicineService.deductStock(
+                                                                        item.getMedicine().getId(),
+                                                                        item.getQuantity()
+                                                                )
+                                                        )
+                                                )
+                                );
+
                         notificationService.createNotification(
                                         savedPayment.getPatient().getUser(),
                                         "Thanh toan thanh cong",
                                         "Khoan thanh toan cua ban da duoc xac nhan thanh cong",
+                                        "PAYMENT_COMPLETED",
+                                        "PAYMENT",
+                                        savedPayment.getId());
+                        notificationService.createNotificationForAdmins(
+                                        "Thanh toan thanh cong",
+                                        "Hoa don #" + savedPayment.getId() + " cua benh nhan "
+                                                + savedPayment.getPatient().getUser().getFullName()
+                                                + " da thanh toan thanh cong. So tien: " + savedPayment.getAmount() + " VND",
                                         "PAYMENT_COMPLETED",
                                         "PAYMENT",
                                         savedPayment.getId());
@@ -187,9 +210,31 @@ public class PaymentServiceImpl implements PaymentService {
                                         "PAYMENT_UPDATED",
                                         "PAYMENT",
                                         savedPayment.getId());
+                        notificationService.createNotificationForAdmins(
+                                        "Thanh toan " + ("FAILED".equals(newStatus) ? "that bai" : "da huy"),
+                                        "Hoa don #" + savedPayment.getId() + " cua benh nhan "
+                                                + savedPayment.getPatient().getUser().getFullName()
+                                                + " co trang thai: " + newStatus,
+                                        "PAYMENT_UPDATED",
+                                        "PAYMENT",
+                                        savedPayment.getId());
                 }
 
                 return toResponse(savedPayment);
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public java.util.List<PaymentResponse> getAllPayments() {
+                User currentUser = getCurrentUser();
+                String role = currentUser.getRole().getName().trim().toUpperCase();
+                if (!"ADMIN".equals(role)) {
+                        throw new AccessDeniedException("Only ADMIN can view all payments");
+                }
+                return paymentRepository.findAll()
+                        .stream()
+                        .map(this::toResponse)
+                        .toList();
         }
 
         private PaymentResponse toResponse(Payment payment) {

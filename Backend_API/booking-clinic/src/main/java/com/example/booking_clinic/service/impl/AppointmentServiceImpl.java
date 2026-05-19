@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -50,32 +51,31 @@ public class AppointmentServiceImpl implements AppointmentService {
         DoctorSchedule schedule = doctorScheduleRepository.findById(request.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found"));
 
-        // Kiểm tra khung giờ còn AVAILABLE không
-        if (!"AVAILABLE".equalsIgnoreCase(schedule.getStatus())) {
-            throw new IllegalArgumentException("This schedule slot is not available for booking");
-        }
-
         // Kiểm tra bệnh nhân chưa đặt đúng khung giờ này (tránh đặt 2 lần)
         if (appointmentRepository.existsByPatient_IdAndSchedule_Id(patient.getId(), schedule.getId())) {
             throw new IllegalArgumentException("You have already booked this schedule slot");
         }
 
-        // Lấy Doctor từ schedule (denormalize để lưu doctor_id trực tiếp vào appointments)
+        // Atomic booking: chỉ cập nhật được nếu slot vẫn AVAILABLE tại thời điểm này
+        int booked = doctorScheduleRepository.tryBookSchedule(schedule.getId());
+        if (booked == 0) {
+            throw new IllegalArgumentException("This schedule slot is not available for booking");
+        }
+
+        // Lấy Doctor từ schedule
         Doctor doctor = schedule.getDoctor();
 
-        // Tạo Appointment
+        // Tạo Appointment với deadline thanh toán 10 phút
+        LocalDateTime deadline = LocalDateTime.now().plusMinutes(10);
         Appointment appointment = Appointment.builder()
                 .patient(patient)
                 .doctor(doctor)
                 .schedule(schedule)
-                .appointmentDate(schedule.getWorkDate()) // lấy ngày từ khung giờ
+                .appointmentDate(schedule.getWorkDate())
                 .reason(request.reason())
                 .status(AppointmentStatus.PENDING)
+                .paymentDeadline(deadline)
                 .build();
-
-        // Đánh dấu khung giờ là BOOKED để người khác không đặt được
-        schedule.setStatus("BOOKED");
-        doctorScheduleRepository.save(schedule);
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
 
@@ -83,6 +83,15 @@ public class AppointmentServiceImpl implements AppointmentService {
                 patient.getUser(),
                 "Dat lich thanh cong",
                 "Ban da dat lich kham thanh cong voi bac si " + doctor.getUser().getFullName(),
+                "APPOINTMENT_CREATED",
+                "APPOINTMENT",
+                savedAppointment.getId()
+        );
+
+        notificationService.createNotification(
+                doctor.getUser(),
+                "Co lich kham moi",
+                "Benh nhan " + patient.getUser().getFullName() + " vua dat lich kham moi",
                 "APPOINTMENT_CREATED",
                 "APPOINTMENT",
                 savedAppointment.getId()
@@ -233,11 +242,30 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                     "APPOINTMENT",
                     savedAppointment.getId()
             );
+            notificationService.createNotificationForAdmins(
+                    "Lich kham da xac nhan",
+                    "Lich kham #" + savedAppointment.getId() + " cua benh nhan "
+                            + savedAppointment.getPatient().getUser().getFullName()
+                            + " da duoc xac nhan boi bac si "
+                            + savedAppointment.getDoctor().getUser().getFullName(),
+                    "APPOINTMENT_CONFIRMED",
+                    "APPOINTMENT",
+                    savedAppointment.getId()
+            );
         } else if (AppointmentStatus.CANCELLED == newStatus) {
             notificationService.createNotification(
                     savedAppointment.getPatient().getUser(),
                     "Lich kham da bi huy",
                     "Lich kham cua ban da bi huy",
+                    "APPOINTMENT_CANCELLED",
+                    "APPOINTMENT",
+                    savedAppointment.getId()
+            );
+            notificationService.createNotificationForAdmins(
+                    "Lich kham bi huy",
+                    "Lich kham #" + savedAppointment.getId() + " cua benh nhan "
+                            + savedAppointment.getPatient().getUser().getFullName()
+                            + " da bi huy",
                     "APPOINTMENT_CANCELLED",
                     "APPOINTMENT",
                     savedAppointment.getId()
@@ -283,6 +311,14 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                 "APPOINTMENT",
                 appointment.getId()
         );
+        notificationService.createNotificationForAdmins(
+                "Benh nhan huy lich",
+                "Benh nhan " + appointment.getPatient().getUser().getFullName()
+                        + " da tu huy lich kham #" + appointment.getId(),
+                "APPOINTMENT_CANCELLED",
+                "APPOINTMENT",
+                appointment.getId()
+        );
     }
 
     private User getCurrentUser() {
@@ -312,7 +348,8 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                 a.getReason(),
                 a.getStatus() != null ? a.getStatus().name() : null,
                 a.getCancelReason(),
-                a.getCreatedAt()
+                a.getCreatedAt(),
+                a.getPaymentDeadline()
         );
     }
 }

@@ -2,9 +2,11 @@ package com.example.booking_clinic.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import com.example.booking_clinic.entity.enums.MedicineStatus;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "medicines")
@@ -29,4 +31,12 @@ public class Medicine {
 
     @Enumerated(EnumType.STRING)
     private MedicineStatus status; // ACTIVE, INACTIVE
+
+    @Column(name = "stock_quantity", nullable = false)
+    @Builder.Default
+    private Integer stockQuantity = 0;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
 }

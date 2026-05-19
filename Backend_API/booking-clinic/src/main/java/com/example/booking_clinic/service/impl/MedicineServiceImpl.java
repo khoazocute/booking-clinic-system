@@ -1,5 +1,6 @@
 package com.example.booking_clinic.service.impl;
 
+import com.example.booking_clinic.common.exception.InsufficientStockException;
 import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.dto.medicine.CreateMedicineRequest;
 import com.example.booking_clinic.dto.medicine.MedicineResponse;
@@ -9,6 +10,7 @@ import com.example.booking_clinic.entity.Medicine;
 import com.example.booking_clinic.entity.enums.MedicineStatus;
 import com.example.booking_clinic.repository.MedicineRepository;
 import com.example.booking_clinic.service.MedicineService;
+import com.example.booking_clinic.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,7 +21,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MedicineServiceImpl implements MedicineService {
 
+    private static final int LOW_STOCK_THRESHOLD = 10;
+
     private final MedicineRepository medicineRepository;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -51,6 +56,7 @@ public class MedicineServiceImpl implements MedicineService {
                         .unitPrice(request.unitPrice())
                         .unit(request.unit().trim())
                         .status(MedicineStatus.ACTIVE)
+                        .stockQuantity(request.stockQuantity())
                         .build()
         );
 
@@ -79,6 +85,10 @@ public class MedicineServiceImpl implements MedicineService {
             medicine.setUnit(request.unit().trim());
         }
 
+        if (request.stockQuantity() != null) {
+            medicine.setStockQuantity(request.stockQuantity());
+        }
+
         return toResponse(medicineRepository.save(medicine));
     }
 
@@ -99,13 +109,59 @@ public class MedicineServiceImpl implements MedicineService {
         return toResponse(medicineRepository.save(medicine));
     }
 
+    @Override
+    @Transactional
+    public void deductStock(Long medicineId, int quantity) {
+        Medicine medicine = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + medicineId));
+
+        int newStock = medicine.getStockQuantity() - quantity;
+        if (newStock < 0) {
+            throw new InsufficientStockException(
+                    "Insufficient stock for: " + medicine.getName() +
+                    ". Available: " + medicine.getStockQuantity() + ", Required: " + quantity
+            );
+        }
+
+        medicine.setStockQuantity(newStock);
+        medicineRepository.save(medicine);
+
+        if (newStock <= LOW_STOCK_THRESHOLD) {
+            String alertType = newStock == 0 ? "OUT_OF_STOCK" : "LOW_STOCK";
+            String title = newStock == 0 ? "Thuoc da het hang" : "Canh bao ton kho thap";
+            String message = "Thuoc \"" + medicine.getName() + "\" con lai " + newStock
+                    + " " + medicine.getUnit() + ". Can nhap them hang.";
+            notificationService.createNotificationForAdmins(title, message, alertType, "MEDICINE", medicineId);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void restoreStock(Long medicineId, int quantity) {
+        Medicine medicine = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + medicineId));
+
+        medicine.setStockQuantity(medicine.getStockQuantity() + quantity);
+        medicineRepository.save(medicine);
+    }
+
+    private String computeStockStatus(int stockQuantity) {
+        if (stockQuantity == 0) return "OUT_OF_STOCK";
+        if (stockQuantity <= LOW_STOCK_THRESHOLD) return "LOW_STOCK";
+        return "IN_STOCK";
+    }
+
     private MedicineResponse toResponse(Medicine medicine) {
+        int stock = medicine.getStockQuantity() != null ? medicine.getStockQuantity() : 0;
         return new MedicineResponse(
                 medicine.getId(),
                 medicine.getName(),
                 medicine.getUnitPrice(),
                 medicine.getUnit(),
-                medicine.getStatus() != null ? medicine.getStatus().name() : null
+                medicine.getStatus() != null ? medicine.getStatus().name() : null,
+                stock,
+                computeStockStatus(stock),
+                medicine.getCreatedAt()
         );
     }
 }

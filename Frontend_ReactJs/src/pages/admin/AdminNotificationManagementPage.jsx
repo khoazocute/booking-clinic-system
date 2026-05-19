@@ -1,66 +1,123 @@
-import React from 'react';
+import { useState } from "react";
+import { markAsRead, markAllAsRead } from "../../services/notificationService";
+import { useAdminNotificationContext } from "../../contexts/AdminNotificationContext";
+
+const TYPE_CONFIG = {
+  APPOINTMENT_CONFIRMED: { label: "SUCCESS", bg: "bg-primary-container/10", text: "text-primary" },
+  APPOINTMENT_CANCELLED: { label: "WARNING", bg: "bg-tertiary-fixed", text: "text-on-tertiary-fixed-variant" },
+  PAYMENT_COMPLETED:     { label: "SUCCESS", bg: "bg-primary-container/10", text: "text-primary" },
+  PAYMENT_UPDATED:       { label: "WARNING", bg: "bg-tertiary-fixed", text: "text-on-tertiary-fixed-variant" },
+  PAYMENT_CREATED:       { label: "INFO",    bg: "bg-secondary-container/20", text: "text-secondary" },
+  PRESCRIPTION_CREATED:  { label: "INFO",    bg: "bg-secondary-container/20", text: "text-secondary" },
+  LOW_STOCK:             { label: "ALERT",   bg: "bg-error-container", text: "text-on-error-container" },
+  OUT_OF_STOCK:          { label: "ALERT",   bg: "bg-error-container", text: "text-on-error-container" },
+};
+
+const DEFAULT_TYPE = { label: "INFO", bg: "bg-secondary-container/20", text: "text-secondary" };
+
+function getTypeConfig(type) {
+  return TYPE_CONFIG[type] || DEFAULT_TYPE;
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return "";
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "Vừa xong";
+  if (mins < 60) return `${mins} phút trước`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} giờ trước`;
+  const days = Math.floor(hrs / 24);
+  return `${days} ngày trước`;
+}
+
+const ITEMS_PER_PAGE = 10;
 
 const AdminNotificationManagementPage = () => {
+  const { notifications, loading, connected, markOneAsRead, markAllRead } = useAdminNotificationContext();
+  const [page, setPage] = useState(1);
+  const [markingAll, setMarkingAll] = useState(false);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await markAsRead(id);
+      markOneAsRead(id);
+    } catch {
+      // silent fail
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    setMarkingAll(true);
+    try {
+      await markAllAsRead();
+      markAllRead();
+    } finally {
+      setMarkingAll(false);
+    }
+  };
+
+  // Stats
+  const stats = notifications.reduce(
+    (acc, n) => {
+      const cfg = getTypeConfig(n.type);
+      if (cfg.label === "ALERT") acc.alert++;
+      else if (cfg.label === "SUCCESS") acc.success++;
+      else if (cfg.label === "WARNING") acc.warning++;
+      else acc.info++;
+      return acc;
+    },
+    { alert: 0, success: 0, warning: 0, info: 0 }
+  );
+
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(notifications.length / ITEMS_PER_PAGE));
+  const paginated = notifications.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+
   return (
     <div className="p-margin max-w-[1140px] mx-auto w-full">
-      {/* Header Section */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-lg gap-md">
         <div>
-          <h2 className="text-h2 font-h2 text-on-surface">System Notifications</h2>
-          <p className="text-body-md font-body-md text-on-surface-variant mt-xs">Manage and track all medical facility alerts and communications.</p>
+          <div className="flex items-center gap-sm">
+            <h2 className="text-h2 font-h2 text-on-surface">System Notifications</h2>
+            <span className={`flex items-center gap-xs text-label-caps font-label-caps px-sm py-xs rounded-full ${connected ? "bg-primary-container/20 text-primary" : "bg-surface-container text-on-surface-variant"}`}>
+              <span className={`w-2 h-2 rounded-full ${connected ? "bg-primary" : "bg-outline"}`}></span>
+              {connected ? "Live" : "Offline"}
+            </span>
+          </div>
+          <p className="text-body-md font-body-md text-on-surface-variant mt-xs">
+            Manage and track all medical facility alerts and communications.
+          </p>
         </div>
         <div className="flex items-center gap-sm">
-          <button className="flex items-center gap-xs px-md py-sm text-primary border border-primary rounded-lg font-button hover:bg-primary-fixed-dim transition-all active:scale-95">
+          {unreadCount > 0 && (
+            <span className="px-sm py-xs rounded-full bg-primary text-on-primary text-label-caps font-label-caps">
+              {unreadCount} chưa đọc
+            </span>
+          )}
+          <button
+            onClick={handleMarkAllAsRead}
+            disabled={markingAll || unreadCount === 0}
+            className="flex items-center gap-xs px-md py-sm text-primary border border-primary rounded-lg font-button hover:bg-primary-fixed-dim transition-all active:scale-95 disabled:opacity-40"
+          >
             <span className="material-symbols-outlined">done_all</span>
             Mark all as read
           </button>
-          <button className="flex items-center justify-center p-sm border border-outline-variant rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-colors">
-            <span className="material-symbols-outlined">filter_list</span>
-          </button>
         </div>
       </div>
 
-      {/* Filters & Stats (Bento Style) */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-lg">
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex items-center gap-md border border-outline-variant/30">
-          <div className="w-12 h-12 rounded-full bg-error-container flex items-center justify-center">
-            <span className="material-symbols-outlined text-error" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
-          </div>
-          <div>
-            <p className="text-label-caps font-label-caps text-on-surface-variant">ALERTS</p>
-            <p className="text-h3 font-h3">04</p>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex items-center gap-md border border-outline-variant/30">
-          <div className="w-12 h-12 rounded-full bg-secondary-container/20 flex items-center justify-center">
-            <span className="material-symbols-outlined text-secondary" style={{ fontVariationSettings: "'FILL' 1" }}>info</span>
-          </div>
-          <div>
-            <p className="text-label-caps font-label-caps text-on-surface-variant">INFO</p>
-            <p className="text-h3 font-h3">12</p>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex items-center gap-md border border-outline-variant/30">
-          <div className="w-12 h-12 rounded-full bg-primary-container/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-          </div>
-          <div>
-            <p className="text-label-caps font-label-caps text-on-surface-variant">SUCCESS</p>
-            <p className="text-h3 font-h3">28</p>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex items-center gap-md border border-outline-variant/30">
-          <div className="w-12 h-12 rounded-full bg-on-tertiary-fixed/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-tertiary" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
-          </div>
-          <div>
-            <p className="text-label-caps font-label-caps text-on-surface-variant">WARNING</p>
-            <p className="text-h3 font-h3">07</p>
-          </div>
-        </div>
+        <StatCard icon="error" iconBg="bg-error-container" iconColor="text-error" label="ALERTS" count={stats.alert} />
+        <StatCard icon="info" iconBg="bg-secondary-container/20" iconColor="text-secondary" label="INFO" count={stats.info} />
+        <StatCard icon="check_circle" iconBg="bg-primary-container/10" iconColor="text-primary" label="SUCCESS" count={stats.success} />
+        <StatCard icon="warning" iconBg="bg-on-tertiary-fixed/10" iconColor="text-tertiary" label="WARNING" count={stats.warning} />
       </div>
 
-      {/* Notifications List Container */}
+      {/* List */}
       <div className="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden border border-outline-variant/50">
         {/* List Header */}
         <div className="grid grid-cols-12 gap-sm px-md py-sm bg-surface-container border-b border-outline-variant text-label-caps font-label-caps text-on-surface-variant">
@@ -71,156 +128,116 @@ const AdminNotificationManagementPage = () => {
           <div className="col-span-1"></div>
         </div>
 
-        {/* Notification Item: Alert (Unread) */}
-        <div className="grid grid-cols-12 gap-sm px-md py-md border-b border-outline-variant hover:bg-surface-container-low transition-colors items-center bg-primary-container/5">
-          <div className="col-span-1 flex justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/20"></div>
-          </div>
-          <div className="col-span-2 flex items-center gap-xs">
-            <span className="px-3 py-1 rounded-full text-label-caps bg-error-container text-on-error-container font-bold">ALERT</span>
-          </div>
-          <div className="col-span-6">
-            <p className="text-body-md font-bold text-on-surface">Critical Supply Shortage: ICU 02</p>
-            <p className="text-body-sm text-on-surface-variant">Cardiac monitor electrodes falling below safety threshold (Current: 15 units).</p>
-          </div>
-          <div className="col-span-2 text-right">
-            <p className="text-body-sm text-on-surface-variant">2 mins ago</p>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">more_vert</button>
-          </div>
-        </div>
+        {loading && (
+          <div className="px-md py-xl text-center text-on-surface-variant">Đang tải thông báo...</div>
+        )}
 
-        {/* Notification Item: Success (Read) */}
-        <div className="grid grid-cols-12 gap-sm px-md py-md border-b border-outline-variant hover:bg-surface-container-low transition-colors items-center opacity-80">
-          <div className="col-span-1 flex justify-center">
-            {/* Read state icon */}
+        {!loading && paginated.length === 0 && (
+          <div className="px-md py-xl text-center text-on-surface-variant">
+            <span className="material-symbols-outlined text-4xl block mb-sm">notifications_off</span>
+            Chưa có thông báo nào
           </div>
-          <div className="col-span-2 flex items-center gap-xs">
-            <span className="px-3 py-1 rounded-full text-label-caps bg-primary-container/10 text-primary font-bold">SUCCESS</span>
-          </div>
-          <div className="col-span-6">
-            <div className="flex items-center gap-sm">
-              <p className="text-body-md font-body-md text-on-surface">Appointment Confirmed: Patient #9921</p>
-              <button className="text-primary text-body-sm font-bold flex items-center gap-xs hover:underline decoration-2">
-                View Related <span className="material-symbols-outlined text-sm">open_in_new</span>
-              </button>
+        )}
+
+        {!loading && paginated.map((n) => {
+          const cfg = getTypeConfig(n.type);
+          return (
+            <div
+              key={n.id}
+              className={`grid grid-cols-12 gap-sm px-md py-md border-b border-outline-variant hover:bg-surface-container-low transition-colors items-center ${
+                !n.isRead ? "bg-primary-container/5" : "opacity-80"
+              }`}
+            >
+              <div className="col-span-1 flex justify-center">
+                {!n.isRead && (
+                  <div className="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/20"></div>
+                )}
+              </div>
+              <div className="col-span-2 flex items-center gap-xs">
+                <span className={`px-3 py-1 rounded-full text-label-caps font-bold ${cfg.bg} ${cfg.text}`}>
+                  {cfg.label}
+                </span>
+              </div>
+              <div className="col-span-6">
+                <p className={`text-body-md text-on-surface ${!n.isRead ? "font-bold" : "font-body-md"}`}>
+                  {n.title}
+                </p>
+                <p className="text-body-sm text-on-surface-variant">{n.message}</p>
+              </div>
+              <div className="col-span-2 text-right">
+                <p className="text-body-sm text-on-surface-variant">{formatTime(n.createdAt)}</p>
+              </div>
+              <div className="col-span-1 flex justify-end">
+                {!n.isRead && (
+                  <button
+                    onClick={() => handleMarkAsRead(n.id)}
+                    title="Đánh dấu đã đọc"
+                    className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors text-xl"
+                  >
+                    mark_email_read
+                  </button>
+                )}
+              </div>
             </div>
-            <p className="text-body-sm text-on-surface-variant">Dr. Miller has accepted the emergency consult for 2:30 PM.</p>
-          </div>
-          <div className="col-span-2 text-right">
-            <p className="text-body-sm text-on-surface-variant">15 mins ago</p>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">more_vert</button>
-          </div>
-        </div>
-
-        {/* Notification Item: Warning (Unread) */}
-        <div className="grid grid-cols-12 gap-sm px-md py-md border-b border-outline-variant hover:bg-surface-container-low transition-colors items-center bg-primary-container/5">
-          <div className="col-span-1 flex justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/20"></div>
-          </div>
-          <div className="col-span-2 flex items-center gap-xs">
-            <span className="px-3 py-1 rounded-full text-label-caps bg-tertiary-fixed text-on-tertiary-fixed-variant font-bold">WARNING</span>
-          </div>
-          <div className="col-span-6">
-            <p className="text-body-md font-bold text-on-surface">System Maintenance Scheduled</p>
-            <p className="text-body-sm text-on-surface-variant">Database optimization scheduled for 02:00 AM UTC. Minor latency expected.</p>
-          </div>
-          <div className="col-span-2 text-right">
-            <p className="text-body-sm text-on-surface-variant">1 hour ago</p>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">more_vert</button>
-          </div>
-        </div>
-
-        {/* Notification Item: Info (Read) */}
-        <div className="grid grid-cols-12 gap-sm px-md py-md border-b border-outline-variant hover:bg-surface-container-low transition-colors items-center opacity-80">
-          <div className="col-span-1 flex justify-center">
-            {/* Read state icon */}
-          </div>
-          <div className="col-span-2 flex items-center gap-xs">
-            <span className="px-3 py-1 rounded-full text-label-caps bg-secondary-container/20 text-secondary font-bold">INFO</span>
-          </div>
-          <div className="col-span-6">
-            <p className="text-body-md font-body-md text-on-surface">New Review Received</p>
-            <p className="text-body-sm text-on-surface-variant">Patient "John D." left a 5-star review for Pediatric Services.</p>
-          </div>
-          <div className="col-span-2 text-right">
-            <p className="text-body-sm text-on-surface-variant">3 hours ago</p>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">more_vert</button>
-          </div>
-        </div>
-
-        {/* Notification Item: Info (Unread) */}
-        <div className="grid grid-cols-12 gap-sm px-md py-md border-b border-outline-variant hover:bg-surface-container-low transition-colors items-center bg-primary-container/5">
-          <div className="col-span-1 flex justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/20"></div>
-          </div>
-          <div className="col-span-2 flex items-center gap-xs">
-            <span className="px-3 py-1 rounded-full text-label-caps bg-secondary-container/20 text-secondary font-bold">INFO</span>
-          </div>
-          <div className="col-span-6">
-            <p className="text-body-md font-bold text-on-surface">Policy Update Reminder</p>
-            <p className="text-body-sm text-on-surface-variant">Updated HIPAA compliance guidelines are available in the staff portal.</p>
-          </div>
-          <div className="col-span-2 text-right">
-            <p className="text-body-sm text-on-surface-variant">5 hours ago</p>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">more_vert</button>
-          </div>
-        </div>
-
-        {/* Notification Item: Success (Unread) */}
-        <div className="grid grid-cols-12 gap-sm px-md py-md border-b border-outline-variant hover:bg-surface-container-low transition-colors items-center bg-primary-container/5">
-          <div className="col-span-1 flex justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/20"></div>
-          </div>
-          <div className="col-span-2 flex items-center gap-xs">
-            <span className="px-3 py-1 rounded-full text-label-caps bg-primary-container/10 text-primary font-bold">SUCCESS</span>
-          </div>
-          <div className="col-span-6">
-            <div className="flex items-center gap-sm">
-              <p className="text-body-md font-bold text-on-surface">Payment Processed: Invoice #4401</p>
-              <button className="text-primary text-body-sm font-bold flex items-center gap-xs hover:underline decoration-2">
-                View Related <span className="material-symbols-outlined text-sm">open_in_new</span>
-              </button>
-            </div>
-            <p className="text-body-sm text-on-surface-variant">The billing for $1,250.00 from Aetna Insurance has been settled.</p>
-          </div>
-          <div className="col-span-2 text-right">
-            <p className="text-body-sm text-on-surface-variant">6 hours ago</p>
-          </div>
-          <div className="col-span-1 flex justify-end">
-            <button className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">more_vert</button>
-          </div>
-        </div>
+          );
+        })}
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-between mt-lg">
-        <p className="text-body-sm text-on-surface-variant">Showing 6 of 51 notifications</p>
-        <div className="flex items-center gap-xs">
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-30" disabled>
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-bold shadow-sm">1</button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">2</button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">3</button>
-          <span className="mx-xs text-on-surface-variant">...</span>
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">9</button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors">
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
+      {!loading && notifications.length > ITEMS_PER_PAGE && (
+        <div className="flex items-center justify-between mt-lg">
+          <p className="text-body-sm text-on-surface-variant">
+            Hiển thị {(page - 1) * ITEMS_PER_PAGE + 1}–{Math.min(page * ITEMS_PER_PAGE, notifications.length)} trong số {notifications.length} thông báo
+          </p>
+          <div className="flex items-center gap-xs">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-30"
+            >
+              <span className="material-symbols-outlined">chevron_left</span>
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg font-bold transition-colors ${
+                  p === page
+                    ? "bg-primary text-on-primary shadow-sm"
+                    : "border border-outline-variant hover:bg-surface-container"
+                }`}
+              >
+                {p}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container transition-colors disabled:opacity-30"
+            >
+              <span className="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
+
+function StatCard({ icon, iconBg, iconColor, label, count }) {
+  return (
+    <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex items-center gap-md border border-outline-variant/30">
+      <div className={`w-12 h-12 rounded-full ${iconBg} flex items-center justify-center`}>
+        <span className={`material-symbols-outlined ${iconColor}`} style={{ fontVariationSettings: "'FILL' 1" }}>
+          {icon}
+        </span>
+      </div>
+      <div>
+        <p className="text-label-caps font-label-caps text-on-surface-variant">{label}</p>
+        <p className="text-h3 font-h3">{String(count).padStart(2, "0")}</p>
+      </div>
+    </div>
+  );
+}
 
 export default AdminNotificationManagementPage;

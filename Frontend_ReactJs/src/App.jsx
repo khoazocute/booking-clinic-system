@@ -29,11 +29,26 @@ import { UsersPage } from "./pages/public/UsersPage";
 import { PatientProfilePage } from "./pages/patient/account/PatientProfilePage";
 import { PatientProfileUpdate } from "./pages/patient/account/PatientProfileUpdate";
 import { ChangePassword } from "./pages/patient/account/ChangePassword";
-import { AdminLayout } from "./layouts/AdminLayout";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import { AdminWorkspace } from "./layouts/AdminWorkspace";
 import MedicineManagementPage from "./pages/admin/MedicineManagementPage";
 import AdminAppointmentManagementPage from "./pages/admin/AdminAppointmentManagementPage";
 import AdminNotificationManagementPage from "./pages/admin/AdminNotificationManagementPage";
+import { MyAppointmentsPage } from "./pages/patient/appointments/MyAppointmentsPage";
+import { AppointmentDetailPage } from "./pages/patient/appointments/AppointmentDetailPage";
+import { PatientMedicalRecordDetailPage } from "./pages/patient/medical/MedicalRecordDetailPage";
+import { MyPrescriptionsPage } from "./pages/patient/prescriptions/MyPrescriptionsPage";
+import { PatientPrescriptionDetailPage } from "./pages/patient/prescriptions/PrescriptionDetailPage";
+import { MyReviewsPage } from "./pages/patient/reviews/MyReviewsPage";
+import { CreateReviewPage } from "./pages/patient/reviews/CreateReviewPage";
+import { EditReviewPage } from "./pages/patient/reviews/EditReviewPage";
+import { MyNotificationsPage } from "./pages/patient/notifications/MyNotificationsPage";
+import { VNPayReturnPage } from "./pages/payment/VNPayReturnPage";
+import { AdminDashboardPage } from "./pages/admin/AdminDashboardPage";
+import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { AdminDoctorsPage } from "./pages/admin/AdminDoctorsPage";
+import { AdminSpecialtiesPage } from "./pages/admin/AdminSpecialtiesPage";
+import { AdminReviewsPage } from "./pages/admin/AdminReviewsPage";
+import { AdminPaymentsPage } from "./pages/admin/AdminPaymentsPage";
 
 export default function App() {
   return (
@@ -52,9 +67,19 @@ export default function App() {
           <Route path="doctors" element={<DoctorsPage />} />
           <Route path="doctors/:id" element={<DoctorDetailPage />} />
           <Route path="booking" element={<BookingPage />} />
+          <Route path="my-appointments" element={<MyAppointmentsPage />} />
+          <Route path="my-appointments/:appointmentId" element={<AppointmentDetailPage />} />
+          <Route path="medical-records/:medicalRecordId" element={<PatientMedicalRecordDetailPage />} />
+          <Route path="prescriptions" element={<MyPrescriptionsPage />} />
+          <Route path="prescriptions/:prescriptionId" element={<PatientPrescriptionDetailPage />} />
+          <Route path="reviews" element={<MyReviewsPage />} />
+          <Route path="reviews/create/:appointmentId" element={<CreateReviewPage />} />
+          <Route path="reviews/:reviewId/edit" element={<EditReviewPage />} />
+          <Route path="notifications" element={<MyNotificationsPage />} />
           <Route path="profile" element={<PatientProfilePage />} />
           <Route path="profile/edit" element={<PatientProfileUpdate />} />
           <Route path="change-password" element={<ChangePassword />} />
+          <Route path="payment/return" element={<VNPayReturnPage />} />
         </Route>
         <Route path="/doctor" element={<DoctorDashboardPage />} />
         <Route path="/doctor/profile" element={<DoctorProfilePage />} />
@@ -95,12 +120,31 @@ export default function App() {
           path="/doctor/notifications"
           element={<DoctorNotificationsPage />}
         />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboardPage />} />
-          <Route path="medicines" element={<MedicineManagementPage />} />
-          <Route path="appointments" element={<AdminAppointmentManagementPage />} />
-          <Route path="notifications" element={<AdminNotificationManagementPage />} />
-        </Route>
+        {/* Admin routes */}
+        <Route path="/admin" element={<AdminDashboardPage />} />
+        <Route path="/admin/users" element={<AdminUsersPage />} />
+        <Route path="/admin/doctors" element={<AdminDoctorsPage />} />
+        <Route path="/admin/specialties" element={<AdminSpecialtiesPage />} />
+        <Route path="/admin/reviews" element={<AdminReviewsPage />} />
+        
+        {/* Existing implemented pages wrapped in AdminWorkspace */}
+        <Route path="/admin/medicines" element={
+          <AdminWorkspace eyebrow="Admin / Thuốc" title="Quản lý thuốc">
+            <MedicineManagementPage />
+          </AdminWorkspace>
+        } />
+        <Route path="/admin/appointments" element={
+          <AdminWorkspace eyebrow="Admin / Lịch hẹn" title="Quản lý lịch hẹn">
+            <AdminAppointmentManagementPage />
+          </AdminWorkspace>
+        } />
+        <Route path="/admin/notifications" element={
+          <AdminWorkspace eyebrow="Admin / Thông báo" title="Quản lý thông báo">
+            <AdminNotificationManagementPage />
+          </AdminWorkspace>
+        } />
+        
+        <Route path="/admin/payments" element={<AdminPaymentsPage />} />
       </Routes>
     </BrowserRouter>
   );
