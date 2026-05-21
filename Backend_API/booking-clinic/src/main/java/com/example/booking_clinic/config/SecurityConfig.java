@@ -118,6 +118,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments").hasAnyRole("PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/payments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/payments/**").hasRole("ADMIN")
+
+                        //ai
+                        .requestMatchers(HttpMethod.POST, "/api/v1/ai/rebuild-index").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/ai/consult").hasRole("PATIENT")
                         
                         .anyRequest().authenticated()
                 )
