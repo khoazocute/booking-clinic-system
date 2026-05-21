@@ -29,6 +29,10 @@ import { UsersPage } from "./pages/public/UsersPage";
 import { PatientProfilePage } from "./pages/patient/account/PatientProfilePage";
 import { PatientProfileUpdate } from "./pages/patient/account/PatientProfileUpdate";
 import { ChangePassword } from "./pages/patient/account/ChangePassword";
+import { AdminWorkspace } from "./layouts/AdminWorkspace";
+import MedicineManagementPage from "./pages/admin/MedicineManagementPage";
+import AdminAppointmentManagementPage from "./pages/admin/AdminAppointmentManagementPage";
+import AdminNotificationManagementPage from "./pages/admin/AdminNotificationManagementPage";
 import { MyAppointmentsPage } from "./pages/patient/appointments/MyAppointmentsPage";
 import { AppointmentDetailPage } from "./pages/patient/appointments/AppointmentDetailPage";
 import { PatientMedicalRecordDetailPage } from "./pages/patient/medical/MedicalRecordDetailPage";
@@ -44,9 +48,6 @@ import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
 import { AdminDoctorsPage } from "./pages/admin/AdminDoctorsPage";
 import { AdminSpecialtiesPage } from "./pages/admin/AdminSpecialtiesPage";
 import { AdminReviewsPage } from "./pages/admin/AdminReviewsPage";
-import { AdminMedicinesPage } from "./pages/admin/AdminMedicinesPage";
-import { AdminAppointmentsPage } from "./pages/admin/AdminAppointmentsPage";
-import { AdminNotificationsPage } from "./pages/admin/AdminNotificationsPage";
 import { AdminPaymentsPage } from "./pages/admin/AdminPaymentsPage";
 
 export default function App() {
@@ -125,9 +126,24 @@ export default function App() {
         <Route path="/admin/doctors" element={<AdminDoctorsPage />} />
         <Route path="/admin/specialties" element={<AdminSpecialtiesPage />} />
         <Route path="/admin/reviews" element={<AdminReviewsPage />} />
-        <Route path="/admin/medicines" element={<AdminMedicinesPage />} />
-        <Route path="/admin/appointments" element={<AdminAppointmentsPage />} />
-        <Route path="/admin/notifications" element={<AdminNotificationsPage />} />
+        
+        {/* Existing implemented pages wrapped in AdminWorkspace */}
+        <Route path="/admin/medicines" element={
+          <AdminWorkspace eyebrow="Admin / Thuốc" title="Quản lý thuốc">
+            <MedicineManagementPage />
+          </AdminWorkspace>
+        } />
+        <Route path="/admin/appointments" element={
+          <AdminWorkspace eyebrow="Admin / Lịch hẹn" title="Quản lý lịch hẹn">
+            <AdminAppointmentManagementPage />
+          </AdminWorkspace>
+        } />
+        <Route path="/admin/notifications" element={
+          <AdminWorkspace eyebrow="Admin / Thông báo" title="Quản lý thông báo">
+            <AdminNotificationManagementPage />
+          </AdminWorkspace>
+        } />
+        
         <Route path="/admin/payments" element={<AdminPaymentsPage />} />
       </Routes>
     </BrowserRouter>

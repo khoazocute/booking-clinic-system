@@ -17,4 +17,8 @@ public interface MedicineService {
     MedicineResponse updateMedicine(Long id, UpdateMedicineRequest request);
 
     MedicineResponse updateMedicineStatus(Long id, UpdateMedicineStatusRequest request);
+
+    void deductStock(Long medicineId, int quantity);
+
+    void restoreStock(Long medicineId, int quantity);
 }

@@ -4,15 +4,13 @@ import {
   clearAccessToken,
   getCurrentUser,
 } from "../../services/authService";
-import {
-  getDoctorNotifications,
-  markNotificationAsRead,
-} from "../../services/doctorPortalService";
+import { markNotificationAsRead } from "../../services/doctorPortalService";
 import {
   formatDateTime,
   getNotificationReferencePath,
   getStatusLabel,
 } from "../../utils/doctorHelpers";
+import { useNotifications } from "../../hooks/useNotifications";
 
 const doctorNavItems = [
   { to: "/doctor", label: "Dashboard", icon: "dashboard", end: true },
@@ -46,10 +44,9 @@ export function DoctorWorkspace({
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
   const [currentUser, setCurrentUser] = useState(null);
-  const [notifications, setNotifications] = useState([]);
-  const [notificationsLoading, setNotificationsLoading] = useState(true);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef(null);
+  const { notifications, loading: notificationsLoading, markOneAsRead } = useNotifications();
 
   useEffect(() => {
     let active = true;
@@ -68,33 +65,6 @@ export function DoctorWorkspace({
     }
 
     loadCurrentUser();
-
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-
-    async function loadNotifications() {
-      try {
-        const items = await getDoctorNotifications();
-        if (active) {
-          setNotifications(items);
-        }
-      } catch {
-        if (active) {
-          setNotifications([]);
-        }
-      } finally {
-        if (active) {
-          setNotificationsLoading(false);
-        }
-      }
-    }
-
-    loadNotifications();
 
     return () => {
       active = false;
@@ -134,10 +104,8 @@ export function DoctorWorkspace({
   async function handleNotificationClick(notification) {
     try {
       if (!notification.isRead) {
-        const updated = await markNotificationAsRead(notification.id);
-        setNotifications((current) =>
-          current.map((item) => (item.id === notification.id ? updated : item)),
-        );
+        await markNotificationAsRead(notification.id);
+        markOneAsRead(notification.id);
       }
     } catch {
       // Keep popup usable even if mark-as-read fails.

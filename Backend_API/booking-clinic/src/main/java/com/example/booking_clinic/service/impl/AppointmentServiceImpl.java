@@ -257,11 +257,30 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                     "APPOINTMENT",
                     savedAppointment.getId()
             );
+            notificationService.createNotificationForAdmins(
+                    "Lich kham da xac nhan",
+                    "Lich kham #" + savedAppointment.getId() + " cua benh nhan "
+                            + savedAppointment.getPatient().getUser().getFullName()
+                            + " da duoc xac nhan boi bac si "
+                            + savedAppointment.getDoctor().getUser().getFullName(),
+                    "APPOINTMENT_CONFIRMED",
+                    "APPOINTMENT",
+                    savedAppointment.getId()
+            );
         } else if (AppointmentStatus.CANCELLED == newStatus) {
             notificationService.createNotification(
                     savedAppointment.getPatient().getUser(),
                     "Lich kham da bi huy",
                     "Lich kham cua ban da bi huy",
+                    "APPOINTMENT_CANCELLED",
+                    "APPOINTMENT",
+                    savedAppointment.getId()
+            );
+            notificationService.createNotificationForAdmins(
+                    "Lich kham bi huy",
+                    "Lich kham #" + savedAppointment.getId() + " cua benh nhan "
+                            + savedAppointment.getPatient().getUser().getFullName()
+                            + " da bi huy",
                     "APPOINTMENT_CANCELLED",
                     "APPOINTMENT",
                     savedAppointment.getId()
@@ -336,6 +355,14 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                 appointment.getDoctor().getUser(),
                 "Benh nhan da huy lich",
                 "Benh nhan " + appointment.getPatient().getUser().getFullName() + " da huy lich kham",
+                "APPOINTMENT_CANCELLED",
+                "APPOINTMENT",
+                appointment.getId()
+        );
+        notificationService.createNotificationForAdmins(
+                "Benh nhan huy lich",
+                "Benh nhan " + appointment.getPatient().getUser().getFullName()
+                        + " da tu huy lich kham #" + appointment.getId(),
                 "APPOINTMENT_CANCELLED",
                 "APPOINTMENT",
                 appointment.getId()

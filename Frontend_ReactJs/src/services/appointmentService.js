@@ -25,3 +25,14 @@ export function cancelAppointment(id, cancelReason = "") {
     method: "DELETE",
   });
 }
+
+export function getAllAppointments() {
+  return apiClient("/appointments");
+}
+
+export function updateAppointmentStatus(id, status, cancelReason = "") {
+  return apiClient(`/appointments/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status, cancelReason }),
+  });
+}

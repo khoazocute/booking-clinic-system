@@ -20,6 +20,13 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<NotificationResponse>>> getAllNotifications() {
+        return ResponseEntity.ok(
+                ApiResponse.success("All notifications fetched successfully", notificationService.getAllNotifications())
+        );
+    }
+
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<List<NotificationResponse>>> getMyNotifications() {
         return ResponseEntity.ok(
