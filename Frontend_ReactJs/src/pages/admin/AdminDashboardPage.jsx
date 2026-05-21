@@ -124,7 +124,6 @@ export function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [dateRange, setDateRange] = useState("MONTH");
-  const [isDateMenuOpen, setIsDateMenuOpen] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -170,32 +169,24 @@ export function AdminDashboardPage() {
   }, []);
 
   const summary = useMemo(() => {
-    const filteredAppointments = dashboard.appointments.filter((appointment) =>
-      isInDateRange(appointment.appointmentDate ?? appointment.createdAt, dateRange)
-    );
-    const filteredPayments = dashboard.payments.filter((payment) =>
-      isInDateRange(payment.createdAt, dateRange)
-    );
-    const paidPayments = filteredPayments.filter((payment) => payment.status === "PAID");
+    const paidPayments = dashboard.payments.filter((payment) => payment.status === "PAID");
     const revenue = paidPayments.reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
-    const paidPercent = percent(paidPayments.length, filteredPayments.length);
+    const paidPercent = percent(paidPayments.length, dashboard.payments.length);
 
     return {
       totalUsers: dashboard.users.length,
       totalDoctors: dashboard.doctors.length,
-      totalAppointments: filteredAppointments.length,
+      totalAppointments: dashboard.appointments.length,
       totalRevenue: revenue,
       paidPercent,
-      appointmentStatusSource: filteredAppointments,
-      paymentStatusSource: filteredPayments,
-      recentAppointments: [...filteredAppointments]
+      recentAppointments: [...dashboard.appointments]
         .sort((a, b) => Number(b.id ?? 0) - Number(a.id ?? 0))
         .slice(0, 4),
-      recentPayments: [...filteredPayments]
+      recentPayments: [...dashboard.payments]
         .sort((a, b) => Number(b.id ?? 0) - Number(a.id ?? 0))
         .slice(0, 4),
     };
-  }, [dashboard, dateRange]);
+  }, [dashboard]);
 
   return (
     <AdminWorkspace
@@ -204,34 +195,10 @@ export function AdminDashboardPage() {
       description="Theo dõi hoạt động và số liệu tổng quan của phòng khám."
       actions={
         <>
-          <div className="admin-date-filter">
-            <button
-              className="button button--ghost"
-              type="button"
-              onClick={() => setIsDateMenuOpen((current) => !current)}
-            >
-              <span className="material-symbols-outlined">calendar_month</span>
-              {DATE_RANGES.find((range) => range.key === dateRange)?.label ?? "30 ngay qua"}
-              <span className="material-symbols-outlined">expand_more</span>
-            </button>
-            {isDateMenuOpen ? (
-              <div className="admin-date-filter__menu">
-                {DATE_RANGES.map((range) => (
-                  <button
-                    className={dateRange === range.key ? "admin-date-filter__option admin-date-filter__option--active" : "admin-date-filter__option"}
-                    key={range.key}
-                    type="button"
-                    onClick={() => {
-                      setDateRange(range.key);
-                      setIsDateMenuOpen(false);
-                    }}
-                  >
-                    {range.label}
-                  </button>
-                ))}
-              </div>
-            ) : null}
-          </div>
+          <button className="button button--ghost" type="button">
+            <span className="material-symbols-outlined">calendar_month</span>
+            30 ngay qua
+          </button>
           <button className="button button--primary" type="button">
             <span className="material-symbols-outlined">download</span>
             Xuat bao cao
@@ -253,8 +220,8 @@ export function AdminDashboardPage() {
           <PanelHeader title="Trang thai lich hen" />
           <div className="admin-progress-list">
             {APPOINTMENT_STATUSES.map((item) => {
-              const count = countByStatus(summary.appointmentStatusSource, item.key);
-              const value = percent(count, summary.appointmentStatusSource.length);
+              const count = countByStatus(dashboard.appointments, item.key);
+              const value = percent(count, dashboard.appointments.length);
               return (
                 <ProgressRow
                   key={item.key}
@@ -280,7 +247,7 @@ export function AdminDashboardPage() {
             </div>
             <div className="admin-legend-list">
               {PAYMENT_STATUSES.map((item) => {
-                const payments = summary.paymentStatusSource.filter((payment) => payment.status === item.key);
+                const payments = dashboard.payments.filter((payment) => payment.status === item.key);
                 const amount = payments.reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
                 return (
                   <div className="admin-legend-row" key={item.key}>
