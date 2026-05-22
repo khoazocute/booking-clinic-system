@@ -129,17 +129,21 @@ export default function App() {
         
         {/* Existing implemented pages wrapped in AdminWorkspace */}
         <Route path="/admin/medicines" element={
-          <AdminWorkspace eyebrow="Admin / Thuốc" title="Quản lý thuốc">
+          <AdminWorkspace
+            eyebrow="Admin / Thuốc"
+            title="Medicine Management"
+            description="Track and manage your pharmaceutical inventory levels in real-time."
+          >
             <MedicineManagementPage />
           </AdminWorkspace>
         } />
         <Route path="/admin/appointments" element={
-          <AdminWorkspace eyebrow="Admin / Lịch hẹn" title="Quản lý lịch hẹn">
+          <AdminWorkspace eyebrow="Admin / Appointments" title="Appointment Management">
             <AdminAppointmentManagementPage />
           </AdminWorkspace>
         } />
         <Route path="/admin/notifications" element={
-          <AdminWorkspace eyebrow="Admin / Thông báo" title="Quản lý thông báo">
+          <AdminWorkspace>
             <AdminNotificationManagementPage />
           </AdminWorkspace>
         } />

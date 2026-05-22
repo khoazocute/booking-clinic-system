@@ -111,14 +111,16 @@ function AdminWorkspaceInner({ eyebrow, title, description, actions, children })
           </header>
 
           {/* Page header */}
-          <header className="admin-page-header">
-            <div>
-              {eyebrow && <p className="admin-page-header__eyebrow">{eyebrow}</p>}
-              <h1>{title}</h1>
-              {description && <p className="admin-page-header__desc">{description}</p>}
-            </div>
-            {actions && <div className="admin-page-header__actions">{actions}</div>}
-          </header>
+          {title && (
+            <header className="admin-page-header">
+              <div>
+                {eyebrow && <p className="admin-page-header__eyebrow">{eyebrow}</p>}
+                <h1>{title}</h1>
+                {description && <p className="admin-page-header__desc">{description}</p>}
+              </div>
+              {actions && <div className="admin-page-header__actions">{actions}</div>}
+            </header>
+          )}
 
           {/* Page body */}
           <div className="admin-page-body">{children}</div>
