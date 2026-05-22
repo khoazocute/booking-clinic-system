@@ -10,6 +10,7 @@ import { CreateDoctorSchedulePage } from "./pages/doctor/CreateDoctorSchedulePag
 import { DoctorAppointmentDetailPage } from "./pages/doctor/DoctorAppointmentDetailPage";
 import { DoctorAppointmentsPage } from "./pages/doctor/DoctorAppointmentsPage";
 import { DoctorDashboardPage } from "./pages/doctor/DoctorDashboardPage";
+import { DoctorMedicalRecordsPage } from "./pages/doctor/DoctorMedicalRecordsPage";
 import { DoctorNotificationsPage } from "./pages/doctor/DoctorNotificationsPage";
 import { DoctorProfilePage } from "./pages/doctor/DoctorProfilePage";
 import { DoctorReviewsPage } from "./pages/doctor/DoctorReviewsPage";
@@ -97,6 +98,14 @@ export default function App() {
         <Route
           path="/doctor/appointments/:appointmentId"
           element={<DoctorAppointmentDetailPage />}
+        />
+        <Route
+          path="/doctor/medical-records"
+          element={<DoctorMedicalRecordsPage />}
+        />
+        <Route
+          path="/doctor/medical-records/create"
+          element={<CreateMedicalRecordPage />}
         />
         <Route
           path="/doctor/medical-records/create/:appointmentId"

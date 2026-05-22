@@ -117,42 +117,18 @@ export function DoctorDashboardPage() {
       .slice(0, 4);
   }, [appointments]);
 
-  const quickActions = [
-    {
-      title: "Patient History",
-      description: "Review past medical logs",
-      to: "/doctor/appointments",
-      tone: "primary",
-      icon: "folder_shared",
-    },
-    {
-      title: "Schedule Board",
-      description: "Open and adjust time slots",
-      to: "/doctor/schedules",
-      tone: "success",
-      icon: "event_available",
-    },
-    {
-      title: "Notifications",
-      description: "Check appointment updates",
-      to: "/doctor/notifications",
-      tone: "secondary",
-      icon: "notifications",
-    },
-  ];
-
   return (
     <DoctorWorkspace
       eyebrow="Doctor / Dashboard"
-      title={doctor ? `Welcome back, ${doctor.fullName}` : "Doctor dashboard"}
-      description="Manage your clinic schedule, patient visits, and follow-up tasks from one focused workspace."
+      title={doctor ? `Xin chao, ${doctor.fullName}` : "Doctor dashboard"}
+      description="Theo doi lich hen, lich lam viec va doanh thu cua bac si."
       actions={
         <>
           <Link className="button button--secondary" to="/doctor/schedules">
-            Manage Schedules
+            Lich lam viec
           </Link>
           <Link className="button button--primary" to="/doctor/appointments">
-            New Consultation
+            Lich hen
           </Link>
         </>
       }
@@ -177,30 +153,30 @@ export function DoctorDashboardPage() {
         ))}
       </section>
 
-      <section className="doctor-dashboard-layout">
+      <section className="doctor-dashboard-layout doctor-dashboard-layout--single">
         <div className="doctor-dashboard-main">
           <article className="doctor-dashboard-card">
             <div className="doctor-dashboard-card__head">
               <div>
-                <h2>Upcoming Appointments</h2>
-                <p>Real-time schedule monitoring</p>
+                <h2>Lich hen gan day</h2>
+                <p>Danh sach lich hen moi nhat cua bac si.</p>
               </div>
               <Link className="doctor-text-link" to="/doctor/appointments">
-                View Full Schedule
+                Xem tat ca
               </Link>
             </div>
 
             {loading ? (
-              <p className="empty-state">Loading appointments...</p>
+              <p className="empty-state">Dang tai lich hen...</p>
             ) : upcomingAppointments.length === 0 ? (
-              <p className="empty-state">No upcoming appointments yet.</p>
+              <p className="empty-state">Chua co lich hen.</p>
             ) : (
               <div className="doctor-dashboard-table">
                 <div className="doctor-dashboard-table__head">
-                  <span>Patient Name</span>
-                  <span>Time / Date</span>
-                  <span>Reason</span>
-                  <span>Status</span>
+                  <span>Benh nhan</span>
+                  <span>Thoi gian</span>
+                  <span>Ly do</span>
+                  <span>Trang thai</span>
                   <span></span>
                 </div>
 
@@ -232,7 +208,7 @@ export function DoctorDashboardPage() {
                         className="button button--secondary doctor-dashboard-row__button"
                         to={`/doctor/appointments/${appointment.id}`}
                       >
-                        View Details
+                        Chi tiet
                       </Link>
                     </div>
                   </div>
@@ -241,104 +217,7 @@ export function DoctorDashboardPage() {
             )}
           </article>
 
-          <section className="doctor-dashboard-tiles">
-            <article className="doctor-dashboard-tile doctor-dashboard-tile--primary">
-              <div>
-                <span>Active Service</span>
-                <h3>Telehealth Portal</h3>
-                <p>
-                  {loading
-                    ? "Loading remote session count..."
-                    : `${appointments.filter((item) => item.status === "CONFIRMED").length} confirmed sessions ready today.`}
-                </p>
-              </div>
-              <Link className="button button--light" to="/doctor/appointments">
-                Open Queue
-              </Link>
-            </article>
-
-            <article className="doctor-dashboard-tile doctor-dashboard-tile--dark">
-              <div>
-                <span>Secure Storage</span>
-                <h3>Patient Records</h3>
-                <p>Jump into clinical documents and continue record flow safely.</p>
-              </div>
-              <Link className="button button--outline-light" to="/doctor/appointments">
-                Open Records
-              </Link>
-            </article>
-          </section>
         </div>
-
-        <aside className="doctor-dashboard-side">
-          <article className="doctor-dashboard-profile">
-            {loading ? (
-              <p className="empty-state">Loading profile...</p>
-            ) : doctor ? (
-              <>
-                <div className="doctor-dashboard-profile__avatar">
-                  {getInitials(doctor.fullName)}
-                </div>
-                <h3>{doctor.fullName}</h3>
-                <p>{doctor.specialtyName || "Doctor"}</p>
-
-                <div className="doctor-dashboard-profile__stats">
-                  <div>
-                    <span>Exp.</span>
-                    <strong>
-                      {doctor.experienceYears ? `${doctor.experienceYears}+ Years` : "--"}
-                    </strong>
-                  </div>
-                  <div>
-                    <span>Room</span>
-                    <strong>{doctor.clinicRoom || "--"}</strong>
-                  </div>
-                  <div>
-                    <span>Patients</span>
-                    <strong>{appointments.length} Cases</strong>
-                  </div>
-                  <div>
-                    <span>Fee</span>
-                    <strong>{formatCurrency(doctor.consultationFee)}</strong>
-                  </div>
-                </div>
-
-                <Link className="button button--secondary doctor-dashboard-profile__button" to="/doctor/profile">
-                  View Full Profile
-                </Link>
-              </>
-            ) : (
-              <p className="empty-state">Doctor profile not found.</p>
-            )}
-          </article>
-
-          <article className="doctor-dashboard-card">
-            <div className="doctor-dashboard-card__head">
-              <div>
-                <h2>Quick Actions</h2>
-                <p>Fast access to the most-used tools.</p>
-              </div>
-            </div>
-
-            <div className="doctor-dashboard-actions">
-              {quickActions.map((action) => (
-                <Link
-                  key={action.title}
-                  className={`doctor-dashboard-action doctor-dashboard-action--${action.tone}`}
-                  to={action.to}
-                >
-                  <div className="doctor-dashboard-action__icon">
-                    <span className="material-symbols-outlined">{action.icon}</span>
-                  </div>
-                  <div>
-                    <strong>{action.title}</strong>
-                    <span>{action.description}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </article>
-        </aside>
       </section>
     </DoctorWorkspace>
   );

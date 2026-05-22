@@ -6,6 +6,7 @@ import {
   getCurrentUser,
 } from "../services/authService";
 import { useNotifications } from "../hooks/useNotifications";
+import { PatientAiChatWidget } from "../components/patient/PatientAiChatWidget";
 
 const publicNavigation = [
   { to: "/", label: "Trang chủ", end: true },
@@ -76,7 +77,7 @@ export function MainLayout() {
                 {item.label}
               </NavLink>
             ))}
-            {currentUser ? (
+            {currentUser?.role?.toUpperCase() === "PATIENT" ? (
               <NavLink
                 to="/my-appointments"
                 className={({ isActive }) =>
@@ -135,6 +136,10 @@ export function MainLayout() {
       <main>
         <Outlet />
       </main>
+
+      {currentUser?.role?.toUpperCase() === "PATIENT" ? (
+        <PatientAiChatWidget />
+      ) : null}
 
       <footer className="site-footer">
         <div className="site-footer__inner">

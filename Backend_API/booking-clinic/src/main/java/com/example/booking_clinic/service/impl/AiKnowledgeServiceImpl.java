@@ -1,10 +1,8 @@
 package com.example.booking_clinic.service.impl;
 
 import com.example.booking_clinic.entity.AiDocument;
-import com.example.booking_clinic.entity.Doctor;
 import com.example.booking_clinic.entity.Specialty;
 import com.example.booking_clinic.repository.AiDocumentRepository;
-import com.example.booking_clinic.repository.DoctorRepository;
 import com.example.booking_clinic.repository.SpecialtyRepository;
 import com.example.booking_clinic.service.AiEmbeddingService;
 import com.example.booking_clinic.service.AiKnowledgeService;
@@ -21,7 +19,6 @@ public class AiKnowledgeServiceImpl implements AiKnowledgeService {
 
     private final AiDocumentRepository aiDocumentRepository;
     private final SpecialtyRepository specialtyRepository;
-    private final DoctorRepository doctorRepository;
     private final AiEmbeddingService aiEmbeddingService;
 
     @Override
@@ -32,31 +29,13 @@ public class AiKnowledgeServiceImpl implements AiKnowledgeService {
         List<AiDocument> documents = new ArrayList<>();
 
         for (Specialty specialty : specialtyRepository.findAll()) {
-            String content = "Chuyên khoa " + specialty.getName()
-                    + ". Mô tả: " + nullToEmpty(specialty.getDescription());
+            String content = "Chuyen khoa " + specialty.getName()
+                    + ". Mo ta: " + nullToEmpty(specialty.getDescription());
 
             documents.add(buildDocument(
                     "SPECIALTY",
                     specialty.getId(),
                     specialty.getName(),
-                    content
-            ));
-        }
-
-        for (Doctor doctor : doctorRepository.findAll()) {
-            String doctorName = doctor.getUser() != null ? doctor.getUser().getFullName() : "Bác sĩ";
-            String specialtyName = doctor.getSpecialty() != null ? doctor.getSpecialty().getName() : "";
-
-            String content = "Bác sĩ " + doctorName
-                    + ". Chuyên khoa: " + specialtyName
-                    + ". Kinh nghiệm: " + doctor.getExperienceYears() + " năm."
-                    + " Phòng khám: " + nullToEmpty(doctor.getClinicRoom())
-                    + ". Phí khám: " + doctor.getConsultationFee();
-
-            documents.add(buildDocument(
-                    "DOCTOR",
-                    doctor.getId(),
-                    doctorName,
                     content
             ));
         }

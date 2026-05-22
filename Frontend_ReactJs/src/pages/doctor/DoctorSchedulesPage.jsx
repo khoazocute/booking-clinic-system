@@ -130,13 +130,13 @@ export function DoctorSchedulesPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Schedules"
-      title="Doctor Schedules"
-      description="Manage and monitor clinical shifts, slot availability, and appointment readiness."
+      eyebrow="Doctor / Schedules"
+      title="Lich lam viec"
+      description="Quan ly khung gio kham va trang thai lich cua bac si."
       actions={
         <Link className="button button--primary" to="/doctor/schedules/create">
           <span className="material-symbols-outlined">add_circle</span>
-          <span>Create Schedule</span>
+          <span>Tao lich</span>
         </Link>
       }
     >
@@ -187,14 +187,27 @@ export function DoctorSchedulesPage() {
         </button>
       </section>
 
-      <section className="doctor-management-table">
+      <section className="doctor-mini-stats">
+        {scheduleStats.map((item) => (
+          <article
+            className={`doctor-mini-stat doctor-mini-stat--${item.tone}`}
+            key={item.label}
+          >
+            <div>
+              <span>{item.label}</span>
+              <strong>{item.value}</strong>
+            </div>
+            <span className="material-symbols-outlined">{item.icon}</span>
+          </article>
+        ))}
+      </section>
+
+      <section className="doctor-management-table doctor-management-table--schedules">
         <div className="doctor-management-table__head">
-          <span>Doctor</span>
-          <span>Specialty</span>
-          <span>Time Slot</span>
-          <span>Location</span>
-          <span>Status</span>
-          <span>Actions</span>
+          <span>Ngay</span>
+          <span>Khung gio</span>
+          <span>Trang thai</span>
+          <span>Thao tac</span>
         </div>
 
         {loading ? (
@@ -204,31 +217,13 @@ export function DoctorSchedulesPage() {
         ) : (
           filteredSchedules.map((schedule) => (
             <article className="doctor-management-row" key={schedule.id}>
-              <div className="doctor-management-row__doctor">
-                <div className="doctor-management-row__avatar">
-                  {(doctor?.fullName || "DR")
-                    .split(" ")
-                    .slice(0, 2)
-                    .map((item) => item[0] || "")
-                    .join("")
-                    .toUpperCase()}
-                </div>
-                <div>
-                  <strong>{doctor?.fullName || "Current Doctor"}</strong>
-                  <span>ID: DR-{String(doctor?.id ?? schedule.id).padStart(4, "0")}</span>
-                </div>
-              </div>
-
-              <div className="doctor-management-row__text">{getSpecialtyLabel(doctor)}</div>
-
               <div className="doctor-management-row__slot">
                 <strong>{formatDate(schedule.workDate)}</strong>
-                <span>
-                  {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
-                </span>
               </div>
 
-              <div className="doctor-management-row__text">{getLocationLabel(doctor)}</div>
+              <div className="doctor-management-row__text">
+                {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+              </div>
 
               <div className="doctor-management-row__status">
                 <DoctorStatusBadge status={schedule.status} />
@@ -284,20 +279,6 @@ export function DoctorSchedulesPage() {
         ) : null}
       </section>
 
-      <section className="doctor-mini-stats">
-        {scheduleStats.map((item) => (
-          <article
-            className={`doctor-mini-stat doctor-mini-stat--${item.tone}`}
-            key={item.label}
-          >
-            <div>
-              <span>{item.label}</span>
-              <strong>{item.value}</strong>
-            </div>
-            <span className="material-symbols-outlined">{item.icon}</span>
-          </article>
-        ))}
-      </section>
     </DoctorWorkspace>
   );
 }
