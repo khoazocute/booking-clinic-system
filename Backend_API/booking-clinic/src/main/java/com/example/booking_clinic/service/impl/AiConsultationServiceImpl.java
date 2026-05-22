@@ -33,6 +33,7 @@ public class AiConsultationServiceImpl implements AiConsultationService {
 
         List<AiSuggestionResponse> suggestions = aiDocumentRepository.findAll()
                 .stream()
+                .filter(document -> "SPECIALTY".equalsIgnoreCase(document.getSourceType()))
                 .map(document -> toSuggestion(document, queryVector))
                 .sorted(Comparator.comparingDouble(AiSuggestionResponse::score).reversed())
                 .limit(5)
@@ -72,13 +73,13 @@ public class AiConsultationServiceImpl implements AiConsultationService {
 
     private String buildAnswer(List<AiSuggestionResponse> suggestions) {
         if (suggestions.isEmpty() || suggestions.get(0).score() <= 0) {
-            return "Tôi chưa tìm thấy chuyên khoa thật sự phù hợp. Bạn nên đặt lịch khám tổng quát để được tư vấn thêm.";
+            return "Toi chua tim thay chuyen khoa that su phu hop. Ban nen dat lich kham tong quat de duoc tu van them.";
         }
 
         AiSuggestionResponse best = suggestions.get(0);
 
-        return "Dựa trên triệu chứng bạn mô tả, tôi gợi ý bạn tham khảo "
+        return "Dua tren trieu chung ban mo ta, toi goi y ban tham khao "
                 + best.title()
-                + ". Đây chỉ là gợi ý hỗ trợ đặt lịch, không thay thế chẩn đoán y khoa.";
+                + ". Day chi la goi y ho tro dat lich, khong thay the chan doan y khoa.";
     }
 }
