@@ -77,12 +77,15 @@ const AdminNotificationManagementPage = () => {
   const paginated = notifications.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
   return (
-    <div className="p-margin max-w-[1140px] mx-auto w-full">
+    <div className="w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-lg gap-md">
         <div>
+          <p className="admin-page-header__eyebrow">Admin / Notifications</p>
           <div className="flex items-center gap-sm">
-            <h2 className="text-h2 font-h2 text-on-surface">System Notifications</h2>
+            <h1 style={{ fontFamily: "Manrope", fontSize: "26px", fontWeight: 800, color: "#111827", margin: 0, lineHeight: 1.2 }}>
+              Notification Management
+            </h1>
             <span className={`flex items-center gap-xs text-label-caps font-label-caps px-sm py-xs rounded-full ${connected ? "bg-primary-container/20 text-primary" : "bg-surface-container text-on-surface-variant"}`}>
               <span className={`w-2 h-2 rounded-full ${connected ? "bg-primary" : "bg-outline"}`}></span>
               {connected ? "Live" : "Offline"}
@@ -95,7 +98,7 @@ const AdminNotificationManagementPage = () => {
         <div className="flex items-center gap-sm">
           {unreadCount > 0 && (
             <span className="px-sm py-xs rounded-full bg-primary text-on-primary text-label-caps font-label-caps">
-              {unreadCount} chưa đọc
+              {unreadCount} unread
             </span>
           )}
           <button
