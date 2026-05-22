@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import {
-  clearAccessToken,
-  getCurrentUser,
-} from "../../services/authService";
+import { clearAccessToken, getCurrentUser } from "../../services/authService";
 import { markNotificationAsRead } from "../../services/doctorPortalService";
 import {
   formatDateTime,
@@ -14,17 +11,16 @@ import { useNotifications } from "../../hooks/useNotifications";
 
 const doctorNavItems = [
   { to: "/doctor", label: "Dashboard", icon: "dashboard", end: true },
-  { to: "/doctor/appointments", label: "Appointments", icon: "calendar_month" },
-  { to: "/doctor/schedules", label: "Schedules", icon: "event_available" },
-  { to: "/doctor/profile", label: "Profile", icon: "badge" },
-  { to: "/doctor/reviews", label: "Reviews", icon: "star" },
-  { to: "/doctor/settings", label: "Settings", icon: "settings" },
+  { to: "/doctor/appointments", label: "Lich hen", icon: "calendar_month" },
+  { to: "/doctor/schedules", label: "Lich lam viec", icon: "event_available" },
+  { to: "/doctor/medical-records", label: "Ho so kham", icon: "clinical_notes" },
+  { to: "/doctor/profile", label: "Ho so", icon: "badge" },
+  { to: "/doctor/reviews", label: "Danh gia", icon: "star" },
+  { to: "/doctor/settings", label: "Cai dat", icon: "settings" },
 ];
 
 function getInitials(name) {
-  if (!name) {
-    return "DR";
-  }
+  if (!name) return "DR";
 
   return String(name)
     .trim()
@@ -34,15 +30,8 @@ function getInitials(name) {
     .join("");
 }
 
-export function DoctorWorkspace({
-  eyebrow,
-  title,
-  description,
-  actions,
-  children,
-}) {
+export function DoctorWorkspace({ eyebrow, title, description, actions, children }) {
   const navigate = useNavigate();
-  const currentYear = new Date().getFullYear();
   const [currentUser, setCurrentUser] = useState(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef(null);
@@ -51,20 +40,13 @@ export function DoctorWorkspace({
   useEffect(() => {
     let active = true;
 
-    async function loadCurrentUser() {
-      try {
-        const response = await getCurrentUser();
-        if (active) {
-          setCurrentUser(response?.data ?? null);
-        }
-      } catch {
-        if (active) {
-          setCurrentUser(null);
-        }
-      }
-    }
-
-    loadCurrentUser();
+    getCurrentUser()
+      .then((response) => {
+        if (active) setCurrentUser(response?.data ?? null);
+      })
+      .catch(() => {
+        if (active) setCurrentUser(null);
+      });
 
     return () => {
       active = false;
@@ -79,9 +61,7 @@ export function DoctorWorkspace({
     }
 
     function handleEscape(event) {
-      if (event.key === "Escape") {
-        setIsNotificationOpen(false);
-      }
+      if (event.key === "Escape") setIsNotificationOpen(false);
     }
 
     document.addEventListener("mousedown", handleOutsideClick);
@@ -108,37 +88,36 @@ export function DoctorWorkspace({
         markOneAsRead(notification.id);
       }
     } catch {
-      // Keep popup usable even if mark-as-read fails.
+      // Keep navigation usable even when the read update fails.
     } finally {
       setIsNotificationOpen(false);
     }
 
-    const referencePath = getNotificationReferencePath(notification);
-    navigate(referencePath || "/doctor/notifications");
+    navigate(getNotificationReferencePath(notification) || "/doctor/notifications");
   }
 
   return (
-    <div className="doctor-portal">
-      <div className="doctor-shell doctor-shell--portal">
-        <aside className="doctor-sidebar doctor-sidebar--portal">
-          <div className="doctor-sidebar__brand doctor-sidebar__brand--portal">
-            <div className="doctor-sidebar__logo">
+    <div className="admin-portal doctor-portal">
+      <div className="admin-shell doctor-shell doctor-shell--portal">
+        <aside className="admin-sidebar">
+          <div className="admin-sidebar__brand">
+            <div className="admin-sidebar__logo">
               <span className="material-symbols-outlined">local_hospital</span>
             </div>
-            <div className="doctor-sidebar__brand-copy">
-              <strong className="doctor-sidebar__brand-title">MedClarity</strong>
-              <span className="doctor-sidebar__brand-subtitle">Clinical Portal</span>
+            <div>
+              <strong className="admin-sidebar__brand-title">MedClarity</strong>
+              <span className="admin-sidebar__brand-sub">Doctor Portal</span>
             </div>
           </div>
 
-          <nav className="doctor-sidebar__nav" aria-label="Doctor navigation">
+          <nav className="admin-sidebar__nav" aria-label="Doctor navigation">
             {doctorNavItems.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `doctor-sidebar__link${isActive ? " doctor-sidebar__link--active" : ""}`
+                  `admin-sidebar__link${isActive ? " admin-sidebar__link--active" : ""}`
                 }
               >
                 <span className="material-symbols-outlined">{item.icon}</span>
@@ -147,32 +126,25 @@ export function DoctorWorkspace({
             ))}
           </nav>
 
-          <button
-            className="doctor-sidebar__logout"
-            type="button"
-            onClick={handleLogout}
-          >
+          <button className="admin-sidebar__logout" type="button" onClick={handleLogout}>
             <span className="material-symbols-outlined">logout</span>
-            <span>Sign Out</span>
+            <span>Dang xuat</span>
           </button>
         </aside>
 
-        <section className="doctor-main doctor-main--portal">
-          <header className="doctor-topbar">
-            <label className="doctor-topbar__search" aria-label="Search doctor portal">
+        <section className="admin-main">
+          <header className="admin-topbar">
+            <label className="admin-topbar__search" aria-label="Tim kiem">
               <span className="material-symbols-outlined">search</span>
-              <input
-                type="search"
-                placeholder="Search patients, visits, or prescriptions..."
-              />
+              <input type="search" placeholder="Tim benh nhan, lich hen..." />
             </label>
 
-            <div className="doctor-topbar__actions">
+            <div className="admin-topbar__actions">
               <div className="doctor-topbar__notification" ref={notificationRef}>
                 <button
-                  className="doctor-topbar__icon-button"
+                  className="admin-topbar__icon-btn doctor-topbar__icon-button"
                   type="button"
-                  aria-label="Notifications"
+                  aria-label="Thong bao"
                   aria-expanded={isNotificationOpen}
                   onClick={() => setIsNotificationOpen((current) => !current)}
                 >
@@ -188,23 +160,19 @@ export function DoctorWorkspace({
                   <div className="doctor-notification-popup">
                     <div className="doctor-notification-popup__head">
                       <div>
-                        <strong>Notifications</strong>
-                        <span>
-                          {unreadCount > 0
-                            ? `${unreadCount} unread update${unreadCount > 1 ? "s" : ""}`
-                            : "You are all caught up"}
-                        </span>
+                        <strong>Thong bao</strong>
+                        <span>{unreadCount > 0 ? `${unreadCount} thong bao moi` : "Da doc het"}</span>
                       </div>
                       <Link to="/doctor/notifications" onClick={() => setIsNotificationOpen(false)}>
-                        View all
+                        Xem tat ca
                       </Link>
                     </div>
 
                     <div className="doctor-notification-popup__list">
                       {notificationsLoading ? (
-                        <p className="doctor-notification-popup__empty">Loading notifications...</p>
+                        <p className="doctor-notification-popup__empty">Dang tai thong bao...</p>
                       ) : popupNotifications.length === 0 ? (
-                        <p className="doctor-notification-popup__empty">No notifications yet.</p>
+                        <p className="doctor-notification-popup__empty">Chua co thong bao.</p>
                       ) : (
                         popupNotifications.map((notification) => (
                           <button
@@ -228,62 +196,31 @@ export function DoctorWorkspace({
                   </div>
                 ) : null}
               </div>
-              <NavLink
-                className="doctor-topbar__icon-button"
-                to="/doctor/settings"
-                aria-label="Settings"
-              >
+
+              <NavLink className="admin-topbar__icon-btn" to="/doctor/settings" aria-label="Cai dat">
                 <span className="material-symbols-outlined">settings</span>
               </NavLink>
-              <NavLink className="doctor-topbar__profile" to="/doctor/profile">
-                <div className="doctor-topbar__avatar">
-                  {getInitials(currentUser?.fullName ?? currentUser?.email)}
-                </div>
+
+              <NavLink className="admin-topbar__profile doctor-topbar__profile" to="/doctor/profile">
+                <div className="admin-topbar__avatar">{getInitials(currentUser?.fullName ?? currentUser?.email)}</div>
                 <div>
-                  <strong>{currentUser?.fullName ?? "Doctor account"}</strong>
-                  <span>{currentUser?.email ?? "Secure workspace"}</span>
+                  <strong>{currentUser?.fullName ?? "Bac si"}</strong>
+                  <span>{currentUser?.email ?? ""}</span>
                 </div>
               </NavLink>
             </div>
           </header>
 
-          <header className="doctor-page-header doctor-page-header--portal">
+          <header className="admin-page-header">
             <div>
-              {eyebrow ? (
-                <p className="doctor-page-header__eyebrow">{eyebrow}</p>
-              ) : null}
+              {eyebrow ? <p className="admin-page-header__eyebrow">{eyebrow}</p> : null}
               <h1>{title}</h1>
-              {description ? <p>{description}</p> : null}
+              {description ? <p className="admin-page-header__desc">{description}</p> : null}
             </div>
-            {actions ? <div className="doctor-page-header__actions">{actions}</div> : null}
+            {actions ? <div className="admin-page-header__actions">{actions}</div> : null}
           </header>
 
-          <div className="doctor-page-body">{children}</div>
-
-          <footer className="site-footer">
-            <div className="site-container footer-shell">
-              <div className="footer-brand">
-                <span className="footer-logo">MediCare</span>
-                <div className="footer-contact">
-                  <p>Doctor portal workspace for appointments, schedules, prescriptions, and follow-up care.</p>
-                  <p>support@medicare.vn</p>
-                  <p>1900 1234</p>
-                </div>
-              </div>
-
-              <div className="footer-links">
-                <NavLink to="/doctor/notifications">Notifications</NavLink>
-                <NavLink to="/doctor/settings">Settings</NavLink>
-                <NavLink to="/doctor/profile">Profile</NavLink>
-                <a href="mailto:support@medicare.vn">Contact Support</a>
-                <a href="/">Help Center</a>
-              </div>
-            </div>
-
-            <div className="site-container footer-bottom">
-              © {currentYear} MediCare. All rights reserved.
-            </div>
-          </footer>
+          <div className="admin-page-body doctor-page-body">{children}</div>
         </section>
       </div>
     </div>

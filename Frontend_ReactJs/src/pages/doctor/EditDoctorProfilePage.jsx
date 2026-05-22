@@ -109,12 +109,12 @@ export function EditDoctorProfilePage() {
   return (
     <DoctorWorkspace
       eyebrow="Doctor / Profile"
-      title="Edit Doctor Profile"
-      description="Manage professional credentials, specialty information, and clinic presentation."
+      title="Chinh sua ho so bac si"
+      description="Cap nhat chuyen khoa, kinh nghiem, bang cap va thong tin phong kham."
       actions={
         <>
           <Link className="button button--secondary" to="/doctor/profile">
-            Cancel
+            Huy
           </Link>
           <button
             className="button button--primary"
@@ -123,7 +123,7 @@ export function EditDoctorProfilePage() {
             type="submit"
           >
             <span className="material-symbols-outlined">save</span>
-            <span>{saving ? "Saving..." : "Save Changes"}</span>
+            <span>{saving ? "Dang luu..." : "Luu thay doi"}</span>
           </button>
         </>
       }
@@ -148,10 +148,6 @@ export function EditDoctorProfilePage() {
 
               <div className="doctor-profile-card__meta">
                 <div>
-                  <span>Full Name</span>
-                  <strong>{doctor?.fullName || "--"}</strong>
-                </div>
-                <div>
                   <span>Email Address</span>
                   <strong>{doctor?.email || "--"}</strong>
                 </div>
@@ -161,51 +157,23 @@ export function EditDoctorProfilePage() {
                 </div>
               </div>
             </article>
-
-            <article className="doctor-panel doctor-identity-card">
-              <div className="doctor-panel__head">
-                <div>
-                  <h2>Identity</h2>
-                  <p>Read-only account information from the current doctor record.</p>
-                </div>
-              </div>
-
-              <div className="doctor-identity-card__grid">
-                <div>
-                  <span>Doctor ID</span>
-                  <strong>{doctor?.id ? `DR-${String(doctor.id).padStart(4, "0")}` : "--"}</strong>
-                </div>
-                <div>
-                  <span>User ID</span>
-                  <strong>{doctor?.userId || "--"}</strong>
-                </div>
-                <div>
-                  <span>Consultation Fee</span>
-                  <strong>
-                    {doctor?.consultationFee
-                      ? `${Number(doctor.consultationFee).toLocaleString("vi-VN")} VND`
-                      : "--"}
-                  </strong>
-                </div>
-              </div>
-            </article>
           </section>
 
           <section className="doctor-profile-editor__content">
             <article className="doctor-panel">
               <div className="doctor-panel__head">
                 <div>
-                  <h2>Professional Information</h2>
-                  <p>Update the details patients see when browsing your public profile.</p>
+                  <h2>Thong tin chuyen mon</h2>
+                  <p>Thong tin nay se hien thi tren ho so cong khai cua bac si.</p>
                 </div>
               </div>
 
               <div className="doctor-form doctor-form--editor">
                 <div className="doctor-form__grid">
                   <label>
-                    <span>Specialty</span>
+                    <span>Chuyen khoa</span>
                     <select name="specialtyId" value={form.specialtyId} onChange={handleChange}>
-                      <option value="">Select specialty</option>
+                      <option value="">Chon chuyen khoa</option>
                       {specialties.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.name}
@@ -215,7 +183,7 @@ export function EditDoctorProfilePage() {
                   </label>
 
                   <label>
-                    <span>Experience (years)</span>
+                    <span>Kinh nghiem (nam)</span>
                     <input
                       name="experienceYears"
                       type="number"
@@ -227,7 +195,7 @@ export function EditDoctorProfilePage() {
 
                 <div className="doctor-form__grid">
                   <label>
-                    <span>Qualification</span>
+                    <span>Bang cap</span>
                     <input
                       name="qualification"
                       type="text"
@@ -237,7 +205,7 @@ export function EditDoctorProfilePage() {
                   </label>
 
                   <label>
-                    <span>Clinic room</span>
+                    <span>Phong kham</span>
                     <input
                       name="clinicRoom"
                       type="text"
@@ -248,7 +216,7 @@ export function EditDoctorProfilePage() {
                 </div>
 
                 <label>
-                  <span>Biography</span>
+                  <span>Gioi thieu</span>
                   <textarea
                     name="biography"
                     rows={6}
@@ -256,32 +224,6 @@ export function EditDoctorProfilePage() {
                     onChange={handleChange}
                   />
                 </label>
-              </div>
-            </article>
-
-            <article className="doctor-panel doctor-profile-editor__helper">
-              <div className="doctor-panel__head">
-                <div>
-                  <h2>Clinic Operations</h2>
-                  <p>
-                    Shift availability is managed from the schedule board so profile edits stay
-                    focused on public-facing information.
-                  </p>
-                </div>
-                <Link className="button button--secondary" to="/doctor/schedules">
-                  Manage Schedules
-                </Link>
-              </div>
-
-              <div className="doctor-editor-note">
-                <span className="material-symbols-outlined">schedule</span>
-                <div>
-                  <strong>Need to adjust clinic hours?</strong>
-                  <p>
-                    Use the schedule module to open, cancel, or re-activate time slots without
-                    affecting your base profile data.
-                  </p>
-                </div>
               </div>
             </article>
           </section>

@@ -80,6 +80,26 @@ export async function createMedicalRecord(payload) {
   return response?.data;
 }
 
+export async function getDoctorMedicalRecordSummaries() {
+  const { doctor, appointments } = await getDoctorAppointments();
+  const completedAppointments = appointments.filter((appointment) => appointment.status === "COMPLETED");
+
+  const settled = await Promise.allSettled(
+    completedAppointments.map(async (appointment) => {
+      const medicalRecord = await getMedicalRecordByAppointmentId(appointment.id);
+      return { appointment, medicalRecord };
+    }),
+  );
+
+  return {
+    doctor,
+    records: settled
+      .filter((item) => item.status === "fulfilled")
+      .map((item) => item.value)
+      .filter((item) => item.medicalRecord),
+  };
+}
+
 export async function getPrescriptionByMedicalRecordId(medicalRecordId) {
   const response = await apiClient(`/prescriptions/medical-record/${medicalRecordId}`);
   return response?.data;
