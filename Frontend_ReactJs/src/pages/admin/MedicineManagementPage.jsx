@@ -139,13 +139,9 @@ const MedicineManagementPage = () => {
   const handleSortChange = (e) => { setSortBy(e.target.value); setPage(1); };
 
   return (
-    <div className="p-margin flex-grow">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-lg gap-md">
-        <div>
-          <h1 className="font-h1 text-h1 text-on-background">Medicine Management</h1>
-          <p className="text-body-lg text-on-surface-variant mt-xs">Track and manage your pharmaceutical inventory levels in real-time.</p>
-        </div>
+    <div>
+      {/* Add button row — title/description come from AdminWorkspace header */}
+      <div className="flex justify-end mb-6">
         <button
           onClick={openAdd}
           className="bg-primary text-on-primary font-button px-lg py-sm rounded-lg flex items-center gap-xs shadow-md active:scale-95 transition-transform"
@@ -155,16 +151,17 @@ const MedicineManagementPage = () => {
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-lg">
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant">
+      {/* Stats — 4 cards, equal height via consistent structure */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-label-caps font-label-caps text-on-surface-variant">TOTAL PRODUCTS</span>
             <span className="material-symbols-outlined text-primary" data-icon="inventory_2">inventory_2</span>
           </div>
           <div className="text-h2 font-h2">{stats.total}</div>
+          <div className="text-body-sm text-on-surface-variant mt-xs">Active medicines in system</div>
         </div>
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant">
+        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-label-caps font-label-caps text-on-surface-variant">LOW STOCK</span>
             <span className="material-symbols-outlined text-secondary" data-icon="warning">warning</span>
@@ -172,7 +169,7 @@ const MedicineManagementPage = () => {
           <div className="text-h2 font-h2 text-secondary">{stats.lowStock}</div>
           <div className="text-body-sm text-on-surface-variant mt-xs">Requires immediate reorder</div>
         </div>
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant">
+        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-label-caps font-label-caps text-on-surface-variant">OUT OF STOCK</span>
             <span className="material-symbols-outlined text-error" data-icon="error">error</span>
@@ -180,7 +177,7 @@ const MedicineManagementPage = () => {
           <div className="text-h2 font-h2 text-error">{stats.outOfStock}</div>
           <div className="text-body-sm text-on-surface-variant mt-xs">Critical stockouts detected</div>
         </div>
-        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant">
+        <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
             <span className="text-label-caps font-label-caps text-on-surface-variant">TOTAL VALUE</span>
             <span className="material-symbols-outlined text-tertiary" data-icon="payments">payments</span>

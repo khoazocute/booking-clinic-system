@@ -184,7 +184,7 @@ const AdminAppointmentManagementPage = () => {
     `https://api.dicebear.com/7.x/notionists/svg?seed=${id}&backgroundColor=b3c5ff`;
 
   return (
-    <div className="p-md lg:p-xl flex-1 overflow-auto bg-background text-on-background w-full max-w-[1400px] mx-auto">
+    <div className="w-full">
 
       {/* Summary Metrics */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-lg">
