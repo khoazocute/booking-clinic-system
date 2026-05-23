@@ -14,6 +14,8 @@ import com.example.booking_clinic.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 
 import java.util.List;
 
@@ -28,6 +30,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "medicines", key = "'all'")
     public List<MedicineResponse> getAllMedicines() {
         return medicineRepository.findAll().stream()
                 .map(this::toResponse)
@@ -36,6 +39,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "medicine", key = "#id")
     public MedicineResponse getMedicineById(Long id) {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + id));
@@ -44,6 +48,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"medicines", "medicine"}, allEntries = true)
     public MedicineResponse createMedicine(CreateMedicineRequest request) {
         String normalizedName = request.name().trim();
         if (medicineRepository.existsByNameIgnoreCase(normalizedName)) {
@@ -65,6 +70,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"medicines", "medicine"}, allEntries = true)
     public MedicineResponse updateMedicine(Long id, UpdateMedicineRequest request) {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + id));
@@ -94,6 +100,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"medicines", "medicine"}, allEntries = true)
     public MedicineResponse updateMedicineStatus(Long id, UpdateMedicineStatusRequest request) {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + id));
@@ -111,6 +118,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"medicines", "medicine"}, allEntries = true)
     public void deductStock(Long medicineId, int quantity) {
         Medicine medicine = medicineRepository.findById(medicineId)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + medicineId));
@@ -137,6 +145,7 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"medicines", "medicine"}, allEntries = true)
     public void restoreStock(Long medicineId, int quantity) {
         Medicine medicine = medicineRepository.findById(medicineId)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + medicineId));

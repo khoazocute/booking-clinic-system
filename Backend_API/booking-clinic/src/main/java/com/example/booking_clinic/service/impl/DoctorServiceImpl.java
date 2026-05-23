@@ -16,6 +16,9 @@ import com.example.booking_clinic.repository.SpecialtyRepository;
 import com.example.booking_clinic.repository.UserRepository;
 import com.example.booking_clinic.service.DoctorService;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ public class DoctorServiceImpl implements DoctorService {
     // --- API CỦA BẠN (Cập nhật hồ sơ cá nhân) ---
     @Override
     @Transactional
+    @CacheEvict(value = {"doctors", "doctor"}, allEntries = true)
     public DoctorResponse updateMyProfile(UpdateDoctorProfileRequest request) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User principal = (User) authentication.getPrincipal();
@@ -76,6 +80,10 @@ public class DoctorServiceImpl implements DoctorService {
     // --- API CỦA NHÓM (Dành cho Admin) ---
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(
+            value = "doctors",
+            key = "T(String).valueOf(#specialtyId) + ':' + (#keyword == null ? '' : #keyword.trim().toLowerCase())"
+    )
     public List<DoctorResponse> getAllDoctors(Long specialtyId, String keyword) {
         String normalizedKeyword = keyword == null ? null : keyword.trim();
 
@@ -96,6 +104,7 @@ public class DoctorServiceImpl implements DoctorService {
     }
 
     @Override
+    @Cacheable(value = "doctor", key = "#id")
     @Transactional(readOnly = true)
     public DoctorResponse getDoctorById(Long id) {
         Doctor doctor = doctorRepository.findById(id)
@@ -105,6 +114,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"doctors", "doctor"}, allEntries = true)
     public DoctorResponse createDoctor(CreateDoctorRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.userId()));
@@ -148,6 +158,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"doctors", "doctor"}, allEntries = true)
     public DoctorResponse updateDoctor(Long id, UpdateDoctorRequest request) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
@@ -183,6 +194,7 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"doctors", "doctor"}, allEntries = true)
     public DoctorResponse updateDoctorStatus(Long id, UpdateDoctorStatusRequest request) {
         Doctor doctor = doctorRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
