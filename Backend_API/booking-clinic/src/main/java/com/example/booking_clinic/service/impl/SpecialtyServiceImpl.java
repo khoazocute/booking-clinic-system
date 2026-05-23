@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 
@@ -19,17 +21,20 @@ import java.util.List;
 public class SpecialtyServiceImpl implements SpecialtyService {
 
     private final SpecialtyRepository specialtyRepository;
-
+//Thêm các annotation @Cacheable vào các phương thức getAllSpecialties và getSpecialtyById
+// để lưu trữ kết quả trả về trong cache.
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "specialties", key = "'all'")
     public List<SpecialtyResponse> getAllSpecialties() {
         return specialtyRepository.findAll().stream()
                 .map(this::toResponse)
                 .toList();
     }
-
+    
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "specialty", key = "#id")
     public SpecialtyResponse getSpecialtyById(Long id) {
         Specialty specialty = specialtyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found with id: " + id));
@@ -38,6 +43,8 @@ public class SpecialtyServiceImpl implements SpecialtyService {
 
     @Override
     @Transactional
+//Thêm annotation @CacheEvict vào các phương thức createSpecialty, updateSpecialty và deleteSpecialty để xóa cache khi có sự thay đổi dữ liệu.
+    @CacheEvict(value = {"specialties", "specialty", "doctors", "doctor"}, allEntries = true)
     public SpecialtyResponse createSpecialty(CreateSpecialtyRequest request) {
         if (specialtyRepository.existsByName(request.name())) {
             throw new IllegalArgumentException("Specialty name already exists: " + request.name());
@@ -55,6 +62,7 @@ public class SpecialtyServiceImpl implements SpecialtyService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"specialties", "specialty", "doctors", "doctor"}, allEntries = true)
     public SpecialtyResponse updateSpecialty(Long id, UpdateSpecialtyRequest request) {
         Specialty specialty = specialtyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found with id: " + id));
@@ -75,6 +83,7 @@ public class SpecialtyServiceImpl implements SpecialtyService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"specialties", "specialty", "doctors", "doctor"}, allEntries = true)
     public void deleteSpecialty(Long id) { // TODO: Waiting for Khoa to implement Doctor Service
         Specialty specialty = specialtyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found with id: " + id));
