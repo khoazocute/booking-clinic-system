@@ -73,25 +73,25 @@ export function MedicalRecordDetailPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow={`Dashboard / Patients / ${medicalRecord?.patientName ?? "Record"} / Record #${medicalRecordId ?? ""}`}
-      title={medicalRecord ? `Medical Record #${medicalRecord.id}` : "Medical record detail"}
-      description={medicalRecord?.notes || "Review the medical record before continuing prescription and follow-up care."}
+      eyebrow={`Tổng quan / Bệnh nhân / ${medicalRecord?.patientName ?? "Hồ sơ"} / Hồ sơ #${medicalRecordId ?? ""}`}
+      title={medicalRecord ? `Hồ sơ bệnh án #${medicalRecord.id}` : "Chi tiết hồ sơ bệnh án"}
+      description={medicalRecord?.notes || "Rà soát hồ sơ bệnh án trước khi kê đơn và theo dõi điều trị."}
       actions={
         medicalRecord ? (
           <>
             <button className="button button--secondary" type="button" onClick={handlePrint}>
-              Print
+              In hồ sơ
             </button>
             <button className="button button--secondary" type="button" onClick={handleShare}>
-              Share
+              Chia sẻ
             </button>
             {prescription ? (
               <Link className="button button--primary" to={`/doctor/prescriptions/${prescription.id}`}>
-                View Prescription
+                Xem đơn thuốc
               </Link>
             ) : (
               <Link className="button button--primary" to={`/doctor/prescriptions/create/${medicalRecord.id}`}>
-                Create Prescription
+                Tạo đơn thuốc
               </Link>
             )}
           </>
@@ -100,7 +100,7 @@ export function MedicalRecordDetailPage() {
     >
       {error ? <p className="empty-state">{error}</p> : null}
       {loading ? (
-        <p className="empty-state">Loading medical record...</p>
+        <p className="empty-state">Đang tải hồ sơ bệnh án...</p>
       ) : medicalRecord ? (
         <section className="doctor-record-layout">
           <div className="doctor-record-top">
@@ -110,26 +110,26 @@ export function MedicalRecordDetailPage() {
                   person
                 </span>
                 <div>
-                  <h2>Patient Summary</h2>
-                  <p>Core patient and attending-doctor context.</p>
+                  <h2>Tóm tắt bệnh nhân</h2>
+                  <p>Thông tin chính của bệnh nhân và bác sĩ phụ trách.</p>
                 </div>
               </div>
 
               <div className="doctor-record-summary-grid">
                 <div>
-                  <span>Full name</span>
+                  <span>Họ tên</span>
                   <strong>{medicalRecord.patientName}</strong>
                 </div>
                 <div>
-                  <span>Patient ID</span>
+                  <span>Mã bệnh nhân</span>
                   <strong>#{medicalRecord.patientId ?? "--"}</strong>
                 </div>
                 <div>
-                  <span>Appointment ID</span>
+                  <span>Mã lịch hẹn</span>
                   <strong>#{medicalRecord.appointmentId ?? "--"}</strong>
                 </div>
                 <div>
-                  <span>Attending doctor</span>
+                  <span>Bác sĩ phụ trách</span>
                   <strong>{medicalRecord.doctorName}</strong>
                 </div>
               </div>
@@ -141,14 +141,14 @@ export function MedicalRecordDetailPage() {
                   ecg_heart
                 </span>
                 <div>
-                  <h2>Symptoms & Findings</h2>
-                  <p>Primary complaint and observed clinical concerns.</p>
+                  <h2>Triệu chứng và ghi nhận</h2>
+                  <p>Khiếu nại chính và các vấn đề lâm sàng được ghi nhận.</p>
                 </div>
               </div>
 
               <div className="doctor-record-symptoms">
                 <div>
-                  <span>Chief complaint</span>
+                  <span>Triệu chứng chính</span>
                   <p>{medicalRecord.symptoms}</p>
                 </div>
                 <div className="doctor-record-tags">
@@ -172,16 +172,16 @@ export function MedicalRecordDetailPage() {
                   checklist
                 </span>
                 <div>
-                  <h2>Diagnosis</h2>
-                  <p>Final assessment from the consultation.</p>
+                  <h2>Chẩn đoán</h2>
+                  <p>Kết luận cuối cùng từ buổi khám.</p>
                 </div>
               </div>
-              <span className="doctor-record-code">Record #{medicalRecord.id}</span>
+              <span className="doctor-record-code">Hồ sơ #{medicalRecord.id}</span>
             </div>
 
             <h3 className="doctor-record-diagnosis">{medicalRecord.diagnosis}</h3>
             <p className="doctor-record-diagnosis-note">
-              {medicalRecord.notes || "No extra diagnostic note provided."}
+              {medicalRecord.notes || "Chưa có ghi chú chẩn đoán bổ sung."}
             </p>
           </article>
 
@@ -192,8 +192,8 @@ export function MedicalRecordDetailPage() {
                   medical_services
                 </span>
                 <div>
-                  <h2>Treatment Plan</h2>
-                  <p>Recommended care sequence and follow-up approach.</p>
+                  <h2>Kế hoạch điều trị</h2>
+                  <p>Trình tự chăm sóc đề xuất và hướng theo dõi.</p>
                 </div>
               </div>
 
@@ -204,10 +204,10 @@ export function MedicalRecordDetailPage() {
                     <div>
                       <strong>
                         {index === 0
-                          ? "Primary intervention"
+                          ? "Can thiệp chính"
                           : index === 1
-                            ? "Symptom support"
-                            : `Plan step ${index + 1}`}
+                            ? "Hỗ trợ triệu chứng"
+                            : `Bước điều trị ${index + 1}`}
                       </strong>
                       <p>{step}</p>
                     </div>
@@ -220,11 +220,11 @@ export function MedicalRecordDetailPage() {
               <div className="doctor-record-prescription__head">
                 <span className="material-symbols-outlined">prescriptions</span>
                 <div>
-                  <h2>Active Prescription</h2>
+                  <h2>Đơn thuốc hiện tại</h2>
                   <p>
                     {prescription
-                      ? "Current medication instructions linked to this medical record."
-                      : "No prescription has been created yet."}
+                      ? "Hướng dẫn dùng thuốc hiện tại gắn với hồ sơ bệnh án này."
+                      : "Chưa có đơn thuốc nào được tạo."}
                   </p>
                 </div>
               </div>
@@ -239,22 +239,22 @@ export function MedicalRecordDetailPage() {
                       >
                         <strong>{item.medicineName}</strong>
                         <span>
-                          {item.dosePerTime} {item.unit || ""} • {item.timesPerDay}x daily •{" "}
-                          {item.durationDays} days
+                          {item.dosePerTime} {item.unit || ""} • {item.timesPerDay} lần/ngày •{" "}
+                          {item.durationDays} ngày
                         </span>
                       </div>
                     ))}
                   </div>
                   <div className="doctor-record-prescription__footer">
-                    <span>Total medicine fee</span>
+                    <span>Tổng tiền thuốc</span>
                     <strong>{formatCurrency(prescription.totalMedicineFee)}</strong>
                   </div>
                 </>
               ) : (
                 <div className="doctor-record-prescription__empty">
-                  <p>Create a prescription to attach medication guidance to this medical record.</p>
+                  <p>Tạo đơn thuốc để gắn hướng dẫn dùng thuốc vào hồ sơ bệnh án này.</p>
                   <Link className="button button--light" to={`/doctor/prescriptions/create/${medicalRecord.id}`}>
-                    Create Prescription
+                    Tạo đơn thuốc
                   </Link>
                 </div>
               )}
@@ -263,21 +263,21 @@ export function MedicalRecordDetailPage() {
 
           <article className="doctor-record-footer">
             <div>
-              <span>Follow-up date</span>
+              <span>Ngày tái khám</span>
               <strong>{medicalRecord.followUpDate ? formatDate(medicalRecord.followUpDate) : "--"}</strong>
             </div>
             <div>
-              <span>Record created</span>
+              <span>Thời gian tạo hồ sơ</span>
               <strong>{formatDateTime(medicalRecord.createdAt)}</strong>
             </div>
             <div>
-              <span>Doctor signature</span>
+              <span>Chữ ký bác sĩ</span>
               <strong>{medicalRecord.doctorName}</strong>
             </div>
           </article>
         </section>
       ) : (
-        <p className="empty-state">Medical record not found.</p>
+        <p className="empty-state">Không tìm thấy hồ sơ bệnh án.</p>
       )}
     </DoctorWorkspace>
   );

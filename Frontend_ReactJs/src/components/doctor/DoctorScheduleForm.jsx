@@ -10,7 +10,7 @@ export function DoctorScheduleForm({
     <form className="doctor-form" onSubmit={onSubmit}>
       <div className="doctor-form__grid">
         <label>
-          <span>Work date</span>
+          <span>Ngày làm việc</span>
           <input
             required
             name="workDate"
@@ -21,7 +21,7 @@ export function DoctorScheduleForm({
         </label>
 
         <label>
-          <span>Start time</span>
+          <span>Giờ bắt đầu</span>
           <input
             required
             name="startTime"
@@ -32,7 +32,7 @@ export function DoctorScheduleForm({
         </label>
 
         <label>
-          <span>End time</span>
+          <span>Giờ kết thúc</span>
           <input
             required
             name="endTime"
@@ -49,10 +49,10 @@ export function DoctorScheduleForm({
           type="button"
           onClick={onCancel}
         >
-          Cancel
+          Hủy
         </button>
         <button className="button button--primary" disabled={submitting} type="submit">
-          {submitting ? "Saving..." : submitLabel}
+          {submitting ? "Đang lưu..." : submitLabel}
         </button>
       </div>
     </form>

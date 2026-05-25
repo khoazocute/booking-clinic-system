@@ -47,18 +47,18 @@ export function PrescriptionDetailPage() {
 
     return [
       {
-        title: "Prescription Created",
+        title: "Đã tạo đơn thuốc",
         subtitle: formatDateTime(prescription.createdAt),
         tone: "done",
       },
       {
-        title: "Sent to Pharmacy",
-        subtitle: pharmacySent ? "Queued for fulfillment" : "Waiting to send",
+        title: "Gửi đến nhà thuốc",
+        subtitle: pharmacySent ? "Đang chờ nhà thuốc xử lý" : "Chưa gửi",
         tone: pharmacySent ? "progress" : "pending",
       },
       {
-        title: "Ready for Pickup",
-        subtitle: "Pending pharmacy confirmation",
+        title: "Sẵn sàng nhận thuốc",
+        subtitle: "Chờ nhà thuốc xác nhận",
         tone: "pending",
       },
     ];
@@ -74,24 +74,24 @@ export function PrescriptionDetailPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow={`Doctor / Prescriptions / #RX-${prescriptionId ?? ""}`}
-      title={prescription ? `Prescription ${prescription.id}` : "Prescription detail"}
-      description="Rao soat don thuoc, huong dan dung thuoc va tong chi phi."
+      eyebrow={`Bác sĩ / Đơn thuốc / #RX-${prescriptionId ?? ""}`}
+      title={prescription ? `Đơn thuốc ${prescription.id}` : "Chi tiết đơn thuốc"}
+      description="Rà soát đơn thuốc, hướng dẫn dùng thuốc và tổng chi phí."
       actions={
         prescription ? (
           <>
             <button className="button button--secondary" type="button" onClick={handlePrint}>
-              Print
+              In đơn
             </button>
             <button className="button button--secondary" type="button" onClick={handleDownloadPdf}>
-              Download PDF
+              Tải PDF
             </button>
             <button
               className="button button--primary"
               type="button"
               onClick={() => setPharmacySent(true)}
             >
-              Send to Pharmacy
+              Gửi nhà thuốc
             </button>
           </>
         ) : null
@@ -99,7 +99,7 @@ export function PrescriptionDetailPage() {
     >
       {error ? <p className="empty-state">{error}</p> : null}
       {loading ? (
-        <p className="empty-state">Loading prescription...</p>
+        <p className="empty-state">Đang tải đơn thuốc...</p>
       ) : prescription ? (
         <section className="doctor-prescription-layout">
           <aside className="doctor-prescription-sidebar">
@@ -109,26 +109,26 @@ export function PrescriptionDetailPage() {
                   person
                 </span>
                 <div>
-                  <h2>Patient Information</h2>
-                  <p>Core details attached to this prescription.</p>
+                  <h2>Thông tin bệnh nhân</h2>
+                  <p>Thông tin chính gắn với đơn thuốc này.</p>
                 </div>
               </div>
 
               <div className="doctor-prescription-meta">
                 <div>
-                  <span>Patient name</span>
+                  <span>Tên bệnh nhân</span>
                   <strong>{prescription.patientName}</strong>
                 </div>
                 <div>
-                  <span>Patient ID</span>
+                  <span>Mã bệnh nhân</span>
                   <strong>P-{prescription.patientId ?? "--"}</strong>
                 </div>
                 <div>
-                  <span>Created at</span>
+                  <span>Thời gian tạo</span>
                   <strong>{formatDateTime(prescription.createdAt)}</strong>
                 </div>
                 <div>
-                  <span>General note</span>
+                  <span>Ghi chú chung</span>
                   <div className="doctor-prescription-note">
                     {prescription.generalNote || "--"}
                   </div>
@@ -136,7 +136,7 @@ export function PrescriptionDetailPage() {
               </div>
 
               <div className="doctor-prescription-total">
-                <span>Total medicine fee</span>
+                <span>Tổng tiền thuốc</span>
                 <strong>{formatCurrency(prescription.totalMedicineFee)}</strong>
               </div>
             </article>
@@ -147,8 +147,8 @@ export function PrescriptionDetailPage() {
                   local_pharmacy
                 </span>
                 <div>
-                  <h2>Pharmacy Status</h2>
-                  <p>Track the current handoff state.</p>
+                  <h2>Trạng thái nhà thuốc</h2>
+                  <p>Theo dõi trạng thái xử lý đơn thuốc.</p>
                 </div>
               </div>
 
@@ -173,12 +173,12 @@ export function PrescriptionDetailPage() {
               <div className="doctor-prescription-card__head">
                 <div className="doctor-prescription-card__title">
                   <div>
-                    <h2>Medicine items</h2>
-                    <p>Chi tiet lieu dung va huong dan.</p>
+                    <h2>Danh sách thuốc</h2>
+                    <p>Chi tiết liều dùng và hướng dẫn.</p>
                   </div>
                 </div>
                 <span className="doctor-prescription-pill">
-                  {medicineCount} medication{medicineCount > 1 ? "s" : ""} added
+                  {medicineCount} thuốc đã thêm
                 </span>
               </div>
 
@@ -191,37 +191,37 @@ export function PrescriptionDetailPage() {
                       </div>
                       <div className="doctor-prescription-item__title">
                         <h3>{item.medicineName}</h3>
-                        <p>{item.dosageText || "Medication plan"}</p>
+                        <p>{item.dosageText || "Kế hoạch dùng thuốc"}</p>
                       </div>
                       <div className="doctor-prescription-item__price">
                         <strong>{formatCurrency(item.lineTotal)}</strong>
-                        <span>Line total</span>
+                        <span>Thành tiền</span>
                       </div>
                     </div>
 
                     <div className="doctor-prescription-item__stats">
                       <div>
-                        <span>Dosage</span>
-                        <strong>{item.dosePerTime} per time</strong>
+                        <span>Liều dùng</span>
+                        <strong>{item.dosePerTime} mỗi lần</strong>
                       </div>
                       <div>
-                        <span>Frequency</span>
-                        <strong>{item.timesPerDay} times/day</strong>
+                        <span>Tần suất</span>
+                        <strong>{item.timesPerDay} lần/ngày</strong>
                       </div>
                       <div>
-                        <span>Duration</span>
-                        <strong>{item.durationDays} day{item.durationDays > 1 ? "s" : ""}</strong>
+                        <span>Thời gian</span>
+                        <strong>{item.durationDays} ngày</strong>
                       </div>
                       <div>
-                        <span>Quantity</span>
-                        <strong>{item.quantity} Unit</strong>
+                        <span>Số lượng</span>
+                        <strong>{item.quantity} đơn vị</strong>
                       </div>
                     </div>
 
                     <div className="doctor-prescription-item__usage">
                       <span className="material-symbols-outlined">info</span>
                       <span>
-                        Usage: {item.instruction || item.note || "Follow doctor guidance."}
+                        Cách dùng: {item.instruction || item.note || "Dùng theo hướng dẫn của bác sĩ."}
                       </span>
                     </div>
                   </article>
@@ -233,21 +233,21 @@ export function PrescriptionDetailPage() {
               <div className="doctor-prescription-verification__badge">
                 <span className="material-symbols-outlined">verified_user</span>
                 <div>
-                  <strong>Clinically Verified</strong>
-                  <span>Digital certificate valid until 2027</span>
+                  <strong>Đã xác thực lâm sàng</strong>
+                  <span>Chứng nhận số có hiệu lực đến năm 2027</span>
                 </div>
               </div>
 
               <div className="doctor-prescription-verification__signature">
                 <p>{prescription.doctorName}</p>
                 <strong>Dr. {prescription.doctorName}</strong>
-                <span>Prescription author</span>
+                <span>Bác sĩ kê đơn</span>
               </div>
             </article>
           </div>
         </section>
       ) : (
-        <p className="empty-state">Prescription not found.</p>
+        <p className="empty-state">Không tìm thấy đơn thuốc.</p>
       )}
     </DoctorWorkspace>
   );

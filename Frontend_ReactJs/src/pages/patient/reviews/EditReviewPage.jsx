@@ -59,25 +59,25 @@ export function EditReviewPage() {
   return (
     <PatientPageShell
       eyebrow="Patient Portal / Review"
-      title="Chinh sua danh gia"
-      description="Cap nhat so sao va nhan xet cua ban."
-      actions={<Link className="mc-btn mc-btn--outline" to="/reviews">Quay lai</Link>}
+      title="Chỉnh sửa đánh giá"
+      description="Cập nhật số sao và nhận xét của bạn."
+      actions={<Link className="mc-btn mc-btn--outline" to="/reviews">Quay lại</Link>}
     >
       {error ? <p className="patient-alert patient-alert--error">{error}</p> : null}
       {loading ? (
-        <div className="mc-state"><p>Dang tai danh gia...</p></div>
+        <div className="mc-state"><p>Đang tải đánh giá...</p></div>
       ) : review ? (
         <article className="patient-panel patient-narrow-panel">
           <div className="patient-panel__head">
             <div>
               <h2>{review.doctorName}</h2>
-              <p>Da tao luc {formatDateTime(review.createdAt)}</p>
+              <p>Đã tạo lúc {formatDateTime(review.createdAt)}</p>
             </div>
           </div>
 
           <form className="patient-form" onSubmit={handleSubmit}>
             <label>
-              <span>So sao</span>
+              <span>Số sao</span>
               <select value={rating} onChange={(event) => setRating(event.target.value)}>
                 <option value="5">5 sao</option>
                 <option value="4">4 sao</option>
@@ -87,16 +87,16 @@ export function EditReviewPage() {
               </select>
             </label>
             <label>
-              <span>Nhan xet</span>
+              <span>Nhận xét</span>
               <textarea rows={6} value={comment} onChange={(event) => setComment(event.target.value)} />
             </label>
             <button className="mc-btn mc-btn--primary" disabled={submitting} type="submit">
-              {submitting ? "Dang luu..." : "Luu thay doi"}
+              {submitting ? "Đang lưu..." : "Lưu thay đổi"}
             </button>
           </form>
         </article>
       ) : (
-        <div className="mc-state"><p>Khong tim thay danh gia.</p></div>
+        <div className="mc-state"><p>Không tìm thấy đánh giá.</p></div>
       )}
     </PatientPageShell>
   );

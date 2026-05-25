@@ -111,18 +111,18 @@ export function CreatePrescriptionPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Prescription"
-      title="Create prescription"
-      description="Nhap don thuoc theo dung payload backend va chon medicine that."
+      eyebrow="Bác sĩ / Đơn thuốc"
+      title="Tạo đơn thuốc"
+      description="Nhập đơn thuốc đúng theo hồ sơ khám và chọn thuốc có trong hệ thống."
     >
       <article className="doctor-panel">
         {error ? <p className="empty-state">{error}</p> : null}
         {loading ? (
-          <p className="empty-state">Loading medicines...</p>
+          <p className="empty-state">Đang tải danh sách thuốc...</p>
         ) : (
           <form className="doctor-form" onSubmit={handleSubmit}>
             <label>
-              <span>General note</span>
+              <span>Ghi chú chung</span>
               <textarea
                 name="generalNote"
                 rows={3}
@@ -137,13 +137,13 @@ export function CreatePrescriptionPage() {
               {form.items.map((item, index) => (
                 <div className="doctor-prescription-row" key={`item-${index}`}>
                   <label>
-                    <span>Medicine</span>
+                    <span>Thuốc</span>
                     <select
                       required
                       value={item.medicineId}
                       onChange={(event) => handleItemChange(index, "medicineId", event.target.value)}
                     >
-                      <option value="">Select medicine</option>
+                      <option value="">Chọn thuốc</option>
                       {medicines.map((medicine) => (
                         <option key={medicine.id} value={medicine.id}>
                           {medicine.name}
@@ -152,7 +152,7 @@ export function CreatePrescriptionPage() {
                     </select>
                   </label>
                   <label>
-                    <span>Dose per time</span>
+                    <span>Liều mỗi lần</span>
                     <input
                       min="1"
                       required
@@ -162,7 +162,7 @@ export function CreatePrescriptionPage() {
                     />
                   </label>
                   <label>
-                    <span>Times per day</span>
+                    <span>Số lần mỗi ngày</span>
                     <input
                       min="1"
                       required
@@ -172,7 +172,7 @@ export function CreatePrescriptionPage() {
                     />
                   </label>
                   <label>
-                    <span>Duration days</span>
+                    <span>Số ngày dùng</span>
                     <input
                       min="1"
                       required
@@ -182,7 +182,7 @@ export function CreatePrescriptionPage() {
                     />
                   </label>
                   <label className="doctor-prescription-row__wide">
-                    <span>Dosage text</span>
+                    <span>Mô tả liều dùng</span>
                     <input
                       type="text"
                       value={item.dosageText}
@@ -190,7 +190,7 @@ export function CreatePrescriptionPage() {
                     />
                   </label>
                   <label className="doctor-prescription-row__wide">
-                    <span>Instruction</span>
+                    <span>Hướng dẫn sử dụng</span>
                     <input
                       type="text"
                       value={item.instruction}
@@ -198,7 +198,7 @@ export function CreatePrescriptionPage() {
                     />
                   </label>
                   <label className="doctor-prescription-row__wide">
-                    <span>Note</span>
+                    <span>Ghi chú</span>
                     <input
                       type="text"
                       value={item.note}
@@ -211,7 +211,7 @@ export function CreatePrescriptionPage() {
                       type="button"
                       onClick={() => removeItemRow(index)}
                     >
-                      Remove row
+                      Xóa dòng
                     </button>
                   ) : null}
                 </div>
@@ -219,19 +219,19 @@ export function CreatePrescriptionPage() {
             </div>
 
             <p className="muted-text">
-              Luu y: backend chi cho tao prescription khi appointment da chuyen
-              sang <strong>COMPLETED</strong> va moi medical record chi co 1 don thuoc.
+              Lưu ý: hệ thống chỉ cho tạo đơn thuốc khi lịch hẹn đã chuyển
+              sang <strong>COMPLETED</strong> và mỗi hồ sơ khám chỉ có 1 đơn thuốc.
             </p>
 
             <div className="doctor-form__actions">
               <button className="button button--secondary" type="button" onClick={addItemRow}>
-                Add medicine row
+                Thêm thuốc
               </button>
               <Link className="button button--secondary" to={`/doctor/medical-records/${medicalRecordId}`}>
-                Back
+                Quay lại
               </Link>
               <button className="button button--primary" disabled={submitting} type="submit">
-                {submitting ? "Saving..." : "Save prescription"}
+                {submitting ? "Đang lưu..." : "Lưu đơn thuốc"}
               </button>
             </div>
           </form>

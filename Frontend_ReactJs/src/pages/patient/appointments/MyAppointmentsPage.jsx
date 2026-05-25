@@ -52,11 +52,11 @@ export function MyAppointmentsPage() {
   return (
     <PatientPageShell
       eyebrow="Patient Portal"
-      title="Lich hen cua toi"
-      description="Theo doi lich kham, trang thai xac nhan va ket qua sau buoi kham."
+      title="Lịch hẹn của tôi"
+      description="Theo dõi lịch khám, trạng thái xác nhận và kết quả sau buổi khám."
       actions={
         <Link className="mc-btn mc-btn--primary" to="/doctors">
-          Dat lich moi
+          Đặt lịch mới
         </Link>
       }
     >
@@ -64,7 +64,7 @@ export function MyAppointmentsPage() {
         <label className="patient-search">
           <span className="material-symbols-outlined">search</span>
           <input
-            placeholder="Tim theo bac si, ly do kham hoac ma lich..."
+            placeholder="Tìm theo bác sĩ, lý do khám hoặc mã lịch..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
           />
@@ -77,7 +77,7 @@ export function MyAppointmentsPage() {
               type="button"
               onClick={() => setActiveFilter(filter)}
             >
-              {filter === "ALL" ? "Tat ca" : filter}
+              {filter === "ALL" ? "Tất cả" : filter}
             </button>
           ))}
         </div>
@@ -86,13 +86,13 @@ export function MyAppointmentsPage() {
       {error ? <p className="patient-alert patient-alert--error">{error}</p> : null}
 
       {loading ? (
-        <div className="mc-state"><p>Dang tai lich hen...</p></div>
+        <div className="mc-state"><p>Đang tải lịch hẹn...</p></div>
       ) : filteredAppointments.length === 0 ? (
         <EmptyState
           icon="event_busy"
-          title="Chua co lich hen phu hop"
-          description="Ban co the tim bac si va dat lich kham moi bat cu luc nao."
-          action={<Link className="mc-btn mc-btn--primary" to="/doctors">Tim bac si</Link>}
+          title="Chưa có lịch hẹn phù hợp"
+          description="Bạn có thể tìm bác sĩ và đặt lịch khám mới bất cứ lúc nào."
+          action={<Link className="mc-btn mc-btn--primary" to="/doctors">Tìm bác sĩ</Link>}
         />
       ) : (
         <div className="patient-card-list">
@@ -104,10 +104,10 @@ export function MyAppointmentsPage() {
                 </div>
                 <div>
                   <div className="patient-row-title">
-                    <h2>{appointment.doctorName ?? "Bac si"}</h2>
+                    <h2>{appointment.doctorName ?? "Bác sĩ"}</h2>
                     <PatientStatusBadge status={appointment.status} />
                   </div>
-                  <p>{appointment.reason || "Chua co ly do kham"}</p>
+                  <p>{appointment.reason || "Chưa có lý do khám"}</p>
                   <div className="patient-meta-row">
                     <span>
                       <span className="material-symbols-outlined">calendar_today</span>
@@ -124,11 +124,11 @@ export function MyAppointmentsPage() {
 
               <div className="patient-card-actions">
                 <Link className="mc-btn mc-btn--outline" to={`/my-appointments/${appointment.id}`}>
-                  Xem chi tiet
+                  Xem chi tiết
                 </Link>
                 {appointment.status === "COMPLETED" ? (
                   <Link className="mc-btn mc-btn--primary" to={`/reviews/create/${appointment.id}`}>
-                    Viet danh gia
+                    Viết đánh giá
                   </Link>
                 ) : null}
               </div>

@@ -36,16 +36,16 @@ export function CreateDoctorSchedulePage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Schedules"
-      title="Create doctor schedule"
-      description="Tao slot lich moi de mo them khung dat lich cho patient."
+      eyebrow="Bác sĩ / Lịch làm việc"
+      title="Tạo lịch làm việc"
+      description="Tạo khung lịch mới để bệnh nhân có thể đặt lịch khám."
     >
       <article className="doctor-panel">
         {error ? <p className="empty-state">{error}</p> : null}
         <DoctorScheduleForm
           form={form}
           submitting={submitting}
-          submitLabel="Create schedule"
+          submitLabel="Tạo lịch"
           onChange={handleChange}
           onSubmit={handleSubmit}
           onCancel={() => navigate("/doctor/schedules")}

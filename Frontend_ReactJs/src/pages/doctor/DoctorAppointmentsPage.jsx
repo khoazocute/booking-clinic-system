@@ -96,7 +96,7 @@ export function DoctorAppointmentsPage() {
     ]);
 
     const csv = [
-      ["Patient Name", "Patient Code", "Date", "Time", "Reason", "Status"],
+      ["Tên bệnh nhân", "Mã bệnh nhân", "Ngày", "Thời gian", "Lý do", "Trạng thái"],
       ...rows,
     ]
       .map((row) => row.map((value) => `"${String(value ?? "").replaceAll('"', '""')}"`).join(","))
@@ -113,16 +113,16 @@ export function DoctorAppointmentsPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Appointments"
-      title="Doctor Appointments"
-      description="Manage your daily schedule and patient visits with precision."
+      eyebrow="Bác sĩ / Lịch hẹn"
+      title="Lịch hẹn của bác sĩ"
+      description="Quản lý lịch khám trong ngày và lượt khám của bệnh nhân."
       actions={
         <>
           <button className="button button--secondary" type="button" onClick={handleExport}>
-            Export
+            Xuất file
           </button>
           <button className="button button--primary" type="button" onClick={() => window.print()}>
-            Print List
+            In danh sách
           </button>
         </>
       }
@@ -131,7 +131,7 @@ export function DoctorAppointmentsPage() {
         <article className="doctor-appointments-filters">
           <label className="doctor-appointments-search">
             <input
-              placeholder="Find patients by name or ID..."
+              placeholder="Tìm bệnh nhân theo tên hoặc mã..."
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -148,7 +148,7 @@ export function DoctorAppointmentsPage() {
                 type="button"
                 onClick={() => setActiveFilter(filter)}
               >
-                {filter === "ALL" ? "All" : filter.charAt(0) + filter.slice(1).toLowerCase()}
+                {filter === "ALL" ? "Tất cả" : <DoctorStatusBadge status={filter} />}
               </button>
             ))}
           </div>
@@ -158,17 +158,17 @@ export function DoctorAppointmentsPage() {
 
         <article className="doctor-appointments-board">
           <header className="doctor-appointments-board__head">
-            <span>Patient Name</span>
-            <span>Date &amp; Time</span>
-            <span>Reason for Visit</span>
-            <span>Status</span>
-            <span>Actions</span>
+            <span>Tên bệnh nhân</span>
+            <span>Ngày &amp; giờ</span>
+            <span>Lý do khám</span>
+            <span>Trạng thái</span>
+            <span>Thao tác</span>
           </header>
 
           {loading ? (
-            <p className="empty-state">Loading appointments...</p>
+            <p className="empty-state">Đang tải lịch hẹn...</p>
           ) : paginatedAppointments.length === 0 ? (
-            <p className="empty-state">No appointments found for the current filter.</p>
+            <p className="empty-state">Không có lịch hẹn phù hợp với bộ lọc hiện tại.</p>
           ) : (
             <div className="doctor-appointments-list">
               {paginatedAppointments.map((appointment) => (
@@ -201,7 +201,7 @@ export function DoctorAppointmentsPage() {
                       className="button button--secondary doctor-appointment-card__button"
                       to={`/doctor/appointments/${appointment.id}`}
                     >
-                      View Details
+                      Xem chi tiết
                     </Link>
                   </div>
                 </article>
@@ -212,9 +212,9 @@ export function DoctorAppointmentsPage() {
           {!loading && filteredAppointments.length > 0 ? (
             <footer className="doctor-appointments-pagination">
               <p>
-                Showing {(currentPage - 1) * PAGE_SIZE + 1}-
-                {Math.min(currentPage * PAGE_SIZE, filteredAppointments.length)} of{" "}
-                {filteredAppointments.length} results
+                Hiển thị {(currentPage - 1) * PAGE_SIZE + 1}-
+                {Math.min(currentPage * PAGE_SIZE, filteredAppointments.length)} /{" "}
+                {filteredAppointments.length} kết quả
               </p>
 
               <div className="doctor-appointments-pagination__controls">

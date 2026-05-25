@@ -20,10 +20,10 @@ import {
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 const copy = {
-  tokenError: "Dang nhap thanh cong nhung khong nhan duoc access token.",
-  registerSuccess: "Dang ky thanh cong. Ban co the dang nhap ngay bay gio.",
+  tokenError: "Đăng nhập thành công nhưng không nhận được access token.",
+  registerSuccess: "Đăng ký thành công. Bạn có thể đăng nhập ngay bây giờ.",
   passwordPlaceholder: "********",
-  googleUnavailable: "Google login is unavailable right now.",
+  googleUnavailable: "Hiện không thể đăng nhập bằng Google.",
 };
 
 function LoginIcon({ src, alt }) {
@@ -123,14 +123,14 @@ export function LoginPage() {
       setAuthSession({ accessToken, refreshToken });
       await redirectAfterLogin();
     } catch (requestError) {
-      setError(requestError.message || "Google login failed");
+      setError(requestError.message || "Đăng nhập Google thất bại.");
     } finally {
       setSubmitting(false);
     }
   }
 
   function handleGoogleError() {
-    setError("Google login failed. Please try email login.");
+    setError("Đăng nhập Google thất bại. Vui lòng đăng nhập bằng email.");
   }
 
   return (
@@ -144,8 +144,8 @@ export function LoginPage() {
           <div className="login-card__brand">
             <h1>MedLink</h1>
             <p>
-              Clinical precision, human empathy. Access your healthcare portal
-              securely.
+              Chăm sóc y tế chính xác, tận tâm. Truy cập cổng sức khỏe của bạn
+              một cách an toàn.
             </p>
           </div>
         </section>
@@ -153,8 +153,8 @@ export function LoginPage() {
         <section className="login-card__form-wrap">
           <div className="login-card__form">
             <header className="login-card__header">
-              <h2>Welcome Back</h2>
-              <p>Please enter your details to sign in securely.</p>
+              <h2>Chào mừng trở lại</h2>
+              <p>Nhập thông tin của bạn để đăng nhập an toàn.</p>
             </header>
 
             <form className="auth-form auth-form--login" onSubmit={handleSubmit}>
@@ -171,7 +171,7 @@ export function LoginPage() {
               ) : null}
 
               <div className="auth-field">
-                <label htmlFor="loginEmail">Email Address</label>
+                <label htmlFor="loginEmail">Địa chỉ email</label>
                 <div className="auth-field__input-wrap">
                   <LoginIcon src={mailIcon} alt="" />
                   <input
@@ -188,9 +188,9 @@ export function LoginPage() {
 
               <div className="auth-field">
                 <div className="auth-field__row">
-                  <label htmlFor="loginPassword">Password</label>
+                  <label htmlFor="loginPassword">Mật khẩu</label>
                   <Link className="auth-field__link" to="/forgot-password">
-                    Forgot Password?
+                    Quên mật khẩu?
                   </Link>
                 </div>
                 <div className="auth-field__input-wrap">
@@ -214,7 +214,7 @@ export function LoginPage() {
                   checked={form.rememberMe}
                   onChange={handleChange}
                 />
-                <span>Remember Me</span>
+                <span>Ghi nhớ đăng nhập</span>
               </label>
 
               <button
@@ -222,12 +222,12 @@ export function LoginPage() {
                 type="submit"
                 disabled={submitting}
               >
-                {submitting ? "Logging in..." : "Login"}
+                {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
                 <img className="auth-submit__icon" src={arrowRightIcon} alt="" />
               </button>
 
               <div className="auth-divider">
-                <span>OR CONTINUE WITH</span>
+                <span>HOẶC TIẾP TỤC VỚI</span>
               </div>
 
               <div className="auth-social">
@@ -253,7 +253,7 @@ export function LoginPage() {
               <div className="auth-footer-line" />
 
               <p className="auth-form__footer">
-                Don&apos;t have an account? <Link to="/register">Sign up</Link>
+                Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
               </p>
             </form>
           </div>

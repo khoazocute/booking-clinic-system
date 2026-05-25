@@ -26,7 +26,7 @@ function renderStars(rating) {
 
 function exportReviewsCsv(reviews) {
   const csv = [
-    ["Patient", "Rating", "Comment", "Appointment"],
+    ["Bệnh nhân", "Đánh giá", "Bình luận", "Lịch hẹn"],
     ...reviews.map((review) => [
       review.patientName ?? "",
       review.rating ?? "",
@@ -134,9 +134,9 @@ export function DoctorReviewsPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Quality Assurance / Reviews"
-      title="Patient Feedback & Reviews"
-      description="Monitor patient-reported outcomes, satisfaction, and communication quality."
+      eyebrow="Chất lượng / Đánh giá"
+      title="Phản hồi và đánh giá của bệnh nhân"
+      description="Theo dõi mức độ hài lòng, kết quả phản hồi và chất lượng giao tiếp với bệnh nhân."
       actions={
         <>
           <button
@@ -145,11 +145,11 @@ export function DoctorReviewsPage() {
             onClick={() => exportReviewsCsv(filteredReviews)}
           >
             <span className="material-symbols-outlined">download</span>
-            <span>Export Data</span>
+            <span>Xuất dữ liệu</span>
           </button>
           <Link className="button button--primary" to="/doctor/profile">
             <span className="material-symbols-outlined">share</span>
-            <span>Share Profile</span>
+            <span>Chia sẻ hồ sơ</span>
           </Link>
         </>
       }
@@ -160,8 +160,8 @@ export function DoctorReviewsPage() {
         <article className="doctor-review-hero__score">
           <strong>{averageRating.toFixed(1)}</strong>
           <div className="doctor-review-hero__stars">{renderStars(averageRating)}</div>
-          <span>Average Rating</span>
-          <small>{reviews.length} total reviews</small>
+          <span>Đánh giá trung bình</span>
+          <small>{reviews.length} đánh giá</small>
         </article>
 
         <div className="doctor-review-hero__metrics">
@@ -171,7 +171,7 @@ export function DoctorReviewsPage() {
             </div>
             <div>
               <strong>{recommendationRate}%</strong>
-              <span>Recommendation Rate</span>
+              <span>Tỷ lệ đề xuất</span>
             </div>
           </article>
 
@@ -181,7 +181,7 @@ export function DoctorReviewsPage() {
             </div>
             <div>
               <strong>{punctualityScore.toFixed(1)}/5</strong>
-              <span>Punctuality Score</span>
+              <span>Điểm đúng giờ</span>
             </div>
           </article>
 
@@ -191,7 +191,7 @@ export function DoctorReviewsPage() {
             </div>
             <div>
               <strong>{communicationScore.toFixed(1)}/5</strong>
-              <span>Communication</span>
+              <span>Giao tiếp</span>
             </div>
           </article>
         </div>
@@ -209,10 +209,10 @@ export function DoctorReviewsPage() {
               onClick={() => setActiveFilter(filter)}
             >
               {filter === "ALL"
-                ? "All Reviews"
+                ? "Tất cả đánh giá"
                 : filter === "POSITIVE"
-                  ? "Positive"
-                  : "Critical"}
+                  ? "Tích cực"
+                  : "Cần chú ý"}
             </button>
           ))}
         </div>
@@ -222,7 +222,7 @@ export function DoctorReviewsPage() {
             <span className="material-symbols-outlined">search</span>
             <input
               type="search"
-              placeholder="Search reviews, patients, or keywords..."
+              placeholder="Tìm đánh giá, bệnh nhân hoặc từ khóa..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
@@ -233,17 +233,17 @@ export function DoctorReviewsPage() {
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value)}
           >
-            <option value="recent">Most Recent</option>
-            <option value="rating">Highest Rating</option>
+            <option value="recent">Mới nhất</option>
+            <option value="rating">Đánh giá cao nhất</option>
           </select>
         </div>
       </section>
 
       <section className="doctor-review-feed">
         {loading ? (
-          <p className="empty-state">Loading reviews...</p>
+          <p className="empty-state">Đang tải đánh giá...</p>
         ) : filteredReviews.length === 0 ? (
-          <p className="empty-state">No reviews found for the current filters.</p>
+          <p className="empty-state">Không tìm thấy đánh giá phù hợp bộ lọc.</p>
         ) : (
           filteredReviews.map((review) => {
             const rating = Number(review.rating ?? 0);
@@ -254,8 +254,8 @@ export function DoctorReviewsPage() {
                   <div className="doctor-review-card__avatar">
                     {getInitials(review.patientName)}
                   </div>
-                  <strong>{review.patientName || "Anonymous"}</strong>
-                  <span>Verified Patient</span>
+                  <strong>{review.patientName || "Ẩn danh"}</strong>
+                  <span>Bệnh nhân đã xác thực</span>
                 </div>
 
                 <div className="doctor-review-card__body">
@@ -264,7 +264,7 @@ export function DoctorReviewsPage() {
                       <div className="doctor-review-card__stars">{renderStars(rating)}</div>
                       <div className="doctor-review-card__meta">
                         <strong>{rating.toFixed(1)}</strong>
-                        <span>Appointment #{review.appointmentId ?? "--"}</span>
+                        <span>Lịch hẹn #{review.appointmentId ?? "--"}</span>
                       </div>
                     </div>
 
@@ -275,22 +275,22 @@ export function DoctorReviewsPage() {
                           : " doctor-review-card__badge--critical"
                       }`}
                     >
-                      {rating >= 4 ? "Helpful" : "Needs attention"}
+                      {rating >= 4 ? "Hài lòng" : "Cần chú ý"}
                     </span>
                   </div>
 
                   <p className="doctor-review-card__comment">
-                    {review.comment || "No comment provided by the patient."}
+                    {review.comment || "Bệnh nhân chưa để lại bình luận."}
                   </p>
 
                   <div className="doctor-review-card__actions">
                     <button className="doctor-text-button" type="button">
                       <span className="material-symbols-outlined">reply</span>
-                      <span>Respond</span>
+                      <span>Phản hồi</span>
                     </button>
                     <button className="doctor-text-button" type="button">
                       <span className="material-symbols-outlined">flag</span>
-                      <span>Report</span>
+                      <span>Báo cáo</span>
                     </button>
                   </div>
                 </div>
@@ -303,8 +303,8 @@ export function DoctorReviewsPage() {
       {!loading && filteredReviews.length > 0 ? (
         <footer className="doctor-review-feed__footer">
           <p>
-            Showing <strong>{filteredReviews.length}</strong> of <strong>{reviews.length}</strong>{" "}
-            reviews for {doctor?.fullName || "this doctor"}
+            Hiển thị <strong>{filteredReviews.length}</strong> trong <strong>{reviews.length}</strong>{" "}
+            đánh giá của {doctor?.fullName || "bác sĩ này"}
           </p>
         </footer>
       ) : null}

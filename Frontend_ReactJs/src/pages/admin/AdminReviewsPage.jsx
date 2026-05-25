@@ -121,7 +121,7 @@ export function AdminReviewsPage() {
   return (
     <AdminWorkspace
       eyebrow="Admin / Đánh giá"
-      title="Patient Feedback"
+      title="Phản hồi bệnh nhân"
       description="Theo dõi đánh giá bệnh nhân theo bác sĩ và chất lượng dịch vụ."
       actions={
         <button className="button button--ghost" type="button" onClick={loadData}>
@@ -146,25 +146,25 @@ export function AdminReviewsPage() {
       <section className="admin-stats-row">
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Average Rating</p>
+            <p className="admin-stat-card__label">Đánh giá trung bình</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.avg.toFixed(1)}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Total Reviews</p>
+            <p className="admin-stat-card__label">Tổng đánh giá</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.total}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Critical Alerts</p>
+            <p className="admin-stat-card__label">Cảnh báo thấp</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.critical}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">New In 24h</p>
+            <p className="admin-stat-card__label">Mới trong 24h</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.recent}</p>
           </div>
         </div>
@@ -173,33 +173,33 @@ export function AdminReviewsPage() {
       <section className="admin-table-card">
         <div className="admin-table-toolbar" style={{ gap: 12, flexWrap: "wrap" }}>
           <label style={{ display: "grid", gap: 6, minWidth: 220 }}>
-            <span>Doctor</span>
+            <span>Bác sĩ</span>
             <select
               value={doctorFilter}
               onChange={(event) => setDoctorFilter(event.target.value)}
               style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
             >
-              <option value="ALL">All Doctors</option>
+              <option value="ALL">Tất cả bác sĩ</option>
               {doctors.map((doctor) => (
                 <option key={doctor.id} value={doctor.id}>
-                  {doctor.fullName ?? `Doctor #${doctor.id}`}
+                  {doctor.fullName ?? `Bác sĩ #${doctor.id}`}
                 </option>
               ))}
             </select>
           </label>
 
           <label style={{ display: "grid", gap: 6, minWidth: 180 }}>
-            <span>Rating Level</span>
+            <span>Mức đánh giá</span>
             <select
               value={ratingFilter}
               onChange={(event) => setRatingFilter(event.target.value)}
               style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
             >
-              <option value="ALL">All Ratings</option>
-              <option value="5">5 Stars</option>
-              <option value="4">4 Stars</option>
-              <option value="3">3 Stars</option>
-              <option value="LOW">Below 3 Stars</option>
+              <option value="ALL">Tất cả đánh giá</option>
+              <option value="5">5 sao</option>
+              <option value="4">4 sao</option>
+              <option value="3">3 sao</option>
+              <option value="LOW">Dưới 3 sao</option>
             </select>
           </label>
 
@@ -207,7 +207,7 @@ export function AdminReviewsPage() {
             <span className="material-symbols-outlined">search</span>
             <input
               type="search"
-              placeholder="Search reviews, patient or doctor..."
+              placeholder="Tìm đánh giá, bệnh nhân hoặc bác sĩ..."
               value={searchKeyword}
               onChange={(event) => setSearchKeyword(event.target.value)}
             />
@@ -219,11 +219,11 @@ export function AdminReviewsPage() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Doctor</th>
-                <th>Patient</th>
-                <th>Rating</th>
-                <th>Comment</th>
-                <th>Created Date</th>
+                <th>Bác sĩ</th>
+                <th>Bệnh nhân</th>
+                <th>Đánh giá</th>
+                <th>Bình luận</th>
+                <th>Ngày tạo</th>
               </tr>
             </thead>
             <tbody>
@@ -273,8 +273,8 @@ export function AdminReviewsPage() {
 
         <div className="admin-table-toolbar" style={{ justifyContent: "space-between" }}>
           <span>
-            Showing {(currentPage - 1) * PAGE_SIZE + (pagedReviews.length > 0 ? 1 : 0)}-
-            {(currentPage - 1) * PAGE_SIZE + pagedReviews.length} of {filteredReviews.length} reviews
+            Hiển thị {(currentPage - 1) * PAGE_SIZE + (pagedReviews.length > 0 ? 1 : 0)}-
+            {(currentPage - 1) * PAGE_SIZE + pagedReviews.length} trong {filteredReviews.length} đánh giá
           </span>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <button
@@ -283,16 +283,16 @@ export function AdminReviewsPage() {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={currentPage <= 1}
             >
-              Prev
+              Trước
             </button>
-            <span>Page {currentPage}/{totalPages}</span>
+            <span>Trang {currentPage}/{totalPages}</span>
             <button
               className="button button--ghost"
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage >= totalPages}
             >
-              Next
+              Sau
             </button>
           </div>
         </div>

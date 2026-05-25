@@ -136,18 +136,18 @@ export default function App() {
         <Route path="/admin/specialties" element={<AdminSpecialtiesPage />} />
         <Route path="/admin/reviews" element={<AdminReviewsPage />} />
         
-        {/* Existing implemented pages wrapped in AdminWorkspace */}
+        {/* Các trang quản trị dùng khung AdminWorkspace */}
         <Route path="/admin/medicines" element={
           <AdminWorkspace
             eyebrow="Admin / Thuốc"
-            title="Medicine Management"
-            description="Track and manage your pharmaceutical inventory levels in real-time."
+            title="Quản lý thuốc"
+            description="Theo dõi và quản lý danh mục thuốc, giá bán và tồn kho."
           >
             <MedicineManagementPage />
           </AdminWorkspace>
         } />
         <Route path="/admin/appointments" element={
-          <AdminWorkspace eyebrow="Admin / Appointments" title="Appointment Management">
+          <AdminWorkspace eyebrow="Admin / Lịch hẹn" title="Quản lý lịch hẹn">
             <AdminAppointmentManagementPage />
           </AdminWorkspace>
         } />

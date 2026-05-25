@@ -46,16 +46,16 @@ export function formatCurrency(value) {
 
 export function getStatusLabel(status) {
   const labels = {
-    PENDING: "Cho xac nhan",
-    CONFIRMED: "Da xac nhan",
-    COMPLETED: "Hoan tat",
-    CANCELLED: "Da huy",
-    AVAILABLE: "Con trong",
-    BOOKED: "Da dat",
-    UNAVAILABLE: "Khong kha dung",
-    APPOINTMENT_CREATED: "Lich moi",
-    APPOINTMENT_CANCELLED: "Lich huy",
-    SYSTEM: "He thong",
+    PENDING: "Chờ xác nhận",
+    CONFIRMED: "Đã xác nhận",
+    COMPLETED: "Hoàn tất",
+    CANCELLED: "Đã hủy",
+    AVAILABLE: "Còn trống",
+    BOOKED: "Đã đặt",
+    UNAVAILABLE: "Không khả dụng",
+    APPOINTMENT_CREATED: "Lịch mới",
+    APPOINTMENT_CANCELLED: "Lịch hủy",
+    SYSTEM: "Hệ thống",
   };
 
   return labels[status] ?? status;

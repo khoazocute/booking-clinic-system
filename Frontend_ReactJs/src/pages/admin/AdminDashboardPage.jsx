@@ -4,38 +4,38 @@ import { AdminWorkspace } from "../../layouts/AdminWorkspace";
 import { apiClient } from "../../services/apiClient";
 
 const APPOINTMENT_STATUSES = [
-  { key: "COMPLETED", label: "Hoan thanh", color: "#0b5bd3" },
-  { key: "CONFIRMED", label: "Da xac nhan", color: "#0f7a8f" },
-  { key: "PENDING", label: "Cho xac nhan", color: "#4b5563" },
-  { key: "CANCELLED", label: "Da huy", color: "#c81e1e" },
+  { key: "COMPLETED", label: "Hoàn thành", color: "#0b5bd3" },
+  { key: "CONFIRMED", label: "Đã xác nhận", color: "#0f7a8f" },
+  { key: "PENDING", label: "Chờ xác nhận", color: "#4b5563" },
+  { key: "CANCELLED", label: "Đã hủy", color: "#c81e1e" },
 ];
 
 const PAYMENT_STATUSES = [
-  { key: "PAID", label: "Da thanh toan", color: "#0b5bd3" },
-  { key: "PENDING", label: "Cho thanh toan", color: "#0f7a8f" },
-  { key: "FAILED", label: "That bai", color: "#4b5563" },
-  { key: "CANCELLED", label: "Da huy", color: "#c81e1e" },
+  { key: "PAID", label: "Đã thanh toán", color: "#0b5bd3" },
+  { key: "PENDING", label: "Chờ thanh toán", color: "#0f7a8f" },
+  { key: "FAILED", label: "Thất bại", color: "#4b5563" },
+  { key: "CANCELLED", label: "Đã hủy", color: "#c81e1e" },
 ];
 
 const APPOINTMENT_LABELS = {
-  PENDING: "Cho xac nhan",
-  CONFIRMED: "Da xac nhan",
-  COMPLETED: "Hoan thanh",
-  CANCELLED: "Da huy",
+  PENDING: "Chờ xác nhận",
+  CONFIRMED: "Đã xác nhận",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
 };
 
 const PAYMENT_LABELS = {
-  PENDING: "Cho thanh toan",
-  PAID: "Da thanh toan",
-  FAILED: "That bai",
-  CANCELLED: "Da huy",
+  PENDING: "Chờ thanh toán",
+  PAID: "Đã thanh toán",
+  FAILED: "Thất bại",
+  CANCELLED: "Đã hủy",
 };
 
 const DATE_RANGES = [
-  { key: "TODAY", label: "Hom nay", days: 1 },
-  { key: "WEEK", label: "7 ngay qua", days: 7 },
-  { key: "MONTH", label: "30 ngay qua", days: 30 },
-  { key: "ALL", label: "Tat ca", days: null },
+  { key: "TODAY", label: "Hôm nay", days: 1 },
+  { key: "WEEK", label: "7 ngày qua", days: 7 },
+  { key: "MONTH", label: "30 ngày qua", days: 30 },
+  { key: "ALL", label: "Tất cả", days: null },
 ];
 
 function isInDateRange(value, rangeKey) {
@@ -190,18 +190,18 @@ export function AdminDashboardPage() {
 
   return (
     <AdminWorkspace
-      eyebrow="Admin / Dashboard"
+      eyebrow="Admin / Tổng quan"
       title="Tổng quan hệ thống"
       description="Theo dõi hoạt động và số liệu tổng quan của phòng khám."
       actions={
         <>
           <button className="button button--ghost" type="button">
             <span className="material-symbols-outlined">calendar_month</span>
-            30 ngay qua
+            30 ngày qua
           </button>
           <button className="button button--primary" type="button">
             <span className="material-symbols-outlined">download</span>
-            Xuat bao cao
+            Xuất báo cáo
           </button>
         </>
       }
@@ -209,15 +209,15 @@ export function AdminDashboardPage() {
       {error ? <p className="admin-empty admin-empty--error">{error}</p> : null}
 
       <div className="admin-stats-row">
-        <StatCard icon="group" label="Tong nguoi dung" value={loading ? "--" : formatNumber(summary.totalUsers)} tone="#0b5bd3" trend="+12%" />
-        <StatCard icon="medical_services" label="Tong bac si" value={loading ? "--" : formatNumber(summary.totalDoctors)} tone="#0f7a8f" trend="+5%" />
-        <StatCard icon="calendar_month" label="Tong lich hen" value={loading ? "--" : formatNumber(summary.totalAppointments)} tone="#4b5563" trend="-2%" trendTone="danger" />
+        <StatCard icon="group" label="Tổng người dùng" value={loading ? "--" : formatNumber(summary.totalUsers)} tone="#0b5bd3" trend="+12%" />
+        <StatCard icon="medical_services" label="Tổng bác sĩ" value={loading ? "--" : formatNumber(summary.totalDoctors)} tone="#0f7a8f" trend="+5%" />
+        <StatCard icon="calendar_month" label="Tổng lịch hẹn" value={loading ? "--" : formatNumber(summary.totalAppointments)} tone="#4b5563" trend="-2%" trendTone="danger" />
         <StatCard icon="payments" label="Doanh thu" value={loading ? "--" : formatVND(summary.totalRevenue)} tone="#0b5bd3" trend="+18%" />
       </div>
 
       <div className="admin-dashboard-grid">
         <section className="admin-dashboard-card">
-          <PanelHeader title="Trang thai lich hen" />
+          <PanelHeader title="Trạng thái lịch hẹn" />
           <div className="admin-progress-list">
             {APPOINTMENT_STATUSES.map((item) => {
               const count = countByStatus(dashboard.appointments, item.key);
@@ -236,14 +236,14 @@ export function AdminDashboardPage() {
         </section>
 
         <section className="admin-dashboard-card">
-          <PanelHeader title="Trang thai thanh toan" />
+          <PanelHeader title="Trạng thái thanh toán" />
           <div className="admin-payment-status">
             <div
               className="admin-donut"
               style={{ "--paid-percent": `${summary.paidPercent * 3.6}deg` }}
             >
               <strong>{loading ? "--" : `${summary.paidPercent}%`}</strong>
-              <span>Da thanh toan</span>
+              <span>Đã thanh toán</span>
             </div>
             <div className="admin-legend-list">
               {PAYMENT_STATUSES.map((item) => {
@@ -264,10 +264,10 @@ export function AdminDashboardPage() {
 
       <div className="admin-dashboard-grid">
         <RecentTable
-          title="Lich hen gan day"
+          title="Lịch hẹn gần đây"
           to="/admin/appointments"
-          emptyText="Chua co lich hen nao."
-          columns={["Benh nhan", "Bac si", "Gio", "Trang thai"]}
+          emptyText="Chưa có lịch hẹn nào."
+          columns={["Bệnh nhân", "Bác sĩ", "Giờ", "Trạng thái"]}
         >
           {summary.recentAppointments.map((appointment) => (
             <tr key={appointment.id}>
@@ -284,15 +284,15 @@ export function AdminDashboardPage() {
         </RecentTable>
 
         <RecentTable
-          title="Thanh toan gan day"
+          title="Thanh toán gần đây"
           to="/admin/payments"
-          emptyText="Chua co giao dich nao."
-          columns={["Benh nhan", "So tien", "Ngay", "Trang thai"]}
+          emptyText="Chưa có giao dịch nào."
+          columns={["Bệnh nhân", "Số tiền", "Ngày", "Trạng thái"]}
         >
           {summary.recentPayments.map((payment) => (
             <tr key={payment.id}>
               <td>
-                <PersonCell name={`Benh nhan #${payment.patientId ?? "--"}`} />
+                <PersonCell name={`Bệnh nhân #${payment.patientId ?? "--"}`} />
               </td>
               <td>{formatVND(payment.amount)}</td>
               <td>{formatDate(payment.createdAt)}</td>
@@ -355,7 +355,7 @@ function RecentTable({ title, to, columns, children, emptyText }) {
     <section className="admin-table-card admin-recent-card">
       <div className="admin-recent-card__head">
         <h2>{title}</h2>
-        <Link to={to}>Xem tat ca</Link>
+        <Link to={to}>Xem tất cả</Link>
       </div>
       <div className="admin-table-wrap">
         <table className="admin-table">

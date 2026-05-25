@@ -7,7 +7,7 @@ export function DoctorSettingsPage() {
     appointmentAlerts: true,
     dailySummary: false,
     compactMode: false,
-    language: "en",
+    language: "vi",
     timezone: "Asia/Ho_Chi_Minh",
   });
   const [saved, setSaved] = useState(false);
@@ -36,32 +36,32 @@ export function DoctorSettingsPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Settings"
-      title="Doctor Settings"
-      description="Adjust workspace preferences, notifications, and session behavior for your clinical portal."
+      eyebrow="Bác sĩ / Cài đặt"
+      title="Cài đặt bác sĩ"
+      description="Điều chỉnh tuỳ chọn làm việc, thông báo và phiên đăng nhập cho cổng bác sĩ."
       actions={
         <button className="button button--primary" type="button" onClick={handleSave}>
           <span className="material-symbols-outlined">save</span>
-          <span>Save Preferences</span>
+          <span>Lưu tuỳ chọn</span>
         </button>
       }
     >
-      {saved ? <p className="doctor-settings__saved">Preferences saved locally for this session.</p> : null}
+      {saved ? <p className="doctor-settings__saved">Đã lưu tuỳ chọn cho phiên làm việc hiện tại.</p> : null}
 
       <section className="doctor-settings-layout">
         <article className="doctor-panel">
           <div className="doctor-panel__head">
             <div>
-              <h2>Notification Preferences</h2>
-              <p>Control how appointment activity and reminders reach you.</p>
+              <h2>Tuỳ chọn thông báo</h2>
+              <p>Kiểm soát cách hệ thống gửi hoạt động lịch hẹn và nhắc nhở cho bạn.</p>
             </div>
           </div>
 
           <div className="doctor-settings-list">
             <label className="doctor-setting-item">
               <div>
-                <strong>Email Notifications</strong>
-                <p>Receive email updates for important account activity.</p>
+                <strong>Thông báo email</strong>
+                <p>Nhận cập nhật qua email cho các hoạt động quan trọng của tài khoản.</p>
               </div>
               <input
                 checked={preferences.emailNotifications}
@@ -73,8 +73,8 @@ export function DoctorSettingsPage() {
 
             <label className="doctor-setting-item">
               <div>
-                <strong>Appointment Alerts</strong>
-                <p>Show alerts for new bookings, changes, and cancellations.</p>
+                <strong>Cảnh báo lịch hẹn</strong>
+                <p>Hiển thị cảnh báo khi có đặt lịch mới, thay đổi hoặc hủy lịch.</p>
               </div>
               <input
                 checked={preferences.appointmentAlerts}
@@ -86,8 +86,8 @@ export function DoctorSettingsPage() {
 
             <label className="doctor-setting-item">
               <div>
-                <strong>Daily Summary</strong>
-                <p>Receive one daily digest of pending tasks and today's activity.</p>
+                <strong>Tóm tắt hằng ngày</strong>
+                <p>Nhận một bản tóm tắt công việc chờ xử lý và hoạt động trong ngày.</p>
               </div>
               <input
                 checked={preferences.dailySummary}
@@ -102,27 +102,27 @@ export function DoctorSettingsPage() {
         <article className="doctor-panel">
           <div className="doctor-panel__head">
             <div>
-              <h2>Workspace Preferences</h2>
-              <p>Set the display behavior and language used in your portal.</p>
+              <h2>Tuỳ chọn không gian làm việc</h2>
+              <p>Thiết lập cách hiển thị và ngôn ngữ dùng trong cổng bác sĩ.</p>
             </div>
           </div>
 
           <div className="doctor-form doctor-form--editor">
             <div className="doctor-form__grid">
               <label>
-                <span>Language</span>
+                <span>Ngôn ngữ</span>
                 <select
                   name="language"
                   value={preferences.language}
                   onChange={handleSelectChange}
                 >
-                  <option value="en">English</option>
-                  <option value="vi">Vietnamese</option>
+                  <option value="vi">Tiếng Việt</option>
+                  <option value="en">Tiếng Anh</option>
                 </select>
               </label>
 
               <label>
-                <span>Timezone</span>
+                <span>Múi giờ</span>
                 <select
                   name="timezone"
                   value={preferences.timezone}
@@ -137,8 +137,8 @@ export function DoctorSettingsPage() {
 
             <label className="doctor-setting-item doctor-setting-item--inline">
               <div>
-                <strong>Compact Workspace Mode</strong>
-                <p>Reduce spacing density for a tighter view on large screens.</p>
+                <strong>Chế độ hiển thị gọn</strong>
+                <p>Giảm khoảng cách hiển thị để xem được nhiều thông tin hơn trên màn hình lớn.</p>
               </div>
               <input
                 checked={preferences.compactMode}
@@ -153,22 +153,22 @@ export function DoctorSettingsPage() {
         <article className="doctor-panel doctor-settings-security">
           <div className="doctor-panel__head">
             <div>
-              <h2>Security & Session</h2>
-              <p>Review account safety options for your current doctor workspace.</p>
+              <h2>Bảo mật và phiên đăng nhập</h2>
+              <p>Kiểm tra các tuỳ chọn bảo mật cho tài khoản bác sĩ hiện tại.</p>
             </div>
           </div>
 
           <div className="doctor-settings-security__cards">
             <div className="doctor-settings-security__card">
               <span className="material-symbols-outlined">shield_lock</span>
-              <strong>Active Session</strong>
-              <p>Your session is protected by token-based authentication and auto refresh.</p>
+              <strong>Phiên đang hoạt động</strong>
+              <p>Phiên đăng nhập được bảo vệ bằng xác thực token và tự động làm mới.</p>
             </div>
 
             <div className="doctor-settings-security__card">
               <span className="material-symbols-outlined">password</span>
-              <strong>Password Policy</strong>
-              <p>Use a strong password and update it regularly from your account settings.</p>
+              <strong>Chính sách mật khẩu</strong>
+              <p>Dùng mật khẩu mạnh và cập nhật định kỳ trong phần cài đặt tài khoản.</p>
             </div>
           </div>
         </article>

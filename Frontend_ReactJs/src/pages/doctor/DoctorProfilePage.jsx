@@ -8,13 +8,13 @@ import {
 import { formatCurrency, formatTime } from "../../utils/doctorHelpers";
 
 const WEEK_DAYS = [
-  { key: 1, label: "Monday", short: "Mon" },
-  { key: 2, label: "Tuesday", short: "Tue" },
-  { key: 3, label: "Wednesday", short: "Wed" },
-  { key: 4, label: "Thursday", short: "Thu" },
-  { key: 5, label: "Friday", short: "Fri" },
-  { key: 6, label: "Saturday", short: "Sat" },
-  { key: 0, label: "Sunday", short: "Sun" },
+  { key: 1, label: "Thứ hai", short: "T2" },
+  { key: 2, label: "Thứ ba", short: "T3" },
+  { key: 3, label: "Thứ tư", short: "T4" },
+  { key: 4, label: "Thứ năm", short: "T5" },
+  { key: 5, label: "Thứ sáu", short: "T6" },
+  { key: 6, label: "Thứ bảy", short: "T7" },
+  { key: 0, label: "Chủ nhật", short: "CN" },
 ];
 
 function getInitials(name) {
@@ -104,17 +104,17 @@ export function DoctorProfilePage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Dashboard / Doctor / Profile View"
-      title="Doctor Profile"
-      description="Review professional information, clinic setup, and current operating hours."
+      eyebrow="Tổng quan / Bác sĩ / Hồ sơ"
+      title="Hồ sơ bác sĩ"
+      description="Xem thông tin chuyên môn, phòng khám và giờ làm việc hiện tại."
       actions={
         <>
           <Link className="button button--secondary" to="/doctor">
-            Back to Dashboard
+            Quay lại tổng quan
           </Link>
           <Link className="button button--primary" to="/doctor/profile/edit">
             <span className="material-symbols-outlined">edit</span>
-            <span>Edit Profile</span>
+            <span>Sửa hồ sơ</span>
           </Link>
         </>
       }
@@ -122,7 +122,7 @@ export function DoctorProfilePage() {
       {error ? <p className="empty-state">{error}</p> : null}
 
       {loading ? (
-        <p className="empty-state">Loading doctor profile...</p>
+        <p className="empty-state">Đang tải hồ sơ bác sĩ...</p>
       ) : doctor ? (
         <section className="doctor-profile-view">
           <aside className="doctor-profile-view__sidebar">
@@ -133,23 +133,23 @@ export function DoctorProfilePage() {
               </div>
 
               <h2>{doctor.fullName}</h2>
-              <p>{doctor.specialtyName || "Doctor"}</p>
+              <p>{doctor.specialtyName || "Bác sĩ"}</p>
               <span className="doctor-profile-view__experience">
-                {doctor.experienceYears ? `${doctor.experienceYears} Years Experience` : "Experience not set"}
+                {doctor.experienceYears ? `${doctor.experienceYears} năm kinh nghiệm` : "Chưa cập nhật kinh nghiệm"}
               </span>
 
               <div className="doctor-profile-view__contacts">
                 <div>
-                  <span>Email Address</span>
+                  <span>Email</span>
                   <strong>{doctor.email || "--"}</strong>
                 </div>
                 <div>
-                  <span>Phone Number</span>
+                  <span>Số điện thoại</span>
                   <strong>{doctor.phone || "--"}</strong>
                 </div>
                 <div>
-                  <span>Primary Clinic</span>
-                  <strong>{doctor.clinicRoom || "Central Clinic"}</strong>
+                  <span>Phòng khám chính</span>
+                  <strong>{doctor.clinicRoom || "Phòng khám trung tâm"}</strong>
                 </div>
               </div>
             </article>
@@ -157,19 +157,19 @@ export function DoctorProfilePage() {
             <article className="doctor-panel">
               <div className="doctor-panel__head">
                 <div>
-                  <h2>Professional License</h2>
-                  <p>Reference information for identity and verification.</p>
+                  <h2>Chứng chỉ hành nghề</h2>
+                  <p>Thông tin tham chiếu để định danh và xác minh.</p>
                 </div>
               </div>
 
               <div className="doctor-license-card">
                 <div>
-                  <span>License Number</span>
+                  <span>Số chứng chỉ</span>
                   <strong>{doctor.id ? `MD-${String(doctor.id).padStart(5, "0")}` : "--"}</strong>
                 </div>
                 <div>
-                  <span>Issuing Body</span>
-                  <strong>{doctor.qualification || "Medical Board"}</strong>
+                  <span>Đơn vị cấp</span>
+                  <strong>{doctor.qualification || "Hội đồng chuyên môn"}</strong>
                 </div>
               </div>
             </article>
@@ -179,35 +179,35 @@ export function DoctorProfilePage() {
             <article className="doctor-panel">
               <div className="doctor-panel__head">
                 <div>
-                  <h2>Biography</h2>
-                  <p>Patient-facing overview of expertise, style, and specialty focus.</p>
+                  <h2>Giới thiệu</h2>
+                  <p>Tổng quan về chuyên môn, phong cách khám và chuyên khoa hiển thị cho bệnh nhân.</p>
                 </div>
               </div>
 
               <p className="doctor-long-copy">
-                {doctor.biography || "No biography provided yet."}
+                {doctor.biography || "Chưa cập nhật giới thiệu."}
               </p>
             </article>
 
             <article className="doctor-panel">
               <div className="doctor-panel__head">
                 <div>
-                  <h2>Clinical Information</h2>
-                  <p>Snapshot of credentials, consultation fees, and clinic setup.</p>
+                  <h2>Thông tin khám bệnh</h2>
+                  <p>Tóm tắt bằng cấp, phí khám và phòng khám.</p>
                 </div>
               </div>
 
               <div className="doctor-clinical-cards">
                 <div className="doctor-clinical-card">
-                  <span>Qualifications</span>
+                  <span>Bằng cấp</span>
                   <strong>{doctor.qualification || "--"}</strong>
                 </div>
                 <div className="doctor-clinical-card">
-                  <span>Consultation Fee</span>
+                  <span>Phí khám</span>
                   <strong>{formatCurrency(doctor.consultationFee)}</strong>
                 </div>
                 <div className="doctor-clinical-card">
-                  <span>Clinic Room</span>
+                  <span>Phòng khám</span>
                   <strong>{doctor.clinicRoom || "--"}</strong>
                 </div>
               </div>
@@ -216,10 +216,10 @@ export function DoctorProfilePage() {
             <article className="doctor-panel">
               <div className="doctor-panel__head">
                 <div>
-                  <h2>Clinic Hours</h2>
-                  <p>Weekly working hours derived from current schedule slots.</p>
+                  <h2>Giờ làm việc</h2>
+                  <p>Giờ khám theo tuần dựa trên các khung lịch hiện tại.</p>
                 </div>
-                <span className="doctor-badge doctor-badge--available">Configured</span>
+                <span className="doctor-badge doctor-badge--available">Đã cấu hình</span>
               </div>
 
               <div className="doctor-hours-list">
@@ -234,11 +234,11 @@ export function DoctorProfilePage() {
                       {day.startTime && day.endTime ? (
                         <>
                           <strong>{formatTime(day.startTime)}</strong>
-                          <span>to</span>
+                          <span>đến</span>
                           <strong>{formatTime(day.endTime)}</strong>
                         </>
                       ) : (
-                        <span className="doctor-hours-row__empty">--:-- to --:--</span>
+                        <span className="doctor-hours-row__empty">--:-- đến --:--</span>
                       )}
                     </div>
 
@@ -250,7 +250,7 @@ export function DoctorProfilePage() {
                             : "doctor-badge--cancelled"
                         }`}
                       >
-                        {day.status === "AVAILABLE" ? "Available" : "Closed"}
+                        {day.status === "AVAILABLE" ? "Có lịch" : "Nghỉ"}
                       </span>
                     </div>
                   </div>
@@ -260,7 +260,7 @@ export function DoctorProfilePage() {
           </div>
         </section>
       ) : (
-        <p className="empty-state">Doctor profile not found.</p>
+        <p className="empty-state">Không tìm thấy hồ sơ bác sĩ.</p>
       )}
     </DoctorWorkspace>
   );

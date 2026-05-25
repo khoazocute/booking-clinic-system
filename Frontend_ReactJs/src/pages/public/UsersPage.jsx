@@ -38,8 +38,8 @@ export function UsersPage() {
   return (
     <div className="page-stack">
       <SectionCard
-        title="User module"
-        description="Example feature module connected to Spring Boot REST API"
+        title="Module người dùng"
+        description="Ví dụ module tính năng kết nối với Spring Boot REST API"
       >
         <UserTable users={users} loading={loading} error={error} />
       </SectionCard>

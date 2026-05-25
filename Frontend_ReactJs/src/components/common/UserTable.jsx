@@ -1,6 +1,6 @@
 export function UserTable({ users, loading, error }) {
   if (loading) {
-    return <p className="empty-state">Loading user list...</p>;
+    return <p className="empty-state">Đang tải danh sách người dùng...</p>;
   }
 
   if (error) {
@@ -8,7 +8,7 @@ export function UserTable({ users, loading, error }) {
   }
 
   if (users.length === 0) {
-    return <p className="empty-state">No users found in the backend yet.</p>;
+    return <p className="empty-state">Chưa có người dùng nào trong hệ thống.</p>;
   }
 
   return (
@@ -17,10 +17,10 @@ export function UserTable({ users, loading, error }) {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Full name</th>
-            <th>Username</th>
+            <th>Họ tên</th>
+            <th>Tên đăng nhập</th>
             <th>Email</th>
-            <th>Role</th>
+            <th>Vai trò</th>
           </tr>
         </thead>
         <tbody>

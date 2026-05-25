@@ -2,9 +2,9 @@ import { SectionCard } from "../../components/common/SectionCard";
 import { useApiStatus } from "../../hooks/useApiStatus";
 
 const roadmapItems = [
-  "Add auth module with JWT and route protection.",
-  "Create doctor, patient, and appointment features by following the same folder pattern.",
-  "Replace demo dashboard cards with real analytics from backend APIs."
+  "Thêm module xác thực bằng JWT và bảo vệ route.",
+  "Xây dựng tính năng bác sĩ, bệnh nhân và lịch hẹn theo cùng cấu trúc thư mục.",
+  "Thay dashboard demo bằng số liệu thật từ API backend."
 ];
 
 export function DashboardPage() {
@@ -13,30 +13,30 @@ export function DashboardPage() {
   return (
     <div className="page-stack">
       <section className="hero-card">
-        <p className="eyebrow">Project starter</p>
-        <h2>Modern fullstack foundation for your clinic booking project</h2>
+        <p className="eyebrow">Khởi tạo dự án</p>
+        <h2>Nền tảng fullstack hiện đại cho hệ thống đặt lịch phòng khám</h2>
         <p className="hero-copy">
-          Backend and frontend are separated cleanly so each side can grow
-          independently while still connecting through REST APIs.
+          Backend và frontend được tách rõ ràng để mỗi phần có thể phát triển
+          độc lập nhưng vẫn kết nối qua REST API.
         </p>
       </section>
 
       <div className="grid-two">
         <SectionCard
-          title="Backend status"
-          description="Checking Spring Boot health endpoint"
+          title="Trạng thái backend"
+          description="Kiểm tra endpoint health của Spring Boot"
         >
           <p className={`status-pill status-${status.toLowerCase()}`}>
-            {loading ? "Checking..." : status}
+            {loading ? "Đang kiểm tra..." : status}
           </p>
           <p className="muted-text">
-            {error || backendInfo || "Update VITE_API_BASE_URL if your backend runs elsewhere."}
+            {error || backendInfo || "Cập nhật VITE_API_BASE_URL nếu backend chạy ở địa chỉ khác."}
           </p>
         </SectionCard>
 
         <SectionCard
-          title="Suggested next modules"
-          description="Recommended roadmap for this architecture"
+          title="Module gợi ý tiếp theo"
+          description="Lộ trình đề xuất cho kiến trúc hiện tại"
         >
           <ul className="feature-list">
             {roadmapItems.map((item) => (

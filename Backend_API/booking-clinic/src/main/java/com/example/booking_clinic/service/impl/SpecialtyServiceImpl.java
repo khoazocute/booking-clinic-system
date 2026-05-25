@@ -34,7 +34,6 @@ public class SpecialtyServiceImpl implements SpecialtyService {
     
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "specialty", key = "#id")
     public SpecialtyResponse getSpecialtyById(Long id) {
         Specialty specialty = specialtyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialty not found with id: " + id));

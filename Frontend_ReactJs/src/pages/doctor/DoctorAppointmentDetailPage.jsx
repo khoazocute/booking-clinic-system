@@ -77,7 +77,7 @@ export function DoctorAppointmentDetailPage() {
       setError("");
       const updated = await updateAppointmentStatus(appointmentId, {
         status,
-        cancelReason: status === "CANCELLED" ? "Cancelled by doctor from dashboard." : null,
+        cancelReason: status === "CANCELLED" ? "Bác sĩ đã hủy lịch từ trang quản lý." : null,
       });
       setAppointment(updated);
     } catch (requestError) {
@@ -93,9 +93,9 @@ export function DoctorAppointmentDetailPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow={`Dashboard / Appointments / ${appointment ? `Appointment #${appointment.id}` : "Detail"}`}
-      title={appointment ? `Appointment ${appointment.id}` : "Appointment detail"}
-      description="Review appointment details and patient context before continuing the clinical workflow."
+      eyebrow={`Tổng quan / Lịch hẹn / ${appointment ? `Lịch hẹn #${appointment.id}` : "Chi tiết"}`}
+      title={appointment ? `Lịch hẹn ${appointment.id}` : "Chi tiết lịch hẹn"}
+      description="Kiểm tra thông tin lịch hẹn và bối cảnh bệnh nhân trước khi tiếp tục quy trình khám."
       actions={
         <>
           <button
@@ -104,7 +104,7 @@ export function DoctorAppointmentDetailPage() {
             type="button"
             onClick={() => handleStatusUpdate("CANCELLED")}
           >
-            Cancel
+            Hủy lịch
           </button>
           <button
             className="button button--primary"
@@ -112,14 +112,14 @@ export function DoctorAppointmentDetailPage() {
             type="button"
             onClick={() => handleStatusUpdate("CONFIRMED")}
           >
-            {updating ? "Updating..." : "Confirm"}
+            {updating ? "Đang cập nhật..." : "Xác nhận"}
           </button>
         </>
       }
     >
       {error ? <p className="empty-state">{error}</p> : null}
       {loading ? (
-        <p className="empty-state">Loading appointment detail...</p>
+        <p className="empty-state">Đang tải chi tiết lịch hẹn...</p>
       ) : appointment ? (
         <section className="doctor-case-layout">
           <div className="doctor-case-main">
@@ -130,8 +130,8 @@ export function DoctorAppointmentDetailPage() {
                     person
                   </span>
                   <div>
-                    <h2>Patient Information</h2>
-                    <p>Prepare for consultation with the latest appointment context.</p>
+                    <h2>Thông tin bệnh nhân</h2>
+                    <p>Chuẩn bị buổi khám với thông tin lịch hẹn mới nhất.</p>
                   </div>
                 </div>
                 <div className="doctor-case-card__inline">
@@ -141,19 +141,19 @@ export function DoctorAppointmentDetailPage() {
 
               <div className="doctor-case-info-grid">
                 <div>
-                  <span>Patient name</span>
+                  <span>Tên bệnh nhân</span>
                   <strong>{appointment.patientName}</strong>
                 </div>
                 <div>
-                  <span>Patient ID</span>
+                  <span>Mã bệnh nhân</span>
                   <strong>#{appointment.patientId ?? "--"}</strong>
                 </div>
                 <div>
-                  <span>Attending doctor</span>
+                  <span>Bác sĩ phụ trách</span>
                   <strong>{appointment.doctorName || "--"}</strong>
                 </div>
                 <div>
-                  <span>Schedule ID</span>
+                  <span>Mã lịch làm việc</span>
                   <strong>#{appointment.scheduleId ?? "--"}</strong>
                 </div>
               </div>
@@ -165,18 +165,18 @@ export function DoctorAppointmentDetailPage() {
                   calendar_month
                 </span>
                 <div>
-                  <h2>Appointment Details</h2>
-                  <p>Review timing, reason for visit, and notes before proceeding.</p>
+                  <h2>Chi tiết lịch hẹn</h2>
+                  <p>Kiểm tra thời gian, lý do khám và ghi chú trước khi xử lý.</p>
                 </div>
               </div>
 
               <div className="doctor-case-info-grid">
                 <div>
-                  <span>Date</span>
+                  <span>Ngày khám</span>
                   <strong>{formatDate(appointment.appointmentDate)}</strong>
                 </div>
                 <div>
-                  <span>Time</span>
+                  <span>Giờ khám</span>
                   <strong>
                     {formatTime(appointment.startTime)} - {formatTime(appointment.endTime)}
                   </strong>
@@ -184,16 +184,16 @@ export function DoctorAppointmentDetailPage() {
               </div>
 
               <div className="doctor-case-highlight">
-                <span>Reason for visit</span>
+                <span>Lý do khám</span>
                 <p>{appointment.reason || "--"}</p>
               </div>
 
               <div className="doctor-case-note">
-                <span>Notes</span>
+                <span>Ghi chú</span>
                 <p>
                   {appointment.cancelReason
                     ? appointment.cancelReason
-                    : "No extra scheduling notes have been attached to this appointment yet."}
+                    : "Chưa có ghi chú bổ sung cho lịch hẹn này."}
                 </p>
               </div>
             </article>
@@ -206,8 +206,8 @@ export function DoctorAppointmentDetailPage() {
                   bolt
                 </span>
                 <div>
-                  <h2>Next actions</h2>
-                  <p>Continue the clinical workflow from this appointment.</p>
+                  <h2>Thao tác tiếp theo</h2>
+                  <p>Tiếp tục quy trình khám từ lịch hẹn này.</p>
                 </div>
               </div>
 
@@ -218,7 +218,7 @@ export function DoctorAppointmentDetailPage() {
                     to={`/doctor/medical-records/${medicalRecord.id}`}
                   >
                     <span className="material-symbols-outlined">description</span>
-                    <span>View Medical Record</span>
+                    <span>Xem hồ sơ bệnh án</span>
                     <span className="material-symbols-outlined">chevron_right</span>
                   </Link>
                 ) : (
@@ -227,7 +227,7 @@ export function DoctorAppointmentDetailPage() {
                     to={`/doctor/medical-records/create/${appointment.id}`}
                   >
                     <span className="material-symbols-outlined">note_add</span>
-                    <span>Create Medical Record</span>
+                    <span>Tạo hồ sơ bệnh án</span>
                     <span className="material-symbols-outlined">chevron_right</span>
                   </Link>
                 )}
@@ -238,7 +238,7 @@ export function DoctorAppointmentDetailPage() {
                     to={`/doctor/prescriptions/${prescription.id}`}
                   >
                     <span className="material-symbols-outlined">medication</span>
-                    <span>View Prescription</span>
+                    <span>Xem đơn thuốc</span>
                     <span className="material-symbols-outlined">chevron_right</span>
                   </Link>
                 ) : medicalRecord ? (
@@ -247,13 +247,13 @@ export function DoctorAppointmentDetailPage() {
                     to={`/doctor/prescriptions/create/${medicalRecord.id}`}
                   >
                     <span className="material-symbols-outlined">medication</span>
-                    <span>Create Prescription</span>
+                    <span>Tạo đơn thuốc</span>
                     <span className="material-symbols-outlined">chevron_right</span>
                   </Link>
                 ) : (
                   <div className="doctor-case-action doctor-case-action--disabled">
                     <span className="material-symbols-outlined">lock</span>
-                    <span>Prescription unlocks after medical record</span>
+                    <span>Cần tạo hồ sơ bệnh án trước khi kê đơn</span>
                   </div>
                 )}
               </div>
@@ -264,26 +264,26 @@ export function DoctorAppointmentDetailPage() {
                   to={medicalRecord ? `/doctor/medical-records/${medicalRecord.id}` : `/doctor/appointments`}
                 >
                   <span className="material-symbols-outlined">history</span>
-                  <strong>{medicalRecord ? "View History" : "Return to queue"}</strong>
+                  <strong>{medicalRecord ? "Xem lịch sử" : "Quay lại danh sách"}</strong>
                 </Link>
                 <Link
                   className="doctor-case-link-card"
                   to={prescription ? `/doctor/prescriptions/${prescription.id}` : "/doctor/schedules"}
                 >
                   <span className="material-symbols-outlined">lab_profile</span>
-                  <strong>{prescription ? "Prescription detail" : "Open schedules"}</strong>
+                  <strong>{prescription ? "Chi tiết đơn thuốc" : "Mở lịch làm việc"}</strong>
                 </Link>
               </div>
             </article>
 
             <article className="doctor-case-promo">
               <div className="doctor-case-promo__overlay" />
-              <p>Providing clarity through data-driven clinical management.</p>
+              <p>Quản lý khám chữa bệnh rõ ràng hơn bằng dữ liệu.</p>
             </article>
           </aside>
         </section>
       ) : (
-        <p className="empty-state">Appointment not found.</p>
+        <p className="empty-state">Không tìm thấy lịch hẹn.</p>
       )}
     </DoctorWorkspace>
   );

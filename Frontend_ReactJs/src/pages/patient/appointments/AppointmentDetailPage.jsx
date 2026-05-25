@@ -82,7 +82,7 @@ export function AppointmentDetailPage() {
   }, [appointmentId]);
 
   async function handleCancel() {
-    const approved = window.confirm("Ban co chac muon huy lich hen nay?");
+    const approved = window.confirm("Bạn có chắc muốn hủy lịch hẹn này?");
     if (!approved) return;
 
     try {
@@ -102,45 +102,45 @@ export function AppointmentDetailPage() {
 
   return (
     <PatientPageShell
-      eyebrow="Patient Portal / Appointment"
-      title={appointment ? `Lich hen #${appointment.id}` : "Chi tiet lich hen"}
-      description="Kiem tra thong tin lich kham va tiep tuc cac buoc sau khi kham."
+      eyebrow="Patient Portal / Lịch hẹn"
+      title={appointment ? `Lịch hẹn #${appointment.id}` : "Chi tiết lịch hẹn"}
+      description="Kiểm tra thông tin lịch khám và tiếp tục các bước sau khi khám."
       actions={
         <Link className="mc-btn mc-btn--outline" to="/my-appointments">
-          Quay lai
+          Quay lại
         </Link>
       }
     >
       {error ? <p className="patient-alert patient-alert--error">{error}</p> : null}
       {loading ? (
-        <div className="mc-state"><p>Dang tai chi tiet lich hen...</p></div>
+        <div className="mc-state"><p>Đang tải chi tiết lịch hẹn...</p></div>
       ) : appointment ? (
         <div className="patient-detail-layout">
           <section className="patient-detail-main">
             <article className="patient-panel">
               <div className="patient-panel__head">
                 <div>
-                  <h2>Thong tin lich kham</h2>
-                  <p>Trang thai hien tai va noi dung dat lich cua ban.</p>
+                  <h2>Thông tin lịch khám</h2>
+                  <p>Trạng thái hiện tại và nội dung đặt lịch của bạn.</p>
                 </div>
                 <PatientStatusBadge status={appointment.status} />
               </div>
 
               <div className="patient-info-grid">
-                <InfoItem label="Bac si" value={appointment.doctorName} icon="stethoscope" />
-                <InfoItem label="Benh nhan" value={appointment.patientName} icon="person" />
-                <InfoItem label="Ngay kham" value={formatDate(appointment.appointmentDate)} icon="calendar_today" />
-                <InfoItem label="Gio kham" value={`${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`} icon="schedule" />
+                <InfoItem label="Bác sĩ" value={appointment.doctorName} icon="stethoscope" />
+                <InfoItem label="Bệnh nhân" value={appointment.patientName} icon="person" />
+                <InfoItem label="Ngày khám" value={formatDate(appointment.appointmentDate)} icon="calendar_today" />
+                <InfoItem label="Giờ khám" value={`${formatTime(appointment.startTime)} - ${formatTime(appointment.endTime)}`} icon="schedule" />
               </div>
 
               <div className="patient-note-box">
-                <span>Ly do kham</span>
-                <p>{appointment.reason || "Chua co ly do kham."}</p>
+                <span>Lý do khám</span>
+                <p>{appointment.reason || "Chưa có lý do khám."}</p>
               </div>
 
               {appointment.cancelReason ? (
                 <div className="patient-note-box patient-note-box--danger">
-                  <span>Ly do huy</span>
+                  <span>Lý do hủy</span>
                   <p>{appointment.cancelReason}</p>
                 </div>
               ) : null}
@@ -151,30 +151,30 @@ export function AppointmentDetailPage() {
             <article className="patient-panel">
               <div className="patient-panel__head">
                 <div>
-                  <h2>Buoc tiep theo</h2>
-                  <p>Thao tac phu hop voi trang thai lich hen.</p>
+                  <h2>Bước tiếp theo</h2>
+                  <p>Thao tác phù hợp với trạng thái lịch hẹn.</p>
                 </div>
               </div>
 
               <div className="patient-action-stack">
                 {canCancel ? (
                   <button className="mc-btn mc-btn--outline" disabled={updating} type="button" onClick={handleCancel}>
-                    {updating ? "Dang huy..." : "Huy lich hen"}
+                    {updating ? "Đang hủy..." : "Hủy lịch hẹn"}
                   </button>
                 ) : null}
 
                 {medicalRecord ? (
                   <Link className="mc-btn mc-btn--primary" to={`/medical-records/${medicalRecord.id}`}>
-                    Xem ho so benh an
+                    Xem hồ sơ bệnh án
                   </Link>
                 ) : (
-                  <div className="patient-action-disabled">Ho so benh an se co sau khi bac si hoan tat buoi kham.</div>
+                  <div className="patient-action-disabled">Hồ sơ bệnh án sẽ có sau khi bác sĩ hoàn tất buổi khám.</div>
                 )}
 
                 {prescription ? (
                   <>
                     <Link className="mc-btn mc-btn--primary" to={`/prescriptions/${prescription.id}`}>
-                      Xem don thuoc
+                      Xem đơn thuốc
                     </Link>
                     {rxPayStatus === "UNPAID" && (
                       <Link
@@ -202,19 +202,19 @@ export function AppointmentDetailPage() {
 
                 {appointment.status === "COMPLETED" ? (
                   <Link className="mc-btn mc-btn--outline" to={`/reviews/create/${appointment.id}`}>
-                    Viet danh gia
+                    Viết đánh giá
                   </Link>
                 ) : null}
 
                 <button className="mc-btn mc-btn--outline" type="button" onClick={() => navigate(`/booking?doctorId=${appointment.doctorId}`)}>
-                  Dat lich lai voi bac si
+                  Đặt lịch lại với bác sĩ
                 </button>
               </div>
             </article>
           </aside>
         </div>
       ) : (
-        <div className="mc-state"><p>Khong tim thay lich hen.</p></div>
+        <div className="mc-state"><p>Không tìm thấy lịch hẹn.</p></div>
       )}
     </PatientPageShell>
   );

@@ -184,12 +184,12 @@ export function AdminSpecialtiesPage() {
   return (
     <AdminWorkspace
       eyebrow="Admin / Chuyên khoa"
-      title="Medical Specialties"
+      title="Quản lý chuyên khoa"
       description="Quản lý danh mục chuyên khoa và mô tả nghiệp vụ."
       actions={
         <button className="button button--primary" type="button" onClick={openCreateModal}>
           <span className="material-symbols-outlined">add</span>
-          Create Specialty
+          Tạo chuyên khoa
         </button>
       }
     >
@@ -209,19 +209,19 @@ export function AdminSpecialtiesPage() {
       <section className="admin-stats-row">
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Total Specialties</p>
+            <p className="admin-stat-card__label">Tổng chuyên khoa</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.total}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">With Description</p>
+            <p className="admin-stat-card__label">Có mô tả</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.withDescription}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">New This Month</p>
+            <p className="admin-stat-card__label">Mới trong tháng</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.newThisMonth}</p>
           </div>
         </div>
@@ -229,12 +229,12 @@ export function AdminSpecialtiesPage() {
 
       <section className="admin-table-card">
         <div className="admin-table-toolbar">
-          <strong>Specialties List</strong>
+          <strong>Danh sách chuyên khoa</strong>
           <label className="admin-search-box" aria-label="Tìm chuyên khoa">
             <span className="material-symbols-outlined">search</span>
             <input
               type="search"
-              placeholder="Search specialties..."
+              placeholder="Tìm chuyên khoa..."
               value={searchKeyword}
               onChange={(event) => setSearchKeyword(event.target.value)}
             />
@@ -246,10 +246,10 @@ export function AdminSpecialtiesPage() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Created Date</th>
-                <th>Actions</th>
+                <th>Tên</th>
+                <th>Mô tả</th>
+                <th>Ngày tạo</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -294,8 +294,8 @@ export function AdminSpecialtiesPage() {
 
         <div className="admin-table-toolbar" style={{ justifyContent: "space-between" }}>
           <span>
-            Showing {(currentPage - 1) * PAGE_SIZE + (pagedSpecialties.length > 0 ? 1 : 0)}-
-            {(currentPage - 1) * PAGE_SIZE + pagedSpecialties.length} of {filteredSpecialties.length} specialties
+            Hiển thị {(currentPage - 1) * PAGE_SIZE + (pagedSpecialties.length > 0 ? 1 : 0)}-
+            {(currentPage - 1) * PAGE_SIZE + pagedSpecialties.length} trong {filteredSpecialties.length} chuyên khoa
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
@@ -304,16 +304,16 @@ export function AdminSpecialtiesPage() {
               disabled={currentPage <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Prev
+              Trước
             </button>
-            <span>Page {currentPage}/{totalPages}</span>
+            <span>Trang {currentPage}/{totalPages}</span>
             <button
               className="button button--ghost"
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
-              Next
+              Sau
             </button>
           </div>
         </div>
@@ -323,14 +323,14 @@ export function AdminSpecialtiesPage() {
         <div className="admin-modal-backdrop" role="dialog" aria-modal="true">
           <form className="admin-modal" onSubmit={handleSubmitForm}>
             <div className="admin-modal__header">
-              <h2>{editingItem ? "Update Specialty" : "Create Specialty"}</h2>
-              <button type="button" className="admin-modal__close" onClick={closeModal} aria-label="Close">
+              <h2>{editingItem ? "Cập nhật chuyên khoa" : "Tạo chuyên khoa"}</h2>
+              <button type="button" className="admin-modal__close" onClick={closeModal} aria-label="Đóng">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <div className="admin-modal__body" style={{ display: "grid", gap: 12 }}>
               <label style={{ display: "grid", gap: 6 }}>
-                Name
+                Tên chuyên khoa
                 <input
                   required
                   value={form.name}
@@ -340,7 +340,7 @@ export function AdminSpecialtiesPage() {
               </label>
 
               <label style={{ display: "grid", gap: 6 }}>
-                Description
+                Mô tả
                 <textarea
                   required
                   rows={4}
@@ -352,10 +352,10 @@ export function AdminSpecialtiesPage() {
 
               <div className="admin-modal__footer" style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                 <button type="button" className="button button--ghost" onClick={closeModal}>
-                  Cancel
+                  Hủy
                 </button>
                 <button type="submit" className="button button--primary" disabled={submitting}>
-                  {submitting ? "Saving..." : "Save"}
+                  {submitting ? "Đang lưu..." : "Lưu"}
                 </button>
               </div>
             </div>

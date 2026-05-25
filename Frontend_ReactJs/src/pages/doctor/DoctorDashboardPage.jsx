@@ -78,30 +78,30 @@ export function DoctorDashboardPage() {
     .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
   const stats = [
     {
-      label: "Appointments",
+      label: "Lịch hẹn",
       value: appointments.filter((item) => item.appointmentDate === today).length,
-      eyebrow: "Today",
+      eyebrow: "Hôm nay",
       tone: "primary",
       icon: "calendar_month",
     },
     {
-      label: "Pending Confirmation",
+      label: "Chờ xác nhận",
       value: appointments.filter((item) => item.status === "PENDING").length,
-      eyebrow: "Urgent",
+      eyebrow: "Cần xử lý",
       tone: "warning",
       icon: "event_note",
     },
     {
-      label: "Completed",
+      label: "Đã hoàn tất",
       value: appointments.filter((item) => item.status === "COMPLETED").length,
-      eyebrow: "Finalized",
+      eyebrow: "Đã kết thúc",
       tone: "success",
       icon: "check_circle",
     },
     {
-      label: "Revenue",
+      label: "Doanh thu",
       value: formatCurrency(paidRevenue),
-      eyebrow: "Paid",
+      eyebrow: "Đã thanh toán",
       tone: "secondary",
       icon: "payments",
     },
@@ -119,16 +119,16 @@ export function DoctorDashboardPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Dashboard"
-      title={doctor ? `Xin chao, ${doctor.fullName}` : "Doctor dashboard"}
-      description="Theo doi lich hen, lich lam viec va doanh thu cua bac si."
+      eyebrow="Bác sĩ / Tổng quan"
+      title={doctor ? `Xin chào, ${doctor.fullName}` : "Tổng quan bác sĩ"}
+      description="Theo dõi lịch hẹn, lịch làm việc và doanh thu của bác sĩ."
       actions={
         <>
           <Link className="button button--secondary" to="/doctor/schedules">
-            Lich lam viec
+            Lịch làm việc
           </Link>
           <Link className="button button--primary" to="/doctor/appointments">
-            Lich hen
+            Lịch hẹn
           </Link>
         </>
       }
@@ -158,25 +158,25 @@ export function DoctorDashboardPage() {
           <article className="doctor-dashboard-card">
             <div className="doctor-dashboard-card__head">
               <div>
-                <h2>Lich hen gan day</h2>
-                <p>Danh sach lich hen moi nhat cua bac si.</p>
+                <h2>Lịch hẹn gần đây</h2>
+                <p>Danh sách lịch hẹn mới nhất của bác sĩ.</p>
               </div>
               <Link className="doctor-text-link" to="/doctor/appointments">
-                Xem tat ca
+                Xem tất cả
               </Link>
             </div>
 
             {loading ? (
-              <p className="empty-state">Dang tai lich hen...</p>
+              <p className="empty-state">Đang tải lịch hẹn...</p>
             ) : upcomingAppointments.length === 0 ? (
-              <p className="empty-state">Chua co lich hen.</p>
+              <p className="empty-state">Chưa có lịch hẹn.</p>
             ) : (
               <div className="doctor-dashboard-table">
                 <div className="doctor-dashboard-table__head">
-                  <span>Benh nhan</span>
-                  <span>Thoi gian</span>
-                  <span>Ly do</span>
-                  <span>Trang thai</span>
+                  <span>Bệnh nhân</span>
+                  <span>Thời gian</span>
+                  <span>Lý do</span>
+                  <span>Trạng thái</span>
                   <span></span>
                 </div>
 
