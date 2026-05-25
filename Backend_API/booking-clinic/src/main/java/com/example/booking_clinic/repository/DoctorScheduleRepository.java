@@ -1,7 +1,9 @@
 package com.example.booking_clinic.repository;
 
 import com.example.booking_clinic.entity.DoctorSchedule;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -9,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, Long> {
 
@@ -52,4 +55,9 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
     @Modifying
     @Query("UPDATE DoctorSchedule s SET s.status = 'AVAILABLE' WHERE s.id = :id AND s.status = 'BOOKED'")
     int releaseSchedule(@Param("id") Long id);
+
+    // Pessimistic write lock: đảm bảo không có race condition khi booking
+    @Query("SELECT s FROM DoctorSchedule s WHERE s.id = :id")
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<DoctorSchedule> findByIdWithLock(@Param("id") Long id);
 }
