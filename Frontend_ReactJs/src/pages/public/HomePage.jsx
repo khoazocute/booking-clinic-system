@@ -50,7 +50,7 @@ const copy = {
     "\u0110\u0103ng k\u00fd t\u00e0i kho\u1ea3n ngay h\u00f4m nay \u0111\u1ec3 tr\u1ea3i nghi\u1ec7m d\u1ecbch v\u1ee5 ch\u0103m s\u00f3c s\u1ee9c kh\u1ecfe to\u00e0n di\u1ec7n v\u00e0 ti\u1ec7n l\u1ee3i nh\u1ea5t.",
   ctaPrimary: "B\u1eaft \u0111\u1ea7u ngay",
   ctaSecondary: "\u0110\u0103ng k\u00fd t\u00e0i kho\u1ea3n",
-  copyright: "\u00a9 2024 MediCare Systems. All rights reserved.",
+  copyright: "\u00a9 2024 MediCare. Bảo lưu mọi quyền.",
 };
 
 const benefits = [

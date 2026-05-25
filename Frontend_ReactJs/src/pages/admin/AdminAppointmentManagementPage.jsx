@@ -5,11 +5,11 @@ import { getAllAppointments, updateAppointmentStatus } from "../../services/appo
 const PAGE_SIZE = 10;
 
 const STATUS_CONFIG = {
-  PENDING:     { label: "Pending",     bg: "bg-secondary-fixed/50",    text: "text-on-secondary-container" },
-  CONFIRMED:   { label: "Confirmed",   bg: "bg-primary/10",            text: "text-primary" },
-  COMPLETED:   { label: "Completed",   bg: "bg-tertiary-container/20", text: "text-tertiary-container" },
-  CANCELLED:   { label: "Cancelled",   bg: "bg-error-container",       text: "text-on-error-container" },
-  IN_PROGRESS: { label: "In Progress", bg: "bg-secondary-fixed/50",    text: "text-on-secondary-container" },
+  PENDING:     { label: "Chờ xác nhận", bg: "bg-secondary-fixed/50",    text: "text-on-secondary-container" },
+  CONFIRMED:   { label: "Đã xác nhận", bg: "bg-primary/10",            text: "text-primary" },
+  COMPLETED:   { label: "Hoàn tất", bg: "bg-tertiary-container/20", text: "text-tertiary-container" },
+  CANCELLED:   { label: "Đã hủy", bg: "bg-error-container",       text: "text-on-error-container" },
+  IN_PROGRESS: { label: "Đang khám", bg: "bg-secondary-fixed/50",    text: "text-on-secondary-container" },
 };
 
 function getStatusConfig(status) {
@@ -18,16 +18,14 @@ function getStatusConfig(status) {
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+  return new Date(dateStr).toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
 function formatTime(timeStr) {
   if (!timeStr) return "—";
   const [hourStr, minuteStr] = timeStr.split(":");
   const hour = parseInt(hourStr, 10);
-  const ampm = hour >= 12 ? "PM" : "AM";
-  const formattedHour = hour % 12 || 12;
-  return `${String(formattedHour).padStart(2, "0")}:${minuteStr} ${ampm}`;
+  return `${String(hour).padStart(2, "0")}:${minuteStr}`;
 }
 
 // Trả về mảng 5 ngày (Mon–Fri) của tuần hiện tại dạng "YYYY-MM-DD"
@@ -43,7 +41,7 @@ function getCurrentWeekDays() {
   });
 }
 
-const WEEK_LABELS = ["MON", "TUE", "WED", "THU", "FRI"];
+const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6"];
 
 const AdminAppointmentManagementPage = () => {
   const { notifications, connected } = useAdminNotificationContext();
@@ -60,11 +58,11 @@ const AdminAppointmentManagementPage = () => {
   const prevNotifCountRef = useRef(null);
 
   const CHART_MODES = [
-    { value: "CONFIRMED",           label: "Confirmed only" },
-    { value: "CONFIRMED_COMPLETED", label: "Confirmed + Completed" },
-    { value: "CONFIRMED_PENDING",   label: "Confirmed + Pending (stacked)" },
-    { value: "ALL_ACTIVE",          label: "All active (excl. Cancelled)" },
-    { value: "CANCELLED",           label: "Cancelled only" },
+    { value: "CONFIRMED",           label: "Chỉ đã xác nhận" },
+    { value: "CONFIRMED_COMPLETED", label: "Đã xác nhận + hoàn tất" },
+    { value: "CONFIRMED_PENDING",   label: "Đã xác nhận + chờ xác nhận" },
+    { value: "ALL_ACTIVE",          label: "Tất cả lịch đang hoạt động" },
+    { value: "CANCELLED",           label: "Chỉ lịch đã hủy" },
   ];
 
   const fetchAppointments = useCallback(async () => {
@@ -189,29 +187,29 @@ const AdminAppointmentManagementPage = () => {
       {/* Summary Metrics */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-lg">
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between border-l-4 border-primary">
-          <span className="font-label-caps text-label-caps text-on-surface-variant">TOTAL APPOINTMENTS</span>
+          <span className="font-label-caps text-label-caps text-on-surface-variant">TỔNG LỊCH HẸN</span>
           <div className="flex items-end justify-between mt-sm">
             <span className="font-h2 text-h2">{total}</span>
             <div className="flex items-center gap-1">
               <span className={`w-2 h-2 rounded-full ${connected ? "bg-primary animate-pulse" : "bg-outline"}`} />
-              <span className="text-body-sm text-on-surface-variant">{connected ? "Live" : "Offline"}</span>
+              <span className="text-body-sm text-on-surface-variant">{connected ? "Đang kết nối" : "Mất kết nối"}</span>
             </div>
           </div>
         </div>
 
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between border-l-4 border-secondary">
-          <span className="font-label-caps text-label-caps text-on-surface-variant">CONFIRMED TODAY</span>
+          <span className="font-label-caps text-label-caps text-on-surface-variant">ĐÃ XÁC NHẬN HÔM NAY</span>
           <div className="flex items-end justify-between mt-sm">
             <span className="font-h2 text-h2">{confirmedToday}</span>
             <div className="flex items-center gap-1 text-on-surface-variant">
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              <span className="text-body-sm">{confirmRate}% rate</span>
+              <span className="text-body-sm">{confirmRate}% tỷ lệ</span>
             </div>
           </div>
         </div>
 
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between border-l-4 border-primary-container">
-          <span className="font-label-caps text-label-caps text-on-surface-variant">MORNING SLOTS</span>
+          <span className="font-label-caps text-label-caps text-on-surface-variant">CA SÁNG</span>
           <div className="flex items-end justify-between mt-sm">
             <span className="font-h2 text-h2">{morning}</span>
             <span className="text-body-sm text-on-surface-variant">08:00 - 12:00</span>
@@ -219,7 +217,7 @@ const AdminAppointmentManagementPage = () => {
         </div>
 
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] flex flex-col justify-between border-l-4 border-tertiary">
-          <span className="font-label-caps text-label-caps text-on-surface-variant">AFTERNOON SLOTS</span>
+          <span className="font-label-caps text-label-caps text-on-surface-variant">CA CHIỀU</span>
           <div className="flex items-end justify-between mt-sm">
             <span className="font-h2 text-h2">{afternoon}</span>
             <span className="text-body-sm text-on-surface-variant">13:00 - 18:00</span>
@@ -230,13 +228,13 @@ const AdminAppointmentManagementPage = () => {
       {/* Table */}
       <div className="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="p-md border-b border-outline-variant/20 flex flex-wrap items-center justify-between gap-md">
-          <h2 className="font-h3 text-h3 text-on-surface">Appointment Registry</h2>
+          <h2 className="font-h3 text-h3 text-on-surface">Danh sách lịch hẹn</h2>
           <div className="flex flex-wrap items-center gap-sm">
             <div className="flex items-center gap-2 bg-surface-container-low px-sm py-2 rounded-lg border border-outline-variant/30">
               <span className="material-symbols-outlined text-outline">search</span>
               <input
                 className="bg-transparent border-none outline-none font-body-sm w-48 text-on-surface placeholder:text-outline"
-                placeholder="Search patients or doctors..."
+                placeholder="Tìm bệnh nhân hoặc bác sĩ..."
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               />
@@ -246,11 +244,11 @@ const AdminAppointmentManagementPage = () => {
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             >
-              <option value="ALL">All Statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="CONFIRMED">Confirmed</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="CANCELLED">Cancelled</option>
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="PENDING">Chờ xác nhận</option>
+              <option value="CONFIRMED">Đã xác nhận</option>
+              <option value="COMPLETED">Hoàn tất</option>
+              <option value="CANCELLED">Đã hủy</option>
             </select>
             <button
               className="bg-surface-container-low border border-outline-variant/30 font-button px-md py-2.5 rounded-lg flex items-center gap-2 hover:bg-surface-container transition-all disabled:opacity-50"
@@ -258,7 +256,7 @@ const AdminAppointmentManagementPage = () => {
               disabled={loading}
             >
               <span className="material-symbols-outlined text-[20px]">refresh</span>
-              {loading ? "Refreshing..." : "Refresh"}
+              {loading ? "Đang làm mới..." : "Làm mới"}
             </button>
           </div>
         </div>
@@ -275,12 +273,12 @@ const AdminAppointmentManagementPage = () => {
             <thead>
               <tr className="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps uppercase tracking-wider">
                 <th className="px-md py-4">ID</th>
-                <th className="px-md py-4">Patient</th>
-                <th className="px-md py-4">Doctor</th>
-                <th className="px-md py-4">Date & Time</th>
-                <th className="px-md py-4">Reason</th>
-                <th className="px-md py-4">Status</th>
-                <th className="px-md py-4 text-right">Actions</th>
+                <th className="px-md py-4">Bệnh nhân</th>
+                <th className="px-md py-4">Bác sĩ</th>
+                <th className="px-md py-4">Ngày & giờ</th>
+                <th className="px-md py-4">Lý do</th>
+                <th className="px-md py-4">Trạng thái</th>
+                <th className="px-md py-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/10">
@@ -288,14 +286,14 @@ const AdminAppointmentManagementPage = () => {
                 <tr>
                   <td colSpan="7" className="px-md py-xl text-center text-on-surface-variant">
                     <span className="material-symbols-outlined text-4xl block mb-sm animate-spin">refresh</span>
-                    Loading appointments...
+                    Đang tải lịch hẹn...
                   </td>
                 </tr>
               ) : paginated.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-md py-xl text-center text-on-surface-variant">
                     <span className="material-symbols-outlined text-4xl block mb-sm">calendar_month</span>
-                    No appointments found.
+                    Không tìm thấy lịch hẹn.
                   </td>
                 </tr>
               ) : (
@@ -314,7 +312,7 @@ const AdminAppointmentManagementPage = () => {
                       <td className="px-md py-4">
                         <div className="flex items-center gap-3">
                           <img
-                            alt="Patient"
+                            alt="Bệnh nhân"
                             className="w-8 h-8 rounded-full object-cover"
                             src={getAvatarUrl(appt.patientId || appt.id)}
                           />
@@ -339,7 +337,7 @@ const AdminAppointmentManagementPage = () => {
                         </p>
                       </td>
                       <td className="px-md py-4">
-                        <span className="font-body-sm">{appt.reason || "General Consultation"}</span>
+                        <span className="font-body-sm">{appt.reason || "Khám tổng quát"}</span>
                       </td>
                       <td className="px-md py-4">
                         <span className={`${sc.bg} ${sc.text} px-3 py-1 rounded-full text-[12px] font-bold`}>
@@ -351,7 +349,7 @@ const AdminAppointmentManagementPage = () => {
                           <div className="flex items-center justify-end gap-2">
                             <input
                               className="bg-surface-container border border-outline-variant/50 rounded-lg px-2 py-1 text-sm outline-none w-32 focus:border-primary"
-                              placeholder="Reason..."
+                              placeholder="Lý do..."
                               value={cancelTarget.reason}
                               autoFocus
                               onChange={(e) => setCancelTarget((t) => ({ ...t, reason: e.target.value }))}
@@ -376,7 +374,7 @@ const AdminAppointmentManagementPage = () => {
                             {canConfirm && (
                               <button
                                 className="p-2 hover:bg-primary/10 text-primary rounded-lg disabled:opacity-50"
-                                title="Confirm"
+                                title="Xác nhận"
                                 disabled={updating}
                                 onClick={() => handleStatusUpdate(appt.id, "CONFIRMED")}
                               >
@@ -386,7 +384,7 @@ const AdminAppointmentManagementPage = () => {
                             {canComplete && (
                               <button
                                 className="p-2 hover:bg-secondary/10 text-secondary rounded-lg disabled:opacity-50"
-                                title="Complete"
+                                title="Hoàn tất"
                                 disabled={updating}
                                 onClick={() => handleStatusUpdate(appt.id, "COMPLETED")}
                               >
@@ -396,7 +394,7 @@ const AdminAppointmentManagementPage = () => {
                             {canCancel && (
                               <button
                                 className="p-2 hover:bg-error/10 text-error rounded-lg disabled:opacity-50"
-                                title="Cancel"
+                                title="Hủy"
                                 disabled={updating}
                                 onClick={() => setCancelTarget({ id: appt.id, reason: "" })}
                               >
@@ -417,7 +415,7 @@ const AdminAppointmentManagementPage = () => {
         {!loading && filtered.length > 0 && (
           <div className="p-md bg-surface-container-low border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-md">
             <p className="text-body-sm text-on-surface-variant">
-              Showing {(page - 1) * PAGE_SIZE + 1} to {Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} entries
+              Hiển thị {(page - 1) * PAGE_SIZE + 1} đến {Math.min(page * PAGE_SIZE, filtered.length)} trong {filtered.length} mục
             </p>
             <div className="flex items-center gap-xs">
               <button

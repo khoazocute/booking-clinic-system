@@ -10,13 +10,13 @@ import {
 import { useNotifications } from "../../hooks/useNotifications";
 
 const doctorNavItems = [
-  { to: "/doctor", label: "Dashboard", icon: "dashboard", end: true },
-  { to: "/doctor/appointments", label: "Lich hen", icon: "calendar_month" },
-  { to: "/doctor/schedules", label: "Lich lam viec", icon: "event_available" },
-  { to: "/doctor/medical-records", label: "Ho so kham", icon: "clinical_notes" },
-  { to: "/doctor/profile", label: "Ho so", icon: "badge" },
-  { to: "/doctor/reviews", label: "Danh gia", icon: "star" },
-  { to: "/doctor/settings", label: "Cai dat", icon: "settings" },
+  { to: "/doctor", label: "Tổng quan", icon: "dashboard", end: true },
+  { to: "/doctor/appointments", label: "Lịch hẹn", icon: "calendar_month" },
+  { to: "/doctor/schedules", label: "Lịch làm việc", icon: "event_available" },
+  { to: "/doctor/medical-records", label: "Hồ sơ khám", icon: "clinical_notes" },
+  { to: "/doctor/profile", label: "Hồ sơ", icon: "badge" },
+  { to: "/doctor/reviews", label: "Đánh giá", icon: "star" },
+  { to: "/doctor/settings", label: "Cài đặt", icon: "settings" },
 ];
 
 function getInitials(name) {
@@ -106,11 +106,11 @@ export function DoctorWorkspace({ eyebrow, title, description, actions, children
             </div>
             <div>
               <strong className="admin-sidebar__brand-title">MedClarity</strong>
-              <span className="admin-sidebar__brand-sub">Doctor Portal</span>
+              <span className="admin-sidebar__brand-sub">Cổng bác sĩ</span>
             </div>
           </div>
 
-          <nav className="admin-sidebar__nav" aria-label="Doctor navigation">
+          <nav className="admin-sidebar__nav" aria-label="Điều hướng bác sĩ">
             {doctorNavItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -128,15 +128,15 @@ export function DoctorWorkspace({ eyebrow, title, description, actions, children
 
           <button className="admin-sidebar__logout" type="button" onClick={handleLogout}>
             <span className="material-symbols-outlined">logout</span>
-            <span>Dang xuat</span>
+            <span>Đăng xuất</span>
           </button>
         </aside>
 
         <section className="admin-main">
           <header className="admin-topbar">
-            <label className="admin-topbar__search" aria-label="Tim kiem">
+            <label className="admin-topbar__search" aria-label="Tìm kiếm">
               <span className="material-symbols-outlined">search</span>
-              <input type="search" placeholder="Tim benh nhan, lich hen..." />
+              <input type="search" placeholder="Tìm bệnh nhân, lịch hẹn..." />
             </label>
 
             <div className="admin-topbar__actions">
@@ -144,7 +144,7 @@ export function DoctorWorkspace({ eyebrow, title, description, actions, children
                 <button
                   className="admin-topbar__icon-btn doctor-topbar__icon-button"
                   type="button"
-                  aria-label="Thong bao"
+                  aria-label="Thông báo"
                   aria-expanded={isNotificationOpen}
                   onClick={() => setIsNotificationOpen((current) => !current)}
                 >
@@ -160,19 +160,19 @@ export function DoctorWorkspace({ eyebrow, title, description, actions, children
                   <div className="doctor-notification-popup">
                     <div className="doctor-notification-popup__head">
                       <div>
-                        <strong>Thong bao</strong>
-                        <span>{unreadCount > 0 ? `${unreadCount} thong bao moi` : "Da doc het"}</span>
+                        <strong>Thông báo</strong>
+                        <span>{unreadCount > 0 ? `${unreadCount} thông báo mới` : "Đã đọc hết"}</span>
                       </div>
                       <Link to="/doctor/notifications" onClick={() => setIsNotificationOpen(false)}>
-                        Xem tat ca
+                        Xem tất cả
                       </Link>
                     </div>
 
                     <div className="doctor-notification-popup__list">
                       {notificationsLoading ? (
-                        <p className="doctor-notification-popup__empty">Dang tai thong bao...</p>
+                        <p className="doctor-notification-popup__empty">Đang tải thông báo...</p>
                       ) : popupNotifications.length === 0 ? (
-                        <p className="doctor-notification-popup__empty">Chua co thong bao.</p>
+                        <p className="doctor-notification-popup__empty">Chưa có thông báo.</p>
                       ) : (
                         popupNotifications.map((notification) => (
                           <button
@@ -197,14 +197,14 @@ export function DoctorWorkspace({ eyebrow, title, description, actions, children
                 ) : null}
               </div>
 
-              <NavLink className="admin-topbar__icon-btn" to="/doctor/settings" aria-label="Cai dat">
+              <NavLink className="admin-topbar__icon-btn" to="/doctor/settings" aria-label="Cài đặt">
                 <span className="material-symbols-outlined">settings</span>
               </NavLink>
 
               <NavLink className="admin-topbar__profile doctor-topbar__profile" to="/doctor/profile">
                 <div className="admin-topbar__avatar">{getInitials(currentUser?.fullName ?? currentUser?.email)}</div>
                 <div>
-                  <strong>{currentUser?.fullName ?? "Bac si"}</strong>
+                  <strong>{currentUser?.fullName ?? "Bác sĩ"}</strong>
                   <span>{currentUser?.email ?? ""}</span>
                 </div>
               </NavLink>

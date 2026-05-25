@@ -4,7 +4,7 @@ import { clearAccessToken, getCurrentUser } from "../services/authService";
 import { AdminNotificationProvider, useAdminNotificationContext } from "../contexts/AdminNotificationContext";
 
 const adminNavItems = [
-  { to: "/admin", label: "Dashboard", icon: "dashboard", end: true },
+  { to: "/admin", label: "Tổng quan", icon: "dashboard", end: true },
   { to: "/admin/users", label: "Người dùng", icon: "group" },
   { to: "/admin/doctors", label: "Bác sĩ", icon: "medical_services" },
   { to: "/admin/specialties", label: "Chuyên khoa", icon: "category" },
@@ -55,11 +55,11 @@ function AdminWorkspaceInner({ eyebrow, title, description, actions, children })
             </div>
             <div>
               <strong className="admin-sidebar__brand-title">MedClarity</strong>
-              <span className="admin-sidebar__brand-sub">Admin Portal</span>
+              <span className="admin-sidebar__brand-sub">Cổng quản trị</span>
             </div>
           </div>
 
-          <nav className="admin-sidebar__nav" aria-label="Admin navigation">
+          <nav className="admin-sidebar__nav" aria-label="Điều hướng quản trị">
             {adminNavItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -103,7 +103,7 @@ function AdminWorkspaceInner({ eyebrow, title, description, actions, children })
                   {getInitials(currentUser?.fullName ?? currentUser?.email)}
                 </div>
                 <div>
-                  <strong>{currentUser?.fullName ?? "Admin"}</strong>
+                  <strong>{currentUser?.fullName ?? "Quản trị viên"}</strong>
                   <span>{currentUser?.email ?? ""}</span>
                 </div>
               </div>

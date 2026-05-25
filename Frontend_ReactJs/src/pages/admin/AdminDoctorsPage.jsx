@@ -258,18 +258,18 @@ export function AdminDoctorsPage() {
 
   const specialtyOptions = useMemo(() => {
     const names = specialties.map((item) => ({ id: item.id, name: item.name })).filter((x) => x.id && x.name);
-    return [{ id: "ALL", name: "All Specialties" }, ...names];
+    return [{ id: "ALL", name: "Tất cả chuyên khoa" }, ...names];
   }, [specialties]);
 
   return (
     <AdminWorkspace
       eyebrow="Admin / Bác sĩ"
-      title="Doctor Management"
+      title="Quản lý bác sĩ"
       description="Quản lý hồ sơ bác sĩ và trạng thái làm việc."
       actions={
         <button className="button button--primary" type="button" onClick={openCreateModal}>
           <span className="material-symbols-outlined">person_add</span>
-          Add New Doctor
+          Thêm bác sĩ
         </button>
       }
     >
@@ -289,7 +289,7 @@ export function AdminDoctorsPage() {
       <section className="admin-stats-row">
         <div className="admin-stat-card">
           <div style={{ width: "100%" }}>
-            <label htmlFor="admin-doctor-specialty-filter">Specialty Filter</label>
+            <label htmlFor="admin-doctor-specialty-filter">Lọc chuyên khoa</label>
             <select
               id="admin-doctor-specialty-filter"
               value={specialtyFilter}
@@ -307,7 +307,7 @@ export function AdminDoctorsPage() {
 
         <div className="admin-stat-card">
           <div style={{ width: "100%" }}>
-            <label htmlFor="admin-doctor-status-filter">Status Filter</label>
+            <label htmlFor="admin-doctor-status-filter">Lọc trạng thái</label>
             <select
               id="admin-doctor-status-filter"
               value={statusFilter}
@@ -325,7 +325,7 @@ export function AdminDoctorsPage() {
 
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Total Staff</p>
+            <p className="admin-stat-card__label">Tổng bác sĩ</p>
             <p className="admin-stat-card__value">{loading ? "--" : filteredDoctors.length}</p>
           </div>
         </div>
@@ -333,12 +333,12 @@ export function AdminDoctorsPage() {
 
       <section className="admin-table-card admin-doctor-table-card">
         <div className="admin-table-toolbar admin-doctor-table-toolbar">
-          <strong>Doctors List</strong>
+          <strong>Danh sách bác sĩ</strong>
           <label className="admin-search-box" aria-label="Tìm bác sĩ">
             <span className="material-symbols-outlined">search</span>
             <input
               type="search"
-              placeholder="Search doctors..."
+              placeholder="Tìm bác sĩ..."
               value={searchKeyword}
               onChange={(event) => setSearchKeyword(event.target.value)}
             />
@@ -349,14 +349,14 @@ export function AdminDoctorsPage() {
           <table className="admin-table admin-doctor-table">
             <thead>
               <tr>
-                <th>Doctor Name</th>
-                <th>Specialty</th>
-                <th>Contact</th>
-                <th>Experience</th>
-                <th>Rating</th>
-                <th>Fee</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>Tên bác sĩ</th>
+                <th>Chuyên khoa</th>
+                <th>Liên hệ</th>
+                <th>Kinh nghiệm</th>
+                <th>Đánh giá</th>
+                <th>Phí khám</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -426,16 +426,16 @@ export function AdminDoctorsPage() {
             disabled={currentPage <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
-            Prev
+            Trước
           </button>
-          <span>Page {currentPage}/{totalPages}</span>
+          <span>Trang {currentPage}/{totalPages}</span>
           <button
             type="button"
             className="button button--ghost"
             disabled={currentPage >= totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           >
-            Next
+            Sau
           </button>
         </div>
       </section>
@@ -444,8 +444,8 @@ export function AdminDoctorsPage() {
         <div className="admin-modal-backdrop" role="dialog" aria-modal="true">
           <form className="admin-modal" onSubmit={handleSubmitForm}>
             <div className="admin-modal__header">
-              <h2>{editingDoctor ? "Update Doctor" : "Create Doctor"}</h2>
-              <button type="button" className="admin-modal__close" onClick={closeModal} aria-label="Close">
+              <h2>{editingDoctor ? "Cập nhật bác sĩ" : "Tạo bác sĩ"}</h2>
+              <button type="button" className="admin-modal__close" onClick={closeModal} aria-label="Đóng">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -453,7 +453,7 @@ export function AdminDoctorsPage() {
 
             {!editingDoctor ? (
               <label style={{ display: "grid", gap: 6 }}>
-                User
+                Người dùng
                 <select
                   required
                   value={form.userId}
@@ -471,7 +471,7 @@ export function AdminDoctorsPage() {
             ) : null}
 
             <label style={{ display: "grid", gap: 6 }}>
-              Specialty
+              Chuyên khoa
               <select
                 required
                 value={form.specialtyId}
@@ -488,7 +488,7 @@ export function AdminDoctorsPage() {
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
-              Experience Years
+              Số năm kinh nghiệm
               <input
                 required
                 min={0}
@@ -500,7 +500,7 @@ export function AdminDoctorsPage() {
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
-              Qualification
+              Bằng cấp
               <input
                 required
                 value={form.qualification}
@@ -510,7 +510,7 @@ export function AdminDoctorsPage() {
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
-              Clinic Room
+              Phòng khám
               <input
                 required
                 value={form.clinicRoom}
@@ -520,7 +520,7 @@ export function AdminDoctorsPage() {
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
-              Consultation Fee
+              Phí khám
               <input
                 required
                 min={0}
@@ -532,7 +532,7 @@ export function AdminDoctorsPage() {
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
-              Biography
+              Tiểu sử
               <textarea
                 required
                 rows={3}
@@ -543,10 +543,10 @@ export function AdminDoctorsPage() {
             </label>
             <div className="admin-modal__footer" style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
               <button type="button" className="button button--ghost" onClick={closeModal}>
-                Cancel
+                Hủy
               </button>
               <button type="submit" className="button button--primary" disabled={submitting}>
-                {submitting ? "Saving..." : "Save"}
+                {submitting ? "Đang lưu..." : "Lưu"}
               </button>
             </div>
             </div>

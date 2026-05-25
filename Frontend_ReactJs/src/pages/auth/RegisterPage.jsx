@@ -92,17 +92,17 @@ export function RegisterPage() {
   return (
     <div className="auth-page">
       <section className="auth-page__visual">
-        <img src={registerSideImage} alt="Medical tablet illustration" />
+        <img src={registerSideImage} alt="Minh họa máy tính bảng y tế" />
         <div className="auth-page__overlay" />
         <div className="auth-page__message">
           <h1>
-            Clinical precision.
+            Chăm sóc chính xác.
             <br />
-            Human empathy.
+            Tận tâm với người bệnh.
           </h1>
           <p>
-            Join MediCare&apos;s secure network to access your health records,
-            book appointments, and connect with top specialists.
+            Tham gia hệ thống MediCare để truy cập hồ sơ sức khỏe,
+            đặt lịch khám và kết nối với bác sĩ chuyên khoa.
           </p>
         </div>
       </section>
@@ -115,8 +115,8 @@ export function RegisterPage() {
           </div>
 
           <header className="auth-page__header">
-            <h2>Create Account</h2>
-            <p>Please fill in your details to get started.</p>
+            <h2>Tạo tài khoản</h2>
+            <p>Điền thông tin của bạn để bắt đầu sử dụng hệ thống.</p>
           </header>
 
           <form className="auth-form" onSubmit={handleSubmit}>
@@ -128,14 +128,14 @@ export function RegisterPage() {
             ) : null}
 
             <div className="auth-field">
-              <label htmlFor="fullName">Full Name</label>
+              <label htmlFor="fullName">Họ tên</label>
               <div className="auth-field__input-wrap">
                 <FieldIcon src={personIcon} alt="" />
                 <input
                   id="fullName"
                   name="fullName"
                   type="text"
-                  placeholder="John Doe"
+                  placeholder="Nguyễn Văn A"
                   value={form.fullName}
                   onChange={handleChange}
                   required
@@ -144,7 +144,7 @@ export function RegisterPage() {
             </div>
 
             <div className="auth-field">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">Địa chỉ email</label>
               <div className="auth-field__input-wrap">
                 <FieldIcon src={mailIcon} alt="" />
                 <input
@@ -160,14 +160,14 @@ export function RegisterPage() {
             </div>
 
             <div className="auth-field">
-              <label htmlFor="phone">Phone Number</label>
+              <label htmlFor="phone">Số điện thoại</label>
               <div className="auth-field__input-wrap">
                 <FieldIcon src={callIcon} alt="" />
                 <input
                   id="phone"
                   name="phone"
                   type="tel"
-                  placeholder="(555) 123-4567"
+                  placeholder="0901234567"
                   value={form.phone}
                   onChange={handleChange}
                   required
@@ -177,7 +177,7 @@ export function RegisterPage() {
 
             <div className="auth-form__grid">
               <div className="auth-field">
-                <label htmlFor="password">Password</label>
+                <label htmlFor="password">Mật khẩu</label>
                 <div className="auth-field__input-wrap">
                   <FieldIcon src={lockIcon} alt="" />
                   <input
@@ -193,7 +193,7 @@ export function RegisterPage() {
               </div>
 
               <div className="auth-field">
-                <label htmlFor="confirmPassword">Confirm Password</label>
+                <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
                 <div className="auth-field__input-wrap">
                   <FieldIcon src={lockIcon} alt="" />
                   <input
@@ -217,8 +217,8 @@ export function RegisterPage() {
                 onChange={handleChange}
               />
               <span>
-                I agree to the <a href="/">Terms of Service</a> and{" "}
-                <a href="/">Privacy Policy</a>.
+                Tôi đồng ý với <a href="/">Điều khoản dịch vụ</a> và{" "}
+                <a href="/">Chính sách bảo mật</a>.
               </span>
             </label>
 
@@ -227,11 +227,11 @@ export function RegisterPage() {
               type="submit"
               disabled={submitting}
             >
-              {submitting ? "Registering..." : "Register"}
+              {submitting ? "Đang đăng ký..." : "Đăng ký"}
             </button>
 
             <p className="auth-form__footer">
-              Already have an account? <Link to="/login">Login</Link>
+              Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
             </p>
           </form>
         </div>

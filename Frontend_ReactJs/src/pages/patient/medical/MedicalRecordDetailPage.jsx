@@ -46,20 +46,20 @@ export function PatientMedicalRecordDetailPage() {
 
   return (
     <PatientPageShell
-      eyebrow="Patient Portal / Medical Record"
-      title="Ho so benh an"
-      description="Ket qua kham va huong dieu tri do bac si ghi nhan."
+      eyebrow="Patient Portal / Hồ sơ bệnh án"
+      title="Hồ sơ bệnh án chi tiết"
+      description="Kết quả khám và hướng điều trị do bác sĩ ghi nhận."
       actions={
         record ? (
           <Link className="mc-btn mc-btn--outline" to={`/my-appointments/${record.appointmentId}`}>
-            Ve lich hen
+            Về lịch hẹn
           </Link>
         ) : null
       }
     >
       {error ? <p className="patient-alert patient-alert--error">{error}</p> : null}
       {loading ? (
-        <div className="mc-state"><p>Dang tai ho so benh an...</p></div>
+        <div className="mc-state"><p>Đang tải hồ sơ bệnh án...</p></div>
       ) : record ? (
         <div className="patient-detail-layout">
           <section className="patient-detail-main">
@@ -67,43 +67,43 @@ export function PatientMedicalRecordDetailPage() {
               <div className="patient-document__title">
                 <span className="material-symbols-outlined">clinical_notes</span>
                 <div>
-                  <h2>Medical Record #{record.id}</h2>
-                  <p>Tao luc {formatDateTime(record.createdAt)}</p>
+                  <h2>Hồ sơ bệnh án #{record.id}</h2>
+                  <p>Tạo lúc {formatDateTime(record.createdAt)}</p>
                 </div>
               </div>
 
               <div className="patient-info-grid">
-                <InfoBlock label="Bac si" value={record.doctorName} />
-                <InfoBlock label="Benh nhan" value={record.patientName} />
-                <InfoBlock label="Ngay tai kham" value={formatDate(record.followUpDate)} />
-                <InfoBlock label="Ma lich hen" value={`#${record.appointmentId}`} />
+                <InfoBlock label="Bác sĩ" value={record.doctorName} />
+                <InfoBlock label=" Bệnh nhân" value={record.patientName} />
+                <InfoBlock label="Ngày tái khám" value={formatDate(record.followUpDate)} />
+                <InfoBlock label="Mã lịch hẹn" value={`#${record.appointmentId}`} />
               </div>
 
-              <MedicalSection title="Trieu chung" value={record.symptoms} />
-              <MedicalSection title="Chan doan" value={record.diagnosis} />
-              <MedicalSection title="Ke hoach dieu tri" value={record.treatmentPlan} />
-              <MedicalSection title="Ghi chu" value={record.notes} />
+              <MedicalSection title="Triệu chứng" value={record.symptoms} />
+              <MedicalSection title="Chẩn đoán" value={record.diagnosis} />
+              <MedicalSection title="Kế hoạch điều trị" value={record.treatmentPlan} />
+              <MedicalSection title="Ghi chú" value={record.notes} />
             </article>
           </section>
 
           <aside className="patient-detail-side">
             <article className="patient-panel">
-              <h2>Don thuoc</h2>
+              <h2>Đơn thuốc</h2>
               <p className="patient-muted">
-                Don thuoc se hien thi sau khi bac si tao tu ho so benh an nay.
+                Đơn thuốc sẽ hiển thị sau khi bác sĩ tạo từ hồ sơ bệnh án này.
               </p>
               {prescription ? (
                 <Link className="mc-btn mc-btn--primary patient-full-btn" to={`/prescriptions/${prescription.id}`}>
-                  Xem don thuoc
+                  Xem đơn thuốc
                 </Link>
               ) : (
-                <div className="patient-action-disabled">Chua co don thuoc.</div>
+                <div className="patient-action-disabled">Chưa có đơn thuốc.</div>
               )}
             </article>
           </aside>
         </div>
       ) : (
-        <div className="mc-state"><p>Khong tim thay ho so benh an.</p></div>
+        <div className="mc-state"><p>Không tìm thấy hồ sơ bệnh án.</p></div>
       )}
     </PatientPageShell>
   );
@@ -124,7 +124,7 @@ function MedicalSection({ title, value }) {
   return (
     <section className="patient-medical-section">
       <h3>{title}</h3>
-      <p>{value || "Chua co thong tin."}</p>
+      <p>{value || "Chưa có thông tin."}</p>
     </section>
   );
 }

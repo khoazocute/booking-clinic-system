@@ -34,17 +34,17 @@ export function MyPrescriptionsPage() {
   return (
     <PatientPageShell
       eyebrow="Patient Portal"
-      title="Don thuoc cua toi"
-      description="Tong hop don thuoc tu cac lich kham da hoan thanh."
+      title="Đơn thuốc của tôi"
+      description="Tổng hợp đơn thuốc từ các lịch khám đã hoàn thành."
     >
       {error ? <p className="patient-alert patient-alert--error">{error}</p> : null}
       {loading ? (
-        <div className="mc-state"><p>Dang tai don thuoc...</p></div>
+        <div className="mc-state"><p>Đang tải đơn thuốc...</p></div>
       ) : items.length === 0 ? (
         <EmptyState
           icon="medication"
-          title="Chua co don thuoc"
-          description="Don thuoc se xuat hien sau khi bac si hoan tat ho so benh an va ke don."
+          title="Chưa có đơn thuốc"
+          description="Đơn thuốc sẽ hiển thị sau khi bác sĩ hoàn tất hồ sơ bệnh án và kê đơn."
         />
       ) : (
         <div className="patient-card-list">
@@ -56,20 +56,20 @@ export function MyPrescriptionsPage() {
                 </div>
                 <div>
                   <div className="patient-row-title">
-                    <h2>Don thuoc #{prescription.id}</h2>
+                    <h2>Đơn thuốc #{prescription.id}</h2>
                     <PatientStatusBadge status={prescription.status} />
                   </div>
-                  <p>Bac si {prescription.doctorName ?? appointment.doctorName}</p>
+                  <p>Bác sĩ {prescription.doctorName ?? appointment.doctorName}</p>
                   <div className="patient-meta-row">
                     <span>{formatDateTime(prescription.createdAt)}</span>
-                    <span>{prescription.items?.length ?? 0} loai thuoc</span>
+                    <span>{prescription.items?.length ?? 0} loại thuốc</span>
                     <span>{formatCurrency(prescription.totalMedicineFee)}</span>
                   </div>
                 </div>
               </div>
               <div className="patient-card-actions">
                 <Link className="mc-btn mc-btn--primary" to={`/prescriptions/${prescription.id}`}>
-                  Xem chi tiet
+                  Xem chi tiết
                 </Link>
               </div>
             </article>

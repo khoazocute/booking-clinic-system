@@ -75,19 +75,19 @@ export function EditDoctorSchedulePage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Schedules"
-      title="Edit doctor schedule"
-      description="Cap nhat ngay va khung gio cua slot kham hien tai."
+      eyebrow="Bác sĩ / Lịch làm việc"
+      title="Sửa lịch làm việc"
+      description="Cập nhật ngày và khung giờ của lịch khám hiện tại."
     >
       <article className="doctor-panel">
         {error ? <p className="empty-state">{error}</p> : null}
         {loading ? (
-          <p className="empty-state">Loading schedule...</p>
+          <p className="empty-state">Đang tải lịch làm việc...</p>
         ) : (
           <DoctorScheduleForm
             form={form}
             submitting={submitting}
-            submitLabel="Save schedule"
+            submitLabel="Lưu lịch làm việc"
             onChange={handleChange}
             onSubmit={handleSubmit}
             onCancel={() => navigate("/doctor/schedules")}

@@ -7,16 +7,16 @@ import {
   getDoctorSchedules,
   updateDoctorScheduleStatus,
 } from "../../services/doctorPortalService";
-import { formatDate, formatTime } from "../../utils/doctorHelpers";
+import { formatDate, formatTime, getStatusLabel } from "../../utils/doctorHelpers";
 
 const FILTERS = ["ALL", "AVAILABLE", "BOOKED", "CANCELLED"];
 
 function getSpecialtyLabel(doctor) {
-  return doctor?.specialtyName || "General Practice";
+  return doctor?.specialtyName || "Khám tổng quát";
 }
 
 function getLocationLabel(doctor) {
-  return doctor?.clinicRoom || "Clinic Room";
+  return doctor?.clinicRoom || "Phòng khám";
 }
 
 export function DoctorSchedulesPage() {
@@ -54,7 +54,7 @@ export function DoctorSchedulesPage() {
   }, []);
 
   async function handleDelete(scheduleId) {
-    const approved = window.confirm("Delete this schedule slot?");
+    const approved = window.confirm("Xóa khung lịch này?");
     if (!approved) {
       return;
     }
@@ -107,19 +107,19 @@ export function DoctorSchedulesPage() {
   const scheduleStats = useMemo(
     () => [
       {
-        label: "Available Slots Today",
+        label: "Khung giờ còn trống",
         value: schedules.filter((item) => item.status === "AVAILABLE").length,
         tone: "success",
         icon: "event_available",
       },
       {
-        label: "Booked Shifts",
+        label: "Ca đã đặt",
         value: schedules.filter((item) => item.status === "BOOKED").length,
         tone: "primary",
         icon: "calendar_month",
       },
       {
-        label: "Cancellations",
+        label: "Ca đã hủy",
         value: schedules.filter((item) => item.status === "CANCELLED").length,
         tone: "danger",
         icon: "event_busy",
@@ -130,13 +130,13 @@ export function DoctorSchedulesPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Schedules"
-      title="Lich lam viec"
-      description="Quan ly khung gio kham va trang thai lich cua bac si."
+      eyebrow="Bác sĩ / Lịch làm việc"
+      title="Lịch làm việc"
+      description="Quản lý khung giờ khám và trạng thái lịch của bác sĩ."
       actions={
         <Link className="button button--primary" to="/doctor/schedules/create">
           <span className="material-symbols-outlined">add_circle</span>
-          <span>Tao lich</span>
+          <span>Tạo lịch</span>
         </Link>
       }
     >
@@ -144,12 +144,11 @@ export function DoctorSchedulesPage() {
 
       <section className="doctor-filter-board">
         <label className="doctor-filter-board__field doctor-filter-board__field--wide">
-          <span>Search schedule</span>
           <div className="doctor-filter-board__input">
             <span className="material-symbols-outlined">search</span>
             <input
               type="search"
-              placeholder="Search schedules, specialty, location..."
+              placeholder="Tìm lịch, chuyên khoa, phòng khám..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
@@ -157,7 +156,6 @@ export function DoctorSchedulesPage() {
         </label>
 
         <label className="doctor-filter-board__field">
-          <span>Work date</span>
           <input
             type="date"
             value={workDate}
@@ -166,11 +164,10 @@ export function DoctorSchedulesPage() {
         </label>
 
         <label className="doctor-filter-board__field">
-          <span>Status</span>
           <select value={activeFilter} onChange={(event) => setActiveFilter(event.target.value)}>
             {FILTERS.map((filter) => (
               <option key={filter} value={filter}>
-                {filter === "ALL" ? "All Statuses" : filter}
+                {filter === "ALL" ? "Tất cả trạng thái" : getStatusLabel(filter)}
               </option>
             ))}
           </select>
@@ -181,7 +178,7 @@ export function DoctorSchedulesPage() {
           disabled={refreshing}
           type="button"
           onClick={() => loadSchedules({ silent: true, date: workDate })}
-          aria-label="Refresh schedules"
+          aria-label="Làm mới lịch"
         >
           <span className="material-symbols-outlined">refresh</span>
         </button>
@@ -204,16 +201,16 @@ export function DoctorSchedulesPage() {
 
       <section className="doctor-management-table doctor-management-table--schedules">
         <div className="doctor-management-table__head">
-          <span>Ngay</span>
-          <span>Khung gio</span>
-          <span>Trang thai</span>
-          <span>Thao tac</span>
+          <span>Ngày</span>
+          <span>Khung giờ</span>
+          <span>Trạng thái</span>
+          <span>Thao tác</span>
         </div>
 
         {loading ? (
-          <p className="empty-state">Loading schedules...</p>
+          <p className="empty-state">Đang tải lịch làm việc...</p>
         ) : filteredSchedules.length === 0 ? (
-          <p className="empty-state">No schedule slots found for the current filters.</p>
+          <p className="empty-state">Không tìm thấy khung lịch phù hợp với bộ lọc hiện tại.</p>
         ) : (
           filteredSchedules.map((schedule) => (
             <article className="doctor-management-row" key={schedule.id}>
@@ -233,7 +230,7 @@ export function DoctorSchedulesPage() {
                 <Link
                   className="doctor-icon-action"
                   to={`/doctor/schedules/${schedule.id}/edit`}
-                  aria-label="Edit schedule"
+                  aria-label="Sửa lịch"
                 >
                   <span className="material-symbols-outlined">edit_square</span>
                 </Link>
@@ -248,7 +245,7 @@ export function DoctorSchedulesPage() {
                         schedule.status === "CANCELLED" ? "AVAILABLE" : "CANCELLED",
                       )
                     }
-                    aria-label={schedule.status === "CANCELLED" ? "Re-open slot" : "Cancel slot"}
+                    aria-label={schedule.status === "CANCELLED" ? "Mở lại khung giờ" : "Hủy khung giờ"}
                   >
                     <span className="material-symbols-outlined">
                       {schedule.status === "CANCELLED" ? "restart_alt" : "block"}
@@ -260,7 +257,7 @@ export function DoctorSchedulesPage() {
                   className="doctor-icon-action doctor-icon-action--danger"
                   type="button"
                   onClick={() => handleDelete(schedule.id)}
-                  aria-label="Delete schedule"
+                  aria-label="Xóa lịch"
                 >
                   <span className="material-symbols-outlined">delete</span>
                 </button>
@@ -272,8 +269,7 @@ export function DoctorSchedulesPage() {
         {!loading && filteredSchedules.length > 0 ? (
           <div className="doctor-management-table__footer">
             <p>
-              Showing <strong>{filteredSchedules.length}</strong> slot
-              {filteredSchedules.length > 1 ? "s" : ""}
+              Hiển thị <strong>{filteredSchedules.length}</strong> khung lịch
             </p>
           </div>
         ) : null}

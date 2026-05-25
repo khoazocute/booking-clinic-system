@@ -10,19 +10,19 @@ const STOCK_STATUS_STYLE = {
 };
 
 const STOCK_STATUS_LABEL = {
-  IN_STOCK: 'In Stock',
-  LOW_STOCK: 'Low Stock',
-  OUT_OF_STOCK: 'Out of Stock',
+  IN_STOCK: 'Còn hàng',
+  LOW_STOCK: 'Sắp hết hàng',
+  OUT_OF_STOCK: 'Hết hàng',
 };
 
 function formatDate(iso) {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  return new Date(iso).toLocaleDateString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
 
 function formatCurrency(value) {
   if (value == null) return '—';
-  return `$${Number(value).toFixed(2)}`;
+  return `${Number(value).toLocaleString('vi-VN')} đ`;
 }
 
 const EMPTY_FORM = { name: '', unitPrice: '', unit: '', stockQuantity: '' };
@@ -126,7 +126,7 @@ const MedicineManagementPage = () => {
   };
 
   const handleDelete = async (med) => {
-    if (!window.confirm(`Deactivate "${med.name}"? It will no longer be available for prescriptions.`)) return;
+    if (!window.confirm(`Ngừng sử dụng thuốc "${med.name}"? Thuốc này sẽ không còn dùng để kê đơn.`)) return;
     try {
       await updateMedicineStatus(med.id, 'INACTIVE');
       await fetchMedicines();
@@ -147,7 +147,7 @@ const MedicineManagementPage = () => {
           className="bg-primary text-on-primary font-button px-lg py-sm rounded-lg flex items-center gap-xs shadow-md active:scale-95 transition-transform"
         >
           <span className="material-symbols-outlined" data-icon="add">add</span>
-          <span>Add New Medicine</span>
+          <span>Thêm thuốc mới</span>
         </button>
       </div>
 
@@ -155,35 +155,35 @@ const MedicineManagementPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-label-caps font-label-caps text-on-surface-variant">TOTAL PRODUCTS</span>
+            <span className="text-label-caps font-label-caps text-on-surface-variant">TỔNG SỐ THUỐC</span>
             <span className="material-symbols-outlined text-primary" data-icon="inventory_2">inventory_2</span>
           </div>
           <div className="text-h2 font-h2">{stats.total}</div>
-          <div className="text-body-sm text-on-surface-variant mt-xs">Active medicines in system</div>
+          <div className="text-body-sm text-on-surface-variant mt-xs">Thuốc đang có trong hệ thống</div>
         </div>
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-label-caps font-label-caps text-on-surface-variant">LOW STOCK</span>
+            <span className="text-label-caps font-label-caps text-on-surface-variant">SẮP HẾT HÀNG</span>
             <span className="material-symbols-outlined text-secondary" data-icon="warning">warning</span>
           </div>
           <div className="text-h2 font-h2 text-secondary">{stats.lowStock}</div>
-          <div className="text-body-sm text-on-surface-variant mt-xs">Requires immediate reorder</div>
+          <div className="text-body-sm text-on-surface-variant mt-xs">Cần nhập thêm sớm</div>
         </div>
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-label-caps font-label-caps text-on-surface-variant">OUT OF STOCK</span>
+            <span className="text-label-caps font-label-caps text-on-surface-variant">HẾT HÀNG</span>
             <span className="material-symbols-outlined text-error" data-icon="error">error</span>
           </div>
           <div className="text-h2 font-h2 text-error">{stats.outOfStock}</div>
-          <div className="text-body-sm text-on-surface-variant mt-xs">Critical stockouts detected</div>
+          <div className="text-body-sm text-on-surface-variant mt-xs">Không còn thuốc trong kho</div>
         </div>
         <div className="bg-surface-container-lowest p-md rounded-xl shadow-sm border border-outline-variant flex flex-col">
           <div className="flex items-center justify-between mb-sm">
-            <span className="text-label-caps font-label-caps text-on-surface-variant">TOTAL VALUE</span>
+            <span className="text-label-caps font-label-caps text-on-surface-variant">TỔNG GIÁ TRỊ</span>
             <span className="material-symbols-outlined text-tertiary" data-icon="payments">payments</span>
           </div>
           <div className="text-h2 font-h2">{formatCurrency(stats.totalValue)}</div>
-          <div className="text-body-sm text-on-surface-variant mt-xs">Current inventory valuation</div>
+          <div className="text-body-sm text-on-surface-variant mt-xs">Giá trị tồn kho hiện tại</div>
         </div>
       </div>
 
@@ -195,24 +195,24 @@ const MedicineManagementPage = () => {
             <div className="flex items-center bg-white border border-outline px-sm py-xs rounded-lg text-body-sm min-w-[200px]">
               <span className="material-symbols-outlined text-outline mr-xs" data-icon="filter_alt">filter_alt</span>
               <select value={filterStatus} onChange={handleFilterChange} className="bg-transparent border-none focus:ring-0 w-full outline-none py-0">
-                <option value="ALL">All Statuses</option>
-                <option value="IN_STOCK">In Stock</option>
-                <option value="LOW_STOCK">Low Stock</option>
-                <option value="OUT_OF_STOCK">Out of Stock</option>
+                <option value="ALL">Tất cả trạng thái</option>
+                <option value="IN_STOCK">Còn hàng</option>
+                <option value="LOW_STOCK">Sắp hết hàng</option>
+                <option value="OUT_OF_STOCK">Hết hàng</option>
               </select>
             </div>
             <div className="flex items-center bg-white border border-outline px-sm py-xs rounded-lg text-body-sm">
               <span className="material-symbols-outlined text-outline mr-xs" data-icon="sort">sort</span>
               <select value={sortBy} onChange={handleSortChange} className="bg-transparent border-none focus:ring-0 outline-none py-0">
-                <option value="createdAt">Created Date</option>
-                <option value="name">Name A-Z</option>
-                <option value="price">Price: High to Low</option>
+                <option value="createdAt">Ngày tạo</option>
+                <option value="name">Tên A-Z</option>
+                <option value="price">Giá: cao đến thấp</option>
               </select>
             </div>
           </div>
           <div className="flex items-center gap-sm">
             <span className="text-body-sm text-on-surface-variant">
-              Showing {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} of {filtered.length} medicines
+              Hiển thị {filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} trong {filtered.length} thuốc
             </span>
             <div className="flex items-center space-x-xs">
               <button
@@ -239,19 +239,19 @@ const MedicineManagementPage = () => {
             <thead>
               <tr className="bg-surface-container-high border-b border-outline-variant">
                 <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">ID</th>
-                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Medicine Name</th>
-                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Unit</th>
-                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Unit Price</th>
-                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Stock</th>
-                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Status</th>
-                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Created Date</th>
-                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Tên thuốc</th>
+                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Đơn vị</th>
+                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Đơn giá</th>
+                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Tồn kho</th>
+                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Trạng thái</th>
+                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">Ngày tạo</th>
+                <th className="px-md py-sm font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {loading && (
                 <tr>
-                  <td colSpan={8} className="px-md py-lg text-center text-on-surface-variant text-body-md">Loading...</td>
+                  <td colSpan={8} className="px-md py-lg text-center text-on-surface-variant text-body-md">Đang tải...</td>
                 </tr>
               )}
               {!loading && error && (
@@ -261,7 +261,7 @@ const MedicineManagementPage = () => {
               )}
               {!loading && !error && paginated.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-md py-lg text-center text-on-surface-variant text-body-md">No medicines found.</td>
+                  <td colSpan={8} className="px-md py-lg text-center text-on-surface-variant text-body-md">Không tìm thấy thuốc nào.</td>
                 </tr>
               )}
               {!loading && !error && paginated.map(med => (
@@ -306,17 +306,17 @@ const MedicineManagementPage = () => {
         {/* Footer pagination */}
         <div className="p-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end">
           <div className="flex items-center gap-sm">
-            <span className="text-body-sm text-on-surface-variant">Page {page} of {totalPages}</span>
+            <span className="text-body-sm text-on-surface-variant">Trang {page} / {totalPages}</span>
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
               className="px-md py-xs bg-white border border-outline rounded-lg text-body-sm hover:bg-surface-container transition-colors disabled:opacity-40"
-            >Previous</button>
+            >Trước</button>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="px-md py-xs bg-primary text-on-primary rounded-lg text-body-sm font-bold shadow-sm disabled:opacity-40"
-            >Next</button>
+            >Sau</button>
           </div>
         </div>
       </div>
@@ -325,10 +325,10 @@ const MedicineManagementPage = () => {
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-lg">
-            <h2 className="text-h3 font-h3 mb-md">{editTarget ? 'Edit Medicine' : 'Add New Medicine'}</h2>
+            <h2 className="text-h3 font-h3 mb-md">{editTarget ? 'Sửa thuốc' : 'Thêm thuốc mới'}</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-sm">
               <div>
-                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Medicine Name</label>
+                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Tên thuốc</label>
                 <input
                   name="name"
                   value={form.name}
@@ -336,11 +336,11 @@ const MedicineManagementPage = () => {
                   required
                   maxLength={100}
                   className="w-full border border-outline rounded-lg px-sm py-xs text-body-md focus:outline-none focus:border-primary"
-                  placeholder="e.g. Amoxicillin 500mg"
+                  placeholder="Ví dụ: Amoxicillin 500mg"
                 />
               </div>
               <div>
-                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Unit</label>
+                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Đơn vị</label>
                 <input
                   name="unit"
                   value={form.unit}
@@ -348,11 +348,11 @@ const MedicineManagementPage = () => {
                   required
                   maxLength={30}
                   className="w-full border border-outline rounded-lg px-sm py-xs text-body-md focus:outline-none focus:border-primary"
-                  placeholder="e.g. Box (100 tabs)"
+                  placeholder="Ví dụ: Hộp 100 viên"
                 />
               </div>
               <div>
-                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Unit Price ($)</label>
+                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Đơn giá (đ)</label>
                 <input
                   name="unitPrice"
                   value={form.unitPrice}
@@ -362,11 +362,11 @@ const MedicineManagementPage = () => {
                   min="0.01"
                   step="0.01"
                   className="w-full border border-outline rounded-lg px-sm py-xs text-body-md focus:outline-none focus:border-primary"
-                  placeholder="e.g. 12.50"
+                  placeholder="Ví dụ: 12500"
                 />
               </div>
               <div>
-                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Stock Quantity</label>
+                <label className="text-label-caps font-label-caps text-on-surface-variant block mb-xs">Số lượng tồn</label>
                 <input
                   name="stockQuantity"
                   value={form.stockQuantity}
@@ -376,16 +376,16 @@ const MedicineManagementPage = () => {
                   min="0"
                   step="1"
                   className="w-full border border-outline rounded-lg px-sm py-xs text-body-md focus:outline-none focus:border-primary"
-                  placeholder="e.g. 100"
+                  placeholder="Ví dụ: 100"
                 />
               </div>
               {formError && <p className="text-error text-body-sm">{formError}</p>}
               <div className="flex justify-end gap-sm mt-sm">
                 <button type="button" onClick={closeModal} className="px-md py-xs border border-outline rounded-lg text-body-sm hover:bg-surface-container transition-colors">
-                  Cancel
+                  Hủy
                 </button>
                 <button type="submit" disabled={submitting} className="px-md py-xs bg-primary text-on-primary rounded-lg text-body-sm font-bold shadow-sm disabled:opacity-50">
-                  {submitting ? 'Saving...' : editTarget ? 'Save Changes' : 'Add Medicine'}
+                  {submitting ? 'Đang lưu...' : editTarget ? 'Lưu thay đổi' : 'Thêm thuốc'}
                 </button>
               </div>
             </form>

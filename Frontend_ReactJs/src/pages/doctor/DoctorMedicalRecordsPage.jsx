@@ -46,19 +46,19 @@ export function DoctorMedicalRecordsPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Medical Records"
-      title="Ho so kham"
-      description="Danh sach ho so benh an da tao sau cac lich kham hoan thanh."
+      eyebrow="Bác sĩ / Hồ sơ khám"
+      title="Hồ sơ khám"
+      description="Danh sách hồ sơ bệnh án đã tạo sau các lịch khám hoàn thành."
       actions={
         <Link className="button button--primary" to="/doctor/appointments">
-          Tao tu lich hen
+          Tạo từ lịch hẹn
         </Link>
       }
     >
       <section className="doctor-appointments-filters doctor-list-toolbar">
         <label className="doctor-appointments-search">
           <input
-            placeholder="Tim theo benh nhan, chan doan, ma ho so..."
+            placeholder="Tìm theo bệnh nhân, chẩn đoán, mã hồ sơ..."
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
@@ -70,22 +70,22 @@ export function DoctorMedicalRecordsPage() {
 
       <article className="doctor-management-table doctor-management-table--records">
         <header className="doctor-management-table__head">
-          <span>Benh nhan</span>
-          <span>Lich hen</span>
-          <span>Chan doan</span>
-          <span>Ngay tao</span>
-          <span>Thao tac</span>
+          <span>Bệnh nhân</span>
+          <span>Lịch hẹn</span>
+          <span>Chẩn đoán</span>
+          <span>Ngày tạo</span>
+          <span>Thao tác</span>
         </header>
 
         {loading ? (
-          <p className="empty-state">Dang tai ho so kham...</p>
+          <p className="empty-state">Đang tải hồ sơ khám...</p>
         ) : filteredRecords.length === 0 ? (
-          <p className="empty-state">Chua co ho so kham phu hop.</p>
+          <p className="empty-state">Chưa có hồ sơ khám phù hợp.</p>
         ) : (
           filteredRecords.map(({ appointment, medicalRecord }) => (
             <div className="doctor-management-row" key={medicalRecord.id}>
               <span>
-                <strong>{medicalRecord.patientName ?? appointment.patientName ?? "Benh nhan"}</strong>
+                <strong>{medicalRecord.patientName ?? appointment.patientName ?? "Bệnh nhân"}</strong>
                 <small>ID #{medicalRecord.patientId ?? appointment.patientId ?? "--"}</small>
               </span>
               <span>

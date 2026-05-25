@@ -1,16 +1,16 @@
 export const STATUS_LABELS = {
-  PENDING: "Cho xac nhan",
-  CONFIRMED: "Da xac nhan",
-  COMPLETED: "Hoan thanh",
-  CANCELLED: "Da huy",
-  PAID: "Da thanh toan",
-  FAILED: "That bai",
-  PRESCRIPTION_CREATED: "Don thuoc",
-  APPOINTMENT_CREATED: "Lich hen",
-  APPOINTMENT_CONFIRMED: "Xac nhan",
-  APPOINTMENT_CANCELLED: "Da huy",
-  PAYMENT_CREATED: "Thanh toan",
-  PAYMENT_COMPLETED: "Da thanh toan",
+  PENDING: "Chờ xác nhận",
+  CONFIRMED: "Đã xác nhận",
+  COMPLETED: "Hoàn thành",
+  CANCELLED: "Đã hủy",
+  PAID: "Đã thanh toán",
+  FAILED: "Thất bại",
+  PRESCRIPTION_CREATED: "Đơn thuốc",
+  APPOINTMENT_CREATED: "Lịch hẹn",
+  APPOINTMENT_CONFIRMED: "Xác nhận",
+  APPOINTMENT_CANCELLED: "Đã hủy",
+  PAYMENT_CREATED: "Thanh toán",
+  PAYMENT_COMPLETED: "Đã thanh toán",
 };
 
 export function formatDate(value) {
@@ -67,12 +67,19 @@ export function PatientStatusBadge({ status }) {
 }
 
 export function PatientPageShell({ eyebrow, title, description, actions, children }) {
+  const localizedEyebrow = eyebrow
+    ?.replace("Patient Portal", "Cổng bệnh nhân")
+    .replace("Appointment", "Lịch hẹn")
+    .replace("Prescription", "Đơn thuốc")
+    .replace("Review", "Đánh giá")
+    .replace("Notifications", "Thông báo");
+
   return (
     <div className="browse-page patient-portal-page">
       <div className="mc-container patient-portal-wrap">
         <header className="patient-portal-header">
           <div>
-            {eyebrow ? <span className="patient-portal-eyebrow">{eyebrow}</span> : null}
+            {localizedEyebrow ? <span className="patient-portal-eyebrow">{localizedEyebrow}</span> : null}
             <h1>{title}</h1>
             {description ? <p>{description}</p> : null}
           </div>

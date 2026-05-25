@@ -3,9 +3,9 @@ import { Link } from "react-router-dom";
 import { consultSpecialty } from "../../services/aiConsultationService";
 
 const quickPrompts = [
-  "Toi bi dau nguc, kho tho va tim dap nhanh",
-  "Toi bi noi man do, ngua da va mun nhieu",
-  "Toi bi dau dau, chong mat va mat ngu",
+  "Tôi bị đau ngực, khó thở và tim đập nhanh",
+  "Tôi bị nổi mẩn đỏ, ngứa da và mụn nhiều",
+  "Tôi bị đau đầu, chóng mặt và mất ngủ",
 ];
 
 export function PatientAiChatWidget() {
@@ -14,7 +14,7 @@ export function PatientAiChatWidget() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Xin chao, toi co the goi y chuyen khoa phu hop dua tren trieu chung cua ban.",
+      text: "Xin chào, tôi có thể gợi ý chuyên khoa phù hợp dựa trên triệu chứng của bạn.",
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,12 +43,12 @@ export function PatientAiChatWidget() {
         ...current,
         {
           role: "assistant",
-          text: data?.answer ?? "Toi chua tim thay goi y phu hop.",
+          text: data?.answer ?? "Tôi chưa tìm thấy gợi ý phù hợp.",
           suggestions: topSuggestions,
         },
       ]);
     } catch (requestError) {
-      setError(requestError.message || "Khong the goi AI tu van luc nay.");
+      setError(requestError.message || "Không thể gọi AI tư vấn lúc này.");
     } finally {
       setIsLoading(false);
     }
@@ -62,17 +62,17 @@ export function PatientAiChatWidget() {
   return (
     <div className="patient-ai-widget">
       {isOpen ? (
-        <section className="patient-ai-panel" aria-label="AI tu van chuyen khoa">
+        <section className="patient-ai-panel" aria-label="AI tư vấn chuyên khoa">
           <div className="patient-ai-panel__head">
             <div>
-              <span>AI ho tro</span>
-              <strong>Tu van chuyen khoa</strong>
+              <span>AI hỗ trợ</span>
+              <strong>Tư vấn chuyên khoa</strong>
             </div>
             <button
               type="button"
               className="patient-ai-icon-btn"
               onClick={() => setIsOpen(false)}
-              aria-label="Dong AI chat"
+              aria-label="Đóng AI chat"
             >
               <span className="material-symbols-outlined">close</span>
             </button>
@@ -92,7 +92,7 @@ export function PatientAiChatWidget() {
                         <div className="patient-ai-suggestion" key={`${suggestion.sourceType}-${suggestion.sourceId}`}>
                           <div>
                             <strong>{suggestion.title}</strong>
-                            <span>Chuyen khoa</span>
+                            <span>Chuyên khoa</span>
                           </div>
                           <Link to={`/specialties/${suggestion.sourceId}`}>Xem</Link>
                         </div>
@@ -103,7 +103,7 @@ export function PatientAiChatWidget() {
               ))}
               {isLoading ? (
                 <div className="patient-ai-message patient-ai-message--assistant">
-                  <p>Dang phan tich trieu chung...</p>
+                  <p>Đang phân tích triệu chứng...</p>
                 </div>
               ) : null}
             </div>
@@ -123,10 +123,10 @@ export function PatientAiChatWidget() {
             <input
               value={message}
               onChange={(event) => setMessage(event.target.value)}
-              placeholder="Nhap trieu chung cua ban..."
-              aria-label="Nhap trieu chung"
+              placeholder="Nhập triệu chứng của bạn..."
+              aria-label="Nhập triệu chứng"
             />
-            <button type="submit" disabled={isLoading || !message.trim()} aria-label="Gui">
+            <button type="submit" disabled={isLoading || !message.trim()} aria-label="Gửi">
               <span className="material-symbols-outlined">send</span>
             </button>
           </form>
@@ -137,7 +137,7 @@ export function PatientAiChatWidget() {
         type="button"
         className="patient-ai-fab"
         onClick={() => setIsOpen((value) => !value)}
-        aria-label="Mo AI tu van"
+        aria-label="Mở AI tư vấn"
       >
         <span className="material-symbols-outlined">smart_toy</span>
         <span>AI</span>

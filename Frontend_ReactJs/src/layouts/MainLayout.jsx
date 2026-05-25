@@ -64,7 +64,7 @@ export function MainLayout() {
             <strong>MediCare</strong>
           </NavLink>
 
-          <nav className="site-nav" aria-label="Primary">
+          <nav className="site-nav" aria-label="Điều hướng chính">
             {publicNavigation.map((item) => (
               <NavLink
                 key={item.label}
@@ -84,7 +84,7 @@ export function MainLayout() {
                   "site-nav__link" + (isActive ? " site-nav__link--active" : "")
                 }
               >
-                Lich hen cua toi
+                Lịch khám của tôi
               </NavLink>
             ) : null}
           </nav>
@@ -92,7 +92,7 @@ export function MainLayout() {
           <div className="site-actions">
             {currentUser ? (
               <>
-                <Link className="site-icon-link" to={currentUser.role?.toUpperCase() === "ADMIN" ? "/admin/notifications" : "/notifications"} aria-label="Thong bao">
+                <Link className="site-icon-link" to={currentUser.role?.toUpperCase() === "ADMIN" ? "/admin/notifications" : "/notifications"} aria-label="Thông báo">
                   <span className="material-symbols-outlined">notifications</span>
                   {unreadCount > 0 ? (
                     <span className="site-icon-link__badge">
@@ -178,7 +178,7 @@ export function MainLayout() {
         </div>
 
         <div className="site-footer__bottom">
-          <span className="site-footer__copy">© 2026 MediCare. All rights reserved.</span>
+          <span className="site-footer__copy">© 2026 MediCare. Bảo lưu mọi quyền.</span>
         </div>
       </footer>
     </div>

@@ -39,7 +39,6 @@ public class MedicineServiceImpl implements MedicineService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "medicine", key = "#id")
     public MedicineResponse getMedicineById(Long id) {
         Medicine medicine = medicineRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + id));

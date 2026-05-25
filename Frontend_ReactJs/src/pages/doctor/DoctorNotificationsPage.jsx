@@ -40,9 +40,9 @@ export function DoctorNotificationsPage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Notifications"
-      title="Doctor notifications"
-      description="Theo doi notification that tu backend va di toi man hinh lien quan."
+      eyebrow="Bác sĩ / Thông báo"
+      title="Thông báo bác sĩ"
+      description="Theo dõi thông báo từ backend và mở màn hình liên quan."
       actions={
         <button
           className="button button--secondary"
@@ -50,16 +50,16 @@ export function DoctorNotificationsPage() {
           type="button"
           onClick={handleMarkAll}
         >
-          Mark all as read
+          Đánh dấu tất cả đã đọc
         </button>
       }
     >
       <article className="doctor-panel">
         {error ? <p className="empty-state">{error}</p> : null}
         {loading ? (
-          <p className="empty-state">Loading notifications...</p>
+          <p className="empty-state">Đang tải thông báo...</p>
         ) : notifications.length === 0 ? (
-          <p className="empty-state">No notifications available.</p>
+          <p className="empty-state">Chưa có thông báo nào.</p>
         ) : (
           <div className="doctor-list">
             {notifications.map((notification) => {
@@ -81,7 +81,7 @@ export function DoctorNotificationsPage() {
                     <div className="doctor-action-stack">
                       {referencePath ? (
                         <Link className="doctor-text-link" to={referencePath}>
-                          Open related
+                          Mở liên quan
                         </Link>
                       ) : null}
                       {!notification.isRead ? (
@@ -91,7 +91,7 @@ export function DoctorNotificationsPage() {
                           type="button"
                           onClick={() => handleMarkOne(notification.id)}
                         >
-                          Mark as read
+                          Đánh dấu đã đọc
                         </button>
                       ) : null}
                     </div>

@@ -95,11 +95,11 @@ export function PatientPrescriptionDetailPage() {
     <>
       <PatientPageShell
         eyebrow="Patient Portal / Prescription"
-        title={prescription ? `Don thuoc #${prescription.id}` : "Chi tiet don thuoc"}
-        description="Thong tin thuoc, lieu dung va huong dan su dung."
+        title={prescription ? `Đơn thuốc #${prescription.id}` : "Chi tiết đơn thuốc"}
+        description="Thông tin thuốc, liều dùng và hướng dẫn sử dụng."
         actions={
           <>
-            <Link className="mc-btn mc-btn--outline" to="/prescriptions">Danh sach don</Link>
+            <Link className="mc-btn mc-btn--outline" to="/prescriptions">Danh sách đơn thuốc</Link>
             <PayStatusChip />
             {showBanner && (
               <button className="mc-btn mc-btn--primary" type="button" onClick={() => { setPayError(""); setShowModal(true); }}>
@@ -107,7 +107,7 @@ export function PatientPrescriptionDetailPage() {
                 Thanh toán tiền thuốc
               </button>
             )}
-            <button className="mc-btn mc-btn--outline" type="button" onClick={() => window.print()}>In don thuoc</button>
+            <button className="mc-btn mc-btn--outline" type="button" onClick={() => window.print()}>In đơn thuốc</button>
           </>
         }
       >
@@ -129,39 +129,39 @@ export function PatientPrescriptionDetailPage() {
         )}
 
         {loading ? (
-          <div className="mc-state"><p>Dang tai don thuoc...</p></div>
+          <div className="mc-state"><p>Đang tải đơn thuốc...</p></div>
         ) : prescription ? (
           <article className="patient-panel patient-document">
             <div className="patient-panel__head">
               <div>
-                <h2>Thong tin don thuoc</h2>
-                <p>Tao luc {formatDateTime(prescription.createdAt)}</p>
+                <h2>Thông tin đơn thuốc</h2>
+                <p>Tạo lúc {formatDateTime(prescription.createdAt)}</p>
               </div>
               <PatientStatusBadge status={prescription.status} />
             </div>
 
             <div className="patient-info-grid">
-              <Info label="Bac si" value={prescription.doctorName} />
-              <Info label="Benh nhan" value={prescription.patientName} />
-              <Info label="Tong tien thuoc" value={formatCurrency(prescription.totalMedicineFee)} />
-              <Info label="Ma ho so" value={`#${prescription.medicalRecordId}`} />
+              <Info label="Bác sĩ" value={prescription.doctorName} />
+              <Info label="Bệnh nhân" value={prescription.patientName} />
+              <Info label="Tổng tiền thuốc" value={formatCurrency(prescription.totalMedicineFee)} />
+              <Info label="Mã hồ sơ" value={`#${prescription.medicalRecordId}`} />
             </div>
 
             <div className="patient-note-box">
-              <span>Ghi chu chung</span>
-              <p>{prescription.generalNote || "Khong co ghi chu chung."}</p>
+              <span>Ghi chú chung</span>
+              <p>{prescription.generalNote || "Không có ghi chú chung."}</p>
             </div>
 
             <div className="patient-table-wrap">
               <table className="patient-table">
                 <thead>
                   <tr>
-                    <th>Thuoc</th>
-                    <th>Lieu</th>
-                    <th>So ngay</th>
-                    <th>So luong</th>
-                    <th>Thanh tien</th>
-                    <th>Huong dan</th>
+                    <th>Thuốc</th>
+                    <th>Lượng</th>
+                    <th>Số ngày</th>
+                    <th>Số lượng</th>
+                    <th>Thanh tiền</th>
+                    <th>Hướng dẫn</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,7 +171,7 @@ export function PatientPrescriptionDetailPage() {
                         <strong>{item.medicineName}</strong>
                         {item.note ? <small>{item.note}</small> : null}
                       </td>
-                      <td>{item.dosePerTime} x {item.timesPerDay}/ngay</td>
+                      <td>{item.dosePerTime} x {item.timesPerDay}/ngày</td>
                       <td>{item.durationDays}</td>
                       <td>{item.quantity}</td>
                       <td>{formatCurrency(item.lineTotal)}</td>
@@ -183,7 +183,7 @@ export function PatientPrescriptionDetailPage() {
             </div>
           </article>
         ) : (
-          <div className="mc-state"><p>Khong tim thay don thuoc.</p></div>
+          <div className="mc-state"><p>Không tìm thấy đơn thuốc.</p></div>
         )}
       </PatientPageShell>
 

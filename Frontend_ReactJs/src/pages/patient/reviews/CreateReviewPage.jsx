@@ -61,13 +61,13 @@ export function CreateReviewPage() {
   return (
     <PatientPageShell
       eyebrow="Patient Portal / Review"
-      title="Viet danh gia"
-      description="Chia se trai nghiem sau khi lich kham da hoan thanh."
-      actions={<Link className="mc-btn mc-btn--outline" to="/reviews">Danh sach danh gia</Link>}
+      title="Viết đánh giá "
+      description="Chia sẻ trải nghiệm sau khi lịch khám đã hoàn thành."
+      actions={<Link className="mc-btn mc-btn--outline" to="/reviews">Danh sách đánh giá</Link>}
     >
       {error ? <p className="patient-alert patient-alert--error">{error}</p> : null}
       {loading ? (
-        <div className="mc-state"><p>Dang tai thong tin lich kham...</p></div>
+        <div className="mc-state"><p>Đang tải thông tin lịch khám...</p></div>
       ) : appointment ? (
         <div className="patient-detail-layout">
           <section className="patient-detail-main">
@@ -82,26 +82,26 @@ export function CreateReviewPage() {
 
               {!canReview ? (
                 <p className="patient-alert patient-alert--error">
-                  Ban chi co the danh gia sau khi lich kham da hoan thanh.
+                  Bạn chỉ có thể đánh giá sau khi lịch khám đã hoàn thành.
                 </p>
               ) : null}
 
               <form className="patient-form" onSubmit={handleSubmit}>
                 <label>
-                  <span>So sao</span>
+                  <span>Số sao</span>
                   <select value={rating} onChange={(event) => setRating(event.target.value)} disabled={!canReview}>
-                    <option value="5">5 sao - Rat hai long</option>
-                    <option value="4">4 sao - Hai long</option>
-                    <option value="3">3 sao - Binh thuong</option>
-                    <option value="2">2 sao - Chua tot</option>
-                    <option value="1">1 sao - Khong hai long</option>
+                    <option value="5">5 sao - Rất hài lòng</option>
+                    <option value="4">4 sao - Hài lòng</option>
+                    <option value="3">3 sao - Bình thường</option>
+                    <option value="2">2 sao - Chưa tốt</option>
+                    <option value="1">1 sao - Không hài lòng</option>
                   </select>
                 </label>
                 <label>
-                  <span>Nhan xet</span>
+                  <span>Nhận xét</span>
                   <textarea
                     rows={6}
-                    placeholder="Nhap cam nhan cua ban ve bac si va buoi kham..."
+                    placeholder="Nhập cảm nhận của bạn về bác sĩ và buổi khám..."
                     value={comment}
                     onChange={(event) => setComment(event.target.value)}
                     disabled={!canReview}
@@ -109,10 +109,10 @@ export function CreateReviewPage() {
                 </label>
                 <div className="patient-card-actions">
                   <Link className="mc-btn mc-btn--outline" to={`/my-appointments/${appointment.id}`}>
-                    Quay lai lich hen
+                    Quay lại lịch hẹn
                   </Link>
                   <button className="mc-btn mc-btn--primary" disabled={!canReview || submitting} type="submit">
-                    {submitting ? "Dang gui..." : "Gui danh gia"}
+                    {submitting ? "Đang gửi..." : "Gửi đánh giá"}
                   </button>
                 </div>
               </form>
@@ -120,7 +120,7 @@ export function CreateReviewPage() {
           </section>
         </div>
       ) : (
-        <div className="mc-state"><p>Khong tim thay lich hen.</p></div>
+        <div className="mc-state"><p>Không tìm thấy lịch hẹn.</p></div>
       )}
     </PatientPageShell>
   );

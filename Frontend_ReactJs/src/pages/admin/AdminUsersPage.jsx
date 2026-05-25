@@ -28,15 +28,15 @@ function formatDate(value) {
 
 function statusMeta(status) {
   const normalized = String(status ?? "").toUpperCase();
-  if (normalized === "INACTIVE") return { label: "Inactive", dot: "#94a3b8", badge: "neutral" };
-  return { label: "Active", dot: "#22c55e", badge: "success" };
+  if (normalized === "INACTIVE") return { label: "Ngưng hoạt động", dot: "#94a3b8", badge: "neutral" };
+  return { label: "Hoạt động", dot: "#22c55e", badge: "success" };
 }
 
 function roleMeta(role) {
   const normalized = String(role ?? "").toUpperCase();
-  if (normalized === "ADMIN") return { label: "Admin", tone: "#1f2937", bg: "#e5e7eb" };
-  if (normalized === "DOCTOR") return { label: "Doctor", tone: "#1d4ed8", bg: "#dbeafe" };
-  return { label: "Patient", tone: "#0f766e", bg: "#ccfbf1" };
+  if (normalized === "ADMIN") return { label: "Quản trị viên", tone: "#1f2937", bg: "#e5e7eb" };
+  if (normalized === "DOCTOR") return { label: "Bác sĩ", tone: "#1d4ed8", bg: "#dbeafe" };
+  return { label: "Bệnh nhân", tone: "#0f766e", bg: "#ccfbf1" };
 }
 
 export function AdminUsersPage() {
@@ -109,12 +109,12 @@ export function AdminUsersPage() {
   return (
     <AdminWorkspace
       eyebrow="Admin / Người dùng"
-      title="User Management"
+      title="Quản lý người dùng"
       description="Quản lý, lọc và theo dõi toàn bộ người dùng trong hệ thống."
       actions={
         <button className="button button--primary" type="button" disabled title="Backend chưa hỗ trợ API tạo user">
           <span className="material-symbols-outlined">person_add</span>
-          Add New User
+          Thêm người dùng
         </button>
       }
     >
@@ -128,25 +128,25 @@ export function AdminUsersPage() {
       <section className="admin-stats-row">
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Total Users</p>
+            <p className="admin-stat-card__label">Tổng người dùng</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.total}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Active Clinicians</p>
+            <p className="admin-stat-card__label">Bác sĩ hoạt động</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.doctors}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Total Patients</p>
+            <p className="admin-stat-card__label">Tổng bệnh nhân</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.patients}</p>
           </div>
         </div>
         <div className="admin-stat-card">
           <div>
-            <p className="admin-stat-card__label">Inactive Users</p>
+            <p className="admin-stat-card__label">Người dùng ngưng hoạt động</p>
             <p className="admin-stat-card__value">{loading ? "--" : stats.inactive}</p>
           </div>
         </div>
@@ -158,42 +158,42 @@ export function AdminUsersPage() {
             <span className="material-symbols-outlined">person_search</span>
             <input
               type="search"
-              placeholder="Search by name, email or phone..."
+              placeholder="Tìm theo tên, email hoặc số điện thoại..."
               value={searchKeyword}
               onChange={(event) => setSearchKeyword(event.target.value)}
             />
           </label>
 
           <label style={{ display: "grid", gap: 6, minWidth: 140 }}>
-            <span>Role</span>
+            <span>Vai trò</span>
             <select
               value={roleFilter}
               onChange={(event) => setRoleFilter(event.target.value)}
               style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
             >
-              <option value="ALL">All Roles</option>
-              <option value="ADMIN">Admin</option>
-              <option value="DOCTOR">Doctor</option>
-              <option value="PATIENT">Patient</option>
+              <option value="ALL">Tất cả vai trò</option>
+              <option value="ADMIN">Quản trị viên</option>
+              <option value="DOCTOR">Bác sĩ</option>
+              <option value="PATIENT">Bệnh nhân</option>
             </select>
           </label>
 
           <label style={{ display: "grid", gap: 6, minWidth: 140 }}>
-            <span>Status</span>
+            <span>Trạng thái</span>
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
             >
-              <option value="ALL">Any Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
+              <option value="ALL">Tất cả trạng thái</option>
+              <option value="ACTIVE">Hoạt động</option>
+              <option value="INACTIVE">Ngưng hoạt động</option>
             </select>
           </label>
 
           <button className="button button--ghost" type="button" onClick={loadUsers}>
             <span className="material-symbols-outlined">refresh</span>
-            Refresh
+            Làm mới
           </button>
         </div>
 
@@ -202,13 +202,13 @@ export function AdminUsersPage() {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Full Name</th>
+                <th>Họ tên</th>
                 <th>Email</th>
-                <th>Phone</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th>Created Date</th>
-                <th>Actions</th>
+                <th>Số điện thoại</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th>Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -276,8 +276,8 @@ export function AdminUsersPage() {
 
         <div className="admin-table-toolbar" style={{ justifyContent: "space-between" }}>
           <span>
-            Showing {(currentPage - 1) * PAGE_SIZE + (pagedUsers.length > 0 ? 1 : 0)}-
-            {(currentPage - 1) * PAGE_SIZE + pagedUsers.length} of {filteredUsers.length} users
+            Hiển thị {(currentPage - 1) * PAGE_SIZE + (pagedUsers.length > 0 ? 1 : 0)}-
+            {(currentPage - 1) * PAGE_SIZE + pagedUsers.length} trong {filteredUsers.length} người dùng
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
@@ -286,16 +286,16 @@ export function AdminUsersPage() {
               disabled={currentPage <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
             >
-              Prev
+              Trước
             </button>
-            <span>Page {currentPage}/{totalPages}</span>
+            <span>Trang {currentPage}/{totalPages}</span>
             <button
               className="button button--ghost"
               type="button"
               disabled={currentPage >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             >
-              Next
+              Sau
             </button>
           </div>
         </div>

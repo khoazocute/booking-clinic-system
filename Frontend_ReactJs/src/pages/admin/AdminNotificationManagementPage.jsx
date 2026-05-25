@@ -3,17 +3,17 @@ import { markAsRead, markAllAsRead } from "../../services/notificationService";
 import { useAdminNotificationContext } from "../../contexts/AdminNotificationContext";
 
 const TYPE_CONFIG = {
-  APPOINTMENT_CONFIRMED: { label: "SUCCESS", bg: "bg-primary-container/10", text: "text-primary" },
-  APPOINTMENT_CANCELLED: { label: "WARNING", bg: "bg-tertiary-fixed", text: "text-on-tertiary-fixed-variant" },
-  PAYMENT_COMPLETED:     { label: "SUCCESS", bg: "bg-primary-container/10", text: "text-primary" },
-  PAYMENT_UPDATED:       { label: "WARNING", bg: "bg-tertiary-fixed", text: "text-on-tertiary-fixed-variant" },
-  PAYMENT_CREATED:       { label: "INFO",    bg: "bg-secondary-container/20", text: "text-secondary" },
-  PRESCRIPTION_CREATED:  { label: "INFO",    bg: "bg-secondary-container/20", text: "text-secondary" },
-  LOW_STOCK:             { label: "ALERT",   bg: "bg-error-container", text: "text-on-error-container" },
-  OUT_OF_STOCK:          { label: "ALERT",   bg: "bg-error-container", text: "text-on-error-container" },
+  APPOINTMENT_CONFIRMED: { label: "THÀNH CÔNG", bg: "bg-primary-container/10", text: "text-primary" },
+  APPOINTMENT_CANCELLED: { label: "NHẮC NHỞ", bg: "bg-tertiary-fixed", text: "text-on-tertiary-fixed-variant" },
+  PAYMENT_COMPLETED:     { label: "THÀNH CÔNG", bg: "bg-primary-container/10", text: "text-primary" },
+  PAYMENT_UPDATED:       { label: "NHẮC NHỞ", bg: "bg-tertiary-fixed", text: "text-on-tertiary-fixed-variant" },
+  PAYMENT_CREATED:       { label: "THÔNG TIN",    bg: "bg-secondary-container/20", text: "text-secondary" },
+  PRESCRIPTION_CREATED:  { label: "THÔNG TIN",    bg: "bg-secondary-container/20", text: "text-secondary" },
+  LOW_STOCK:             { label: "CẢNH BÁO",   bg: "bg-error-container", text: "text-on-error-container" },
+  OUT_OF_STOCK:          { label: "CẢNH BÁO",   bg: "bg-error-container", text: "text-on-error-container" },
 };
 
-const DEFAULT_TYPE = { label: "INFO", bg: "bg-secondary-container/20", text: "text-secondary" };
+const DEFAULT_TYPE = { label: "THÔNG TIN", bg: "bg-secondary-container/20", text: "text-secondary" };
 
 function getTypeConfig(type) {
   return TYPE_CONFIG[type] || DEFAULT_TYPE;
@@ -61,9 +61,9 @@ const AdminNotificationManagementPage = () => {
   const stats = notifications.reduce(
     (acc, n) => {
       const cfg = getTypeConfig(n.type);
-      if (cfg.label === "ALERT") acc.alert++;
-      else if (cfg.label === "SUCCESS") acc.success++;
-      else if (cfg.label === "WARNING") acc.warning++;
+      if (cfg.label === "CẢNH BÁO") acc.alert++;
+      else if (cfg.label === "THÀNH CÔNG") acc.success++;
+      else if (cfg.label === "NHẮC NHỞ") acc.warning++;
       else acc.info++;
       return acc;
     },
@@ -81,24 +81,24 @@ const AdminNotificationManagementPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between mb-lg gap-md">
         <div>
-          <p className="admin-page-header__eyebrow">Admin / Notifications</p>
+          <p className="admin-page-header__eyebrow">Admin / Thông báo</p>
           <div className="flex items-center gap-sm">
             <h1 style={{ fontFamily: "Manrope", fontSize: "26px", fontWeight: 800, color: "#111827", margin: 0, lineHeight: 1.2 }}>
-              Notification Management
+              Quản lý thông báo
             </h1>
             <span className={`flex items-center gap-xs text-label-caps font-label-caps px-sm py-xs rounded-full ${connected ? "bg-primary-container/20 text-primary" : "bg-surface-container text-on-surface-variant"}`}>
               <span className={`w-2 h-2 rounded-full ${connected ? "bg-primary" : "bg-outline"}`}></span>
-              {connected ? "Live" : "Offline"}
+              {connected ? "Đang kết nối" : "Mất kết nối"}
             </span>
           </div>
           <p className="text-body-md font-body-md text-on-surface-variant mt-xs">
-            Manage and track all medical facility alerts and communications.
+            Quản lý và theo dõi toàn bộ cảnh báo, trao đổi trong hệ thống phòng khám.
           </p>
         </div>
         <div className="flex items-center gap-sm">
           {unreadCount > 0 && (
             <span className="px-sm py-xs rounded-full bg-primary text-on-primary text-label-caps font-label-caps">
-              {unreadCount} unread
+              {unreadCount} chưa đọc
             </span>
           )}
           <button
@@ -107,27 +107,27 @@ const AdminNotificationManagementPage = () => {
             className="flex items-center gap-xs px-md py-sm text-primary border border-primary rounded-lg font-button hover:bg-primary-fixed-dim transition-all active:scale-95 disabled:opacity-40"
           >
             <span className="material-symbols-outlined">done_all</span>
-            Mark all as read
+            Đánh dấu tất cả đã đọc
           </button>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-lg">
-        <StatCard icon="error" iconBg="bg-error-container" iconColor="text-error" label="ALERTS" count={stats.alert} />
-        <StatCard icon="info" iconBg="bg-secondary-container/20" iconColor="text-secondary" label="INFO" count={stats.info} />
-        <StatCard icon="check_circle" iconBg="bg-primary-container/10" iconColor="text-primary" label="SUCCESS" count={stats.success} />
-        <StatCard icon="warning" iconBg="bg-on-tertiary-fixed/10" iconColor="text-tertiary" label="WARNING" count={stats.warning} />
+        <StatCard icon="error" iconBg="bg-error-container" iconColor="text-error" label="CẢNH BÁO" count={stats.alert} />
+        <StatCard icon="info" iconBg="bg-secondary-container/20" iconColor="text-secondary" label="THÔNG TIN" count={stats.info} />
+        <StatCard icon="check_circle" iconBg="bg-primary-container/10" iconColor="text-primary" label="THÀNH CÔNG" count={stats.success} />
+        <StatCard icon="warning" iconBg="bg-on-tertiary-fixed/10" iconColor="text-tertiary" label="NHẮC NHỞ" count={stats.warning} />
       </div>
 
       {/* List */}
       <div className="bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden border border-outline-variant/50">
         {/* List Header */}
         <div className="grid grid-cols-12 gap-sm px-md py-sm bg-surface-container border-b border-outline-variant text-label-caps font-label-caps text-on-surface-variant">
-          <div className="col-span-1 flex justify-center">STATUS</div>
-          <div className="col-span-2">TYPE</div>
-          <div className="col-span-6">NOTIFICATION</div>
-          <div className="col-span-2 text-right">TIME</div>
+          <div className="col-span-1 flex justify-center">TRẠNG THÁI</div>
+          <div className="col-span-2">LOẠI</div>
+          <div className="col-span-6">THÔNG BÁO</div>
+          <div className="col-span-2 text-right">THỜI GIAN</div>
           <div className="col-span-1"></div>
         </div>
 

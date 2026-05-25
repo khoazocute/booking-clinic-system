@@ -1,8 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { SafeAvatar } from "../../../components/common/SafeAvatar";
+import doctorsBackgroundImage from "../../../assets/images/homepage/background1.png";
 import { getDoctors } from "../../../services/doctorService";
 import { getSpecialties } from "../../../services/specialtyService";
+
+function formatCurrency(value) {
+  if (value == null || Number(value) <= 0) return "Chưa cập nhật";
+  return `${Number(value).toLocaleString("vi-VN")} đ`;
+}
+
+function getRating(doctor) {
+  return doctor.averageRating == null ? 0 : Number(doctor.averageRating);
+}
 
 export function DoctorsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,6 +24,29 @@ export function DoctorsPage() {
   const [keyword, setKeyword] = useState(searchParams.get("keyword") ?? "");
   const [inputKeyword, setInputKeyword] = useState(searchParams.get("keyword") ?? "");
   const [specialtyId, setSpecialtyId] = useState(searchParams.get("specialtyId") ?? "");
+  const [minExperience, setMinExperience] = useState(searchParams.get("minExperience") ?? "");
+  const [sortBy, setSortBy] = useState("rating");
+
+  const selectedSpecialty = useMemo(
+    () => specialties.find((specialty) => String(specialty.id) === String(specialtyId)),
+    [specialties, specialtyId]
+  );
+
+  const visibleDoctors = useMemo(() => {
+    const minYears = Number(minExperience || 0);
+
+    return [...doctors]
+      .filter((doctor) => Number(doctor.experienceYears ?? 0) >= minYears)
+      .sort((a, b) => {
+        if (sortBy === "experience") {
+          return Number(b.experienceYears ?? 0) - Number(a.experienceYears ?? 0);
+        }
+        if (sortBy === "fee") {
+          return Number(a.consultationFee ?? 0) - Number(b.consultationFee ?? 0);
+        }
+        return getRating(b) - getRating(a);
+      });
+  }, [doctors, minExperience, sortBy]);
 
   useEffect(() => {
     getSpecialties()
@@ -25,100 +58,156 @@ export function DoctorsPage() {
     let active = true;
     setLoading(true);
     setError("");
+
     getDoctors({ keyword, specialtyId: specialtyId || undefined })
       .then((res) => {
-        if (active) {
-          setDoctors(res?.data?.items ?? res?.data ?? []);
-          setLoading(false);
-        }
+        if (!active) return;
+        setDoctors(res?.data?.items ?? res?.data ?? []);
+        setLoading(false);
       })
       .catch((err) => {
-        if (active) { setError(err.message); setLoading(false); }
+        if (!active) return;
+        setError(err.message);
+        setLoading(false);
       });
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+    };
   }, [keyword, specialtyId]);
 
-  function handleSearch(e) {
-    e.preventDefault();
-    const kw = inputKeyword.trim();
-    setKeyword(kw);
-    const p = {};
-    if (kw) p.keyword = kw;
-    if (specialtyId) p.specialtyId = specialtyId;
-    setSearchParams(p);
+  function syncSearchParams(nextKeyword, nextSpecialtyId, nextExperience) {
+    const params = {};
+    if (nextKeyword) params.keyword = nextKeyword;
+    if (nextSpecialtyId) params.specialtyId = nextSpecialtyId;
+    if (nextExperience) params.minExperience = nextExperience;
+    setSearchParams(params);
   }
 
-  function handleSpecialtyChange(sid) {
-    const val = specialtyId === sid ? "" : sid;
-    setSpecialtyId(val);
-    const p = {};
-    if (keyword) p.keyword = keyword;
-    if (val) p.specialtyId = val;
-    setSearchParams(p);
+  function handleSearch(event) {
+    event.preventDefault();
+    const nextKeyword = inputKeyword.trim();
+    setKeyword(nextKeyword);
+    syncSearchParams(nextKeyword, specialtyId, minExperience);
+  }
+
+  function handleSpecialtyChange(nextSpecialtyId) {
+    const value = specialtyId === nextSpecialtyId ? "" : nextSpecialtyId;
+    setSpecialtyId(value);
+    syncSearchParams(keyword, value, minExperience);
+  }
+
+  function handleExperienceChange(event) {
+    const value = event.target.value;
+    setMinExperience(value);
+    syncSearchParams(keyword, specialtyId, value);
   }
 
   function handleClearFilters() {
-    setSpecialtyId("");
     setKeyword("");
     setInputKeyword("");
+    setSpecialtyId("");
+    setMinExperience("");
+    setSortBy("rating");
     setSearchParams({});
   }
 
   return (
-    <div className="browse-page">
-      <main className="mc-container mc-page-body">
-        <aside className="mc-filter-panel">
-          <div className="mc-filter-card">
-            <h3 className="mc-filter-title">Bộ lọc</h3>
+    <div
+      className="doctor-directory-page"
+      style={{ "--doctor-directory-bg": `url(${doctorsBackgroundImage})` }}
+    >
+      <section className="doctor-directory-hero">
+        <div className="site-container doctor-directory-hero__inner">
+          <span className="doctor-directory-hero__eyebrow">MediCare Doctors</span>
+          <h1>Tìm bác sĩ chuyên khoa</h1>
+          <p>Tra cứu bác sĩ theo tên, chuyên khoa và kinh nghiệm để đặt lịch khám nhanh hơn.</p>
 
-            <div className="mc-filter-section">
-              <span className="mc-label-caps">Chuyên khoa</span>
-              <div className="mc-filter-list">
-                {specialties.map((s) => (
-                  <label key={s.id} className="mc-filter-check">
-                    <input
-                      type="checkbox"
-                      checked={specialtyId === String(s.id)}
-                      onChange={() => handleSpecialtyChange(String(s.id))}
-                    />
-                    <span>{s.name}</span>
-                  </label>
+          <form className="doctor-directory-search" onSubmit={handleSearch}>
+            <label className="doctor-directory-search__field">
+              <span className="material-symbols-outlined">search</span>
+              <input
+                type="search"
+                placeholder="Tên bác sĩ hoặc triệu chứng..."
+                value={inputKeyword}
+                onChange={(event) => setInputKeyword(event.target.value)}
+              />
+            </label>
+
+            <label className="doctor-directory-search__field">
+              <span className="material-symbols-outlined">medical_services</span>
+              <select value={specialtyId} onChange={(event) => handleSpecialtyChange(event.target.value)}>
+                <option value="">Chuyên khoa</option>
+                {specialties.map((specialty) => (
+                  <option key={specialty.id} value={String(specialty.id)}>
+                    {specialty.name}
+                  </option>
                 ))}
-                {specialties.length === 0 && (
-                  <span className="mc-text-muted">Đang tải...</span>
-                )}
-              </div>
+              </select>
+            </label>
+
+            <label className="doctor-directory-search__field">
+              <span className="material-symbols-outlined">history_edu</span>
+              <select value={minExperience} onChange={handleExperienceChange}>
+                <option value="">Kinh nghiệm</option>
+                <option value="5">5+ năm</option>
+                <option value="10">10+ năm</option>
+                <option value="15">15+ năm</option>
+              </select>
+            </label>
+
+            <button type="submit">Tìm ngay</button>
+          </form>
+        </div>
+      </section>
+
+      <main className="site-container doctor-directory-layout">
+        <aside className="doctor-directory-sidebar">
+          <section className="doctor-directory-panel">
+            <div className="doctor-directory-panel__head">
+              <h2>Chuyên khoa</h2>
+              <button type="button" onClick={handleClearFilters}>Xóa lọc</button>
             </div>
 
-            <button className="mc-btn mc-btn--clear" type="button" onClick={handleClearFilters}>
-              Xoá bộ lọc
-            </button>
-          </div>
+            <div className="doctor-directory-checks">
+              {specialties.map((specialty) => {
+                const id = String(specialty.id);
+                return (
+                  <label key={specialty.id}>
+                    <input
+                      type="checkbox"
+                      checked={specialtyId === id}
+                      onChange={() => handleSpecialtyChange(id)}
+                    />
+                    <span>{specialty.name}</span>
+                  </label>
+                );
+              })}
+              {specialties.length === 0 ? <p>Đang tải chuyên khoa...</p> : null}
+            </div>
+          </section>
+
+          <section className="doctor-directory-ai">
+            <div>
+              <span className="material-symbols-outlined">smart_toy</span>
+              <strong>Trợ lý AI</strong>
+            </div>
+            <p>Mô tả triệu chứng, AI sẽ gợi ý chuyên khoa phù hợp để bạn chọn bác sĩ nhanh hơn.</p>
+          </section>
         </aside>
 
-        <section className="mc-result-section">
-          <form className="mc-search-bar" onSubmit={handleSearch}>
-            <span className="material-symbols-outlined mc-search-icon">search</span>
-            <input
-              className="mc-search-input"
-              type="search"
-              placeholder="Tìm theo tên bác sĩ..."
-              value={inputKeyword}
-              onChange={(e) => setInputKeyword(e.target.value)}
-            />
-            <button className="mc-btn mc-btn--primary" type="submit">Tìm kiếm</button>
-          </form>
+        <section className="doctor-directory-results">
 
           {loading ? (
-            <div className="mc-state"><p>Đang tải...</p></div>
+            <div className="doctor-directory-state">Đang tải danh sách bác sĩ...</div>
           ) : error ? (
-            <div className="mc-state mc-state--error"><p>{error}</p></div>
-          ) : doctors.length === 0 ? (
-            <div className="mc-state"><p>Không tìm thấy bác sĩ nào.</p></div>
+            <div className="doctor-directory-state doctor-directory-state--error">{error}</div>
+          ) : visibleDoctors.length === 0 ? (
+            <div className="doctor-directory-state">Không tìm thấy bác sĩ phù hợp.</div>
           ) : (
-            <div className="mc-doc-grid">
-              {doctors.map((doc) => (
-                <DoctorCard key={doc.id} doc={doc} />
+            <div className="doctor-directory-grid">
+              {visibleDoctors.map((doctor) => (
+                <DoctorCard key={doctor.id} doctor={doctor} />
               ))}
             </div>
           )}
@@ -128,51 +217,50 @@ export function DoctorsPage() {
   );
 }
 
-function DoctorCard({ doc }) {
+function DoctorCard({ doctor }) {
   return (
-    <article className="mc-doc-card">
-      <div className="mc-doc-card__inner">
-        <div className="mc-doc-card__avatar">
+    <article className="doctor-directory-card">
+      <div className="doctor-directory-card__top">
+        <div className="doctor-directory-card__avatar">
           <SafeAvatar
-            src={doc.avatarUrl}
-            alt={doc.fullName}
-            name={doc.fullName}
+            src={doctor.avatarUrl}
+            alt={doctor.fullName}
+            name={doctor.fullName}
             imageClassName=""
             fallbackClassName="mc-avatar-initial"
           />
+          <span className="doctor-directory-card__status-dot" />
         </div>
-        <div className="mc-doc-card__info">
-          <div className="mc-doc-card__header">
-            <div>
-              <h4 className="mc-doc-card__name">{doc.fullName ?? `Bác sĩ #${doc.id}`}</h4>
-              <p className="mc-doc-card__specialty">{doc.specialtyName ?? "Chuyên khoa"}</p>
+
+        <div className="doctor-directory-card__info">
+          <div className="doctor-directory-card__title">
+            <h3>{doctor.fullName ?? `Bác sĩ #${doctor.id}`}</h3>
+            <span>Đang hoạt động</span>
+          </div>
+          <p>{doctor.specialtyName ?? "Chuyên khoa"}</p>
+          {doctor.averageRating != null ? (
+            <div className="doctor-directory-card__rating">
+              <span className="material-symbols-outlined">star</span>
+              <strong>{Number(doctor.averageRating).toFixed(1)}</strong>
             </div>
-            {doc.averageRating != null && (
-              <span className="mc-rating-badge">
-                <span className="material-symbols-outlined mc-star-icon" style={{ fontVariationSettings: "'FILL' 1" }}>star</span>
-                {Number(doc.averageRating).toFixed(1)}
-              </span>
-            )}
-          </div>
-          <div className="mc-doc-card__meta">
-            {doc.experienceYears != null && (
-              <span className="mc-meta-item">
-                <span className="material-symbols-outlined">work_history</span>
-                {doc.experienceYears}+ năm kinh nghiệm
-              </span>
-            )}
-            {doc.qualification && (
-              <span className="mc-meta-item">
-                <span className="material-symbols-outlined">workspace_premium</span>
-                {doc.qualification}
-              </span>
-            )}
-          </div>
+          ) : null}
         </div>
       </div>
-      <div className="mc-doc-card__actions">
-        <Link className="mc-btn mc-btn--outline" to={`/doctors/${doc.id}`}>Xem hồ sơ</Link>
-        <Link className="mc-btn mc-btn--primary" to={`/booking?doctorId=${doc.id}`}>Đặt lịch</Link>
+
+      <div className="doctor-directory-card__stats">
+        <div>
+          <span>Kinh nghiệm</span>
+          <strong>{doctor.experienceYears != null ? `${doctor.experienceYears} năm` : "Chưa cập nhật"}</strong>
+        </div>
+        <div>
+          <span>Phí khám</span>
+          <strong>{formatCurrency(doctor.consultationFee)}</strong>
+        </div>
+      </div>
+
+      <div className="doctor-directory-card__actions">
+        <Link to={`/doctors/${doctor.id}`}>Xem hồ sơ</Link>
+        <Link to={`/booking?doctorId=${doctor.id}`}>Đặt lịch</Link>
       </div>
     </article>
   );

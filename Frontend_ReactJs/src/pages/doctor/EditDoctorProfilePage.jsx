@@ -108,13 +108,13 @@ export function EditDoctorProfilePage() {
 
   return (
     <DoctorWorkspace
-      eyebrow="Doctor / Profile"
-      title="Chinh sua ho so bac si"
-      description="Cap nhat chuyen khoa, kinh nghiem, bang cap va thong tin phong kham."
+      eyebrow="Bác sĩ / Hồ sơ"
+      title="Chỉnh sửa hồ sơ bác sĩ"
+      description="Cập nhật chuyên khoa, kinh nghiệm, bằng cấp và thông tin phòng khám."
       actions={
         <>
           <Link className="button button--secondary" to="/doctor/profile">
-            Huy
+            Hủy
           </Link>
           <button
             className="button button--primary"
@@ -123,7 +123,7 @@ export function EditDoctorProfilePage() {
             type="submit"
           >
             <span className="material-symbols-outlined">save</span>
-            <span>{saving ? "Dang luu..." : "Luu thay doi"}</span>
+            <span>{saving ? "Đang lưu..." : "Lưu thay đổi"}</span>
           </button>
         </>
       }
@@ -131,7 +131,7 @@ export function EditDoctorProfilePage() {
       {error ? <p className="empty-state">{error}</p> : null}
 
       {loading ? (
-        <p className="empty-state">Loading profile form...</p>
+        <p className="empty-state">Đang tải biểu mẫu hồ sơ...</p>
       ) : (
         <form
           className="doctor-profile-editor"
@@ -143,17 +143,17 @@ export function EditDoctorProfilePage() {
               <div className="doctor-profile-card__avatar">
                 {getInitials(doctor?.fullName)}
               </div>
-              <h2>{doctor?.fullName || "Doctor"}</h2>
-              <p>{doctor?.email || "Secure doctor account"}</p>
+              <h2>{doctor?.fullName || "Bác sĩ"}</h2>
+              <p>{doctor?.email || "Tài khoản bác sĩ bảo mật"}</p>
 
               <div className="doctor-profile-card__meta">
                 <div>
-                  <span>Email Address</span>
+                  <span>Email</span>
                   <strong>{doctor?.email || "--"}</strong>
                 </div>
                 <div>
-                  <span>Current Room</span>
-                  <strong>{doctor?.clinicRoom || "Not assigned"}</strong>
+                  <span>Phòng hiện tại</span>
+                  <strong>{doctor?.clinicRoom || "Chưa phân phòng"}</strong>
                 </div>
               </div>
             </article>
@@ -163,17 +163,17 @@ export function EditDoctorProfilePage() {
             <article className="doctor-panel">
               <div className="doctor-panel__head">
                 <div>
-                  <h2>Thong tin chuyen mon</h2>
-                  <p>Thong tin nay se hien thi tren ho so cong khai cua bac si.</p>
+                  <h2>Thông tin chuyên môn</h2>
+                  <p>Thông tin này sẽ hiển thị trên hồ sơ công khai của bác sĩ.</p>
                 </div>
               </div>
 
               <div className="doctor-form doctor-form--editor">
                 <div className="doctor-form__grid">
                   <label>
-                    <span>Chuyen khoa</span>
+                    <span>Chuyên khoa</span>
                     <select name="specialtyId" value={form.specialtyId} onChange={handleChange}>
-                      <option value="">Chon chuyen khoa</option>
+                      <option value="">Chọn chuyên khoa</option>
                       {specialties.map((item) => (
                         <option key={item.id} value={item.id}>
                           {item.name}
@@ -183,7 +183,7 @@ export function EditDoctorProfilePage() {
                   </label>
 
                   <label>
-                    <span>Kinh nghiem (nam)</span>
+                    <span>Kinh nghiệm (năm)</span>
                     <input
                       name="experienceYears"
                       type="number"
@@ -195,7 +195,7 @@ export function EditDoctorProfilePage() {
 
                 <div className="doctor-form__grid">
                   <label>
-                    <span>Bang cap</span>
+                    <span>Bằng cấp</span>
                     <input
                       name="qualification"
                       type="text"
@@ -205,7 +205,7 @@ export function EditDoctorProfilePage() {
                   </label>
 
                   <label>
-                    <span>Phong kham</span>
+                    <span>Phòng khám</span>
                     <input
                       name="clinicRoom"
                       type="text"
@@ -216,7 +216,7 @@ export function EditDoctorProfilePage() {
                 </div>
 
                 <label>
-                  <span>Gioi thieu</span>
+                  <span>Giới thiệu</span>
                   <textarea
                     name="biography"
                     rows={6}
