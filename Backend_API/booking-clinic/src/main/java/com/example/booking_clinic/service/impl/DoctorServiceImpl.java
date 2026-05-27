@@ -82,7 +82,7 @@ public class DoctorServiceImpl implements DoctorService {
     @Transactional(readOnly = true)
     @Cacheable(
             value = "doctors",
-            key = "T(String).valueOf(#specialtyId) + ':' + (#keyword == null ? '' : #keyword.trim().toLowerCase())"
+            key = "(#specialtyId == null ? 'null' : #specialtyId.toString()) + ':' + (#keyword == null ? '' : #keyword.trim().toLowerCase())"
     )
     public List<DoctorResponse> getAllDoctors(Long specialtyId, String keyword) {
         String normalizedKeyword = keyword == null ? null : keyword.trim();
