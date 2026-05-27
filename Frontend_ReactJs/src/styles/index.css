@@ -471,6 +471,13 @@ a {
   object-position: top;
 }
 
+.doctor-image__photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
 .doctor-body {
   padding: var(--space-md);
   display: grid;
@@ -1273,8 +1280,8 @@ a {
   min-height: 100vh;
   padding: 12px 0 24px;
   background:
-    radial-gradient(circle at top left, rgba(25, 147, 240, 0.08), transparent 28%),
-    linear-gradient(180deg, #f5f7fb 0%, #eef2f8 100%);
+    linear-gradient(180deg, rgba(248, 250, 252, 0.84), rgba(241, 245, 249, 0.9)),
+    url("../assets/images/homepage/background4.png") center / cover fixed no-repeat;
 }
 
 .doctor-shell--portal {
@@ -5449,10 +5456,16 @@ a {
 }
 
 .doctor-avatar-initial {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);
   font-family: "Manrope", sans-serif;
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--primary);
+  color: #075985;
 }
 
 .doctor-avatar-initial--lg {
@@ -10302,7 +10315,9 @@ a {
 
 .admin-portal {
   min-height: 100vh;
-  background: #f1f5f9;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.84), rgba(241, 245, 249, 0.9)),
+    url("../assets/images/homepage/background4.png") center / cover fixed no-repeat;
 }
 
 .admin-shell {
@@ -11519,7 +11534,9 @@ a {
 /* Doctor portal aligned with admin UI */
 .doctor-portal {
   min-height: 100vh;
-  background: #f1f5f9;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.84), rgba(241, 245, 249, 0.9)),
+    url("../assets/images/homepage/background4.png") center / cover fixed no-repeat;
 }
 
 .doctor-portal .admin-shell {
@@ -12085,9 +12102,10 @@ a {
 }
 
 .doctor-directory-layout {
+  width: min(calc(100% - 32px), 1640px);
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr);
-  gap: 32px;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 28px;
   padding: 8px 0 80px;
 }
 
@@ -12243,7 +12261,7 @@ a {
 
 .doctor-directory-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
 }
 
@@ -12269,7 +12287,8 @@ a {
   height: 82px;
   flex-shrink: 0;
   border-radius: 999px;
-  background: #edf2ff;
+  background: #e0f2fe;
+  box-shadow: 0 10px 22px rgba(2, 132, 199, 0.14);
 }
 
 .doctor-directory-card__avatar img,
@@ -12282,8 +12301,9 @@ a {
 }
 
 .doctor-directory-card__avatar .mc-avatar-initial {
-  background: #22c55e;
-  color: var(--primary);
+  background: linear-gradient(135deg, #e0f2fe 0%, #bfdbfe 100%);
+  color: #075985;
+  border-color: rgba(14, 116, 144, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -12420,6 +12440,18 @@ a {
   color: var(--error);
 }
 
+@media (max-width: 1320px) {
+  .doctor-directory-layout {
+    width: min(calc(100% - 48px), var(--container-width));
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .doctor-directory-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1100px) {
   .doctor-directory-search {
     grid-template-columns: 1fr;
@@ -12457,4 +12489,22 @@ a {
   .doctor-directory-card__actions {
     grid-template-columns: 1fr;
   }
+}
+
+/* Patient Pages Background Styling */
+.patient-layout-bg {
+  min-height: calc(100vh - 80px);
+  background-image:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.34) 0%, rgba(15, 23, 42, 0.18) 34%, rgba(248, 250, 252, 0.84) 100%),
+    url("../assets/images/homepage/background4.png");
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center -150px;
+  background-repeat: no-repeat;
+}
+
+.patient-layout-bg > .browse-page:not(.browse-page--specialties),
+.patient-layout-bg > .patient-portal-page,
+.patient-layout-bg > .pp-page {
+  background: transparent;
 }

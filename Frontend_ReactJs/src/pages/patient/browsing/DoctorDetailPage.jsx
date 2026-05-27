@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { SafeAvatar } from "../../../components/common/SafeAvatar";
 import { getDoctorById } from "../../../services/doctorService";
+import { getDoctorAvatar } from "../../../utils/doctorHelpers";
 
 const DEFAULT_CLINIC_ADDRESS = "123 Healthcare Ave, District 1, Ho Chi Minh City";
 
@@ -120,6 +121,7 @@ export function DoctorDetailPage() {
                 name={doctor.fullName}
                 imageClassName=""
                 fallbackClassName="mc-avatar-initial"
+                defaultSrc={getDoctorAvatar(doctor.id)}
               />
             </div>
             <div className="mc-hero-body">

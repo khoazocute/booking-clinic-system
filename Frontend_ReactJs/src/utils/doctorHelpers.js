@@ -1,3 +1,15 @@
+import doctor1 from "../assets/images/homepage/doctor-1.jpg";
+import doctor2 from "../assets/images/homepage/doctor-2.jpg";
+import doctor3 from "../assets/images/homepage/doctor-3.jpg";
+import doctor4 from "../assets/images/homepage/doctor-4.jpg";
+
+const doctorAvatars = [doctor1, doctor2, doctor3, doctor4];
+
+export function getDoctorAvatar(id) {
+  const index = id ? (Number(id) % doctorAvatars.length) : 0;
+  return doctorAvatars[index];
+}
+
 export function formatDate(value) {
   if (!value) {
     return "--";

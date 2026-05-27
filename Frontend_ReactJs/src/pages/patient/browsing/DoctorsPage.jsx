@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { SafeAvatar } from "../../../components/common/SafeAvatar";
 import doctorsBackgroundImage from "../../../assets/images/homepage/background1.png";
 import { getDoctors } from "../../../services/doctorService";
+import { getDoctorAvatar } from "../../../utils/doctorHelpers";
 import { getSpecialties } from "../../../services/specialtyService";
 
 function formatCurrency(value) {
@@ -228,6 +229,7 @@ function DoctorCard({ doctor }) {
             name={doctor.fullName}
             imageClassName=""
             fallbackClassName="mc-avatar-initial"
+            defaultSrc={getDoctorAvatar(doctor.id)}
           />
           <span className="doctor-directory-card__status-dot" />
         </div>
