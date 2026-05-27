@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
 import { getMyNotifications } from "../services/notificationService";
+import { getWebSocketUrl } from "../services/apiClient";
 
-const WS_URL = "ws://localhost:8082/ws";
+const WS_URL = getWebSocketUrl();
 
 export function useAdminNotifications() {
   const [notifications, setNotifications] = useState([]);
