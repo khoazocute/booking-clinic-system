@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { SafeAvatar } from "../../../components/common/SafeAvatar";
 import { getSpecialtyById } from "../../../services/specialtyService";
 import { getDoctors } from "../../../services/doctorService";
+import { getDoctorAvatar } from "../../../utils/doctorHelpers";
 
 export function SpecialtyDetailPage() {
   const { id } = useParams();
@@ -172,6 +173,7 @@ function DoctorCard({ doctor }) {
           name={doctor.fullName}
           imageClassName=""
           fallbackClassName="doctor-avatar-initial"
+          defaultSrc={getDoctorAvatar(doctor.id)}
         />
       </div>
       <div className="doctor-body">

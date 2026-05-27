@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   clearAccessToken,
   getAccessToken,
@@ -16,8 +16,22 @@ const publicNavigation = [
 
 export function MainLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentUser, setCurrentUser] = useState(null);
   const { unreadCount } = useNotifications();
+
+  const isPatientPage = [
+    "/profile",
+    "/change-password",
+    "/my-appointments",
+    "/medical-records",
+    "/prescriptions",
+    "/reviews",
+    "/notifications",
+    "/booking",
+    "/specialties",
+    "/doctors"
+  ].some(path => location.pathname === path || location.pathname.startsWith(path + "/"));
 
   useEffect(() => {
     let active = true;
@@ -133,7 +147,7 @@ export function MainLayout() {
         </div>
       </header>
 
-      <main>
+      <main className={isPatientPage ? "patient-layout-bg" : ""}>
         <Outlet />
       </main>
 

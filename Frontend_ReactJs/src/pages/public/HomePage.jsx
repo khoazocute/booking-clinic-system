@@ -1,10 +1,5 @@
-import {
-  doctorFourImage,
-  doctorOneImage,
-  doctorThreeImage,
-  doctorTwoImage,
-  heroDoctorImage,
-} from "../../assets/images/homepage";
+import { useEffect, useMemo, useState } from "react";
+import heroDoctorImage from "../../assets/images/homepage/hero-doctor.jpg";
 import {
   arrowForwardIcon,
   boltIcon,
@@ -25,6 +20,9 @@ import {
   workHistoryIcon,
   workspacePremiumIcon,
 } from "../../assets/icons/homepage";
+import { SafeAvatar } from "../../components/common/SafeAvatar";
+import { getDoctors } from "../../services/doctorService";
+import { getDoctorAvatar } from "../../utils/doctorHelpers";
 
 const copy = {
   heroTitle:
@@ -99,41 +97,6 @@ const specialties = [
   },
 ];
 
-const doctors = [
-  {
-    name: "PGS.TS. Nguy\u1ec5n V\u0103n A",
-    specialty: "Tim m\u1ea1ch",
-    experience: "15 n\u0103m kinh nghi\u1ec7m",
-    rating: "4.9",
-    fee: "300.000\u0111",
-    image: doctorOneImage,
-  },
-  {
-    name: "ThS.BS. Tr\u1ea7n Th\u1ecb B",
-    specialty: "Nhi khoa",
-    experience: "10 n\u0103m kinh nghi\u1ec7m",
-    rating: "4.8",
-    fee: "250.000\u0111",
-    image: doctorTwoImage,
-  },
-  {
-    name: "BS.CKII. L\u00ea V\u0103n C",
-    specialty: "N\u1ed9i t\u1ed5ng qu\u00e1t",
-    experience: "20 n\u0103m kinh nghi\u1ec7m",
-    rating: "5.0",
-    fee: "400.000\u0111",
-    image: doctorThreeImage,
-  },
-  {
-    name: "BS. Ph\u1ea1m Th\u1ecb D",
-    specialty: "Da li\u1ec5u",
-    experience: "8 n\u0103m kinh nghi\u1ec7m",
-    rating: "4.7",
-    fee: "200.000\u0111",
-    image: doctorFourImage,
-  },
-];
-
 const steps = [
   {
     title: "Ch\u1ecdn b\u00e1c s\u0129",
@@ -161,7 +124,43 @@ function IconImage({ src, alt }) {
   return <img className="icon-symbol" src={src} alt={alt} />;
 }
 
+function unwrapList(response) {
+  if (Array.isArray(response)) return response;
+  if (Array.isArray(response?.data)) return response.data;
+  if (Array.isArray(response?.data?.data)) return response.data.data;
+  return [];
+}
+
+function formatCurrency(value) {
+  if (value == null || Number(value) === 0) return "Miễn phí";
+  return Number(value).toLocaleString("vi-VN") + "đ";
+}
+
 export function HomePage() {
+  const [doctors, setDoctors] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    getDoctors()
+      .then((response) => {
+        if (active) {
+          setDoctors(unwrapList(response).slice(0, 4));
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setDoctors([]);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const featuredDoctors = useMemo(() => doctors.slice(0, 4), [doctors]);
+
   return (
     <div className="home-page">
       <section className="hero-section">
@@ -240,31 +239,38 @@ export function HomePage() {
           </div>
 
           <div className="doctor-grid">
-            {doctors.map((doctor) => (
-              <article className="doctor-card" key={doctor.name}>
+            {featuredDoctors.map((doctor) => (
+              <article className="doctor-card" key={doctor.id ?? doctor.fullName}>
                 <div className="doctor-image">
-                  <img alt={doctor.name} src={doctor.image} />
+                  <SafeAvatar
+                    src={doctor.avatarUrl}
+                    alt={doctor.fullName}
+                    name={doctor.fullName}
+                    imageClassName="doctor-image__photo"
+                    fallbackClassName="doctor-avatar-initial"
+                    defaultSrc={getDoctorAvatar(doctor.id)}
+                  />
                 </div>
                 <div className="doctor-body">
                   <div className="doctor-header">
-                    <h3>{doctor.name}</h3>
+                    <h3>{doctor.fullName ?? `Bác sĩ #${doctor.id}`}</h3>
                     <span className="doctor-rating">
                       <IconImage alt="" src={starIcon} />
-                      {doctor.rating}
+                      {doctor.averageRating != null ? Number(doctor.averageRating).toFixed(1) : "5.0"}
                     </span>
                   </div>
-                  <p className="doctor-specialty">{doctor.specialty}</p>
+                  <p className="doctor-specialty">{doctor.specialtyName ?? "Chuyên khoa"}</p>
                   <p className="doctor-experience">
                     <IconImage alt="" src={workHistoryIcon} />
-                    {doctor.experience}
+                    {doctor.experienceYears != null ? `${doctor.experienceYears} năm kinh nghiệm` : "Chưa cập nhật kinh nghiệm"}
                   </p>
                 </div>
                 <div className="doctor-footer">
                   <div>
                     <p className="doctor-fee-label">{copy.consultationFee}</p>
-                    <strong>{doctor.fee}</strong>
+                    <strong>{formatCurrency(doctor.consultationFee)}</strong>
                   </div>
-                  <a className="button button--soft" href="/doctors">
+                  <a className="button button--soft" href={doctor.id ? `/doctors/${doctor.id}` : "/doctors"}>
                     {copy.doctorDetails}
                   </a>
                 </div>

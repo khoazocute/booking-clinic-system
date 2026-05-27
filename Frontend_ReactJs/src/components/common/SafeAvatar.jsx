@@ -17,6 +17,7 @@ export function SafeAvatar({
   name,
   imageClassName,
   fallbackClassName,
+  defaultSrc,
 }) {
   const [hasError, setHasError] = useState(false);
 
@@ -25,6 +26,15 @@ export function SafeAvatar({
   }, [src]);
 
   if (!src || hasError) {
+    if (defaultSrc) {
+      return (
+        <img
+          className={imageClassName}
+          src={defaultSrc}
+          alt={alt ?? name ?? "Avatar"}
+        />
+      );
+    }
     return <span className={fallbackClassName}>{getInitials(name)}</span>;
   }
 
