@@ -17,8 +17,9 @@ WORKDIR /app
 # Sao chép file jar từ build stage sang chạy bằng JRE tối giản
 COPY --from=build /app/target/*.jar app.jar
 
-# Spring Boot đang cấu hình cổng chạy là 8082
-EXPOSE 8082
+# Render web services scan for an open port; Spring Boot reads the real
+# value from the PORT environment variable and falls back to 8082 locally.
+EXPOSE 10000
 
 # Khởi động ứng dụng
 ENTRYPOINT ["java", "-jar", "app.jar"]
