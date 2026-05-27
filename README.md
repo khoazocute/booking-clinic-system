@@ -1,182 +1,142 @@
-# Booking Clinic System
+# Booking Clinic System 🏥
 
-Hệ thống đặt lịch phòng khám gồm:
+Hệ thống quản lý và đặt lịch khám bệnh trực tuyến được phát triển trên kiến trúc Fullstack, hỗ trợ chạy Docker hóa hoàn toàn giúp triển khai nhanh chóng.
 
-- `Backend_API/booking-clinic`: Spring Boot API
-- `Frontend_ReactJs`: ReactJS + Vite
+---
 
-## Công Nghệ
+## 🚀 Hướng dẫn khởi chạy bằng DOCKER (Khuyên dùng - Nhanh nhất)
 
-- Backend: Java 21, Spring Boot 4, Spring Security, JWT, Spring Data JPA, MySQL
-- Frontend: ReactJS, Vite
-- Cache: Redis chạy bằng Docker
+Dành cho bạn bè hoặc người dùng mới muốn chạy dự án này bằng Docker trên máy cá nhân:
 
-## Chạy MySQL
+### Bước 1: Chuẩn bị môi trường trên máy cá nhân
+Hãy đảm bảo máy tính của bạn đã cài đặt sẵn các phần mềm sau:
+1. **Git**: Dùng để tải mã nguồn dự án. [Tải Git tại đây](https://git-scm.com/).
+2. **Docker Desktop**: Công cụ bắt buộc để chạy toàn bộ hệ thống. [Tải Docker Desktop tại đây](https://www.docker.com/products/docker-desktop/).
+   * *Lưu ý*: Sau khi cài đặt, hãy **mở ứng dụng Docker Desktop lên** trước khi thực hiện các bước tiếp theo.
+3. **Giải phóng cổng kết nối**: Đảm bảo bạn đã tắt các ứng dụng chạy MySQL local (Laragon, XAMPP, v.v.) đang chiếm dụng cổng `3306`, và Redis local ở cổng `6379`.
 
-Tạo database:
-
-```sql
-CREATE DATABASE booking_clinic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+### Bước 2: Tải dự án (Clone Project) về máy
+Mở Terminal (CMD, PowerShell hoặc Git Bash) và chạy các lệnh sau:
+```bash
+git clone https://github.com/khoazocute/booking-clinic-system.git
+cd booking-clinic-system
 ```
 
-Thông tin mặc định:
-
-```text
-Host: localhost
-Port: 3306
-Username: root
-Password: để trống
+### Bước 3: Khởi chạy dự án bằng Docker (Một lệnh duy nhất)
+Chạy lệnh:
+```bash
+docker-compose up -d --build
 ```
+* **Cách hoạt động**: Lệnh này sẽ tự động tải các base image, build source code Frontend/Backend và tự động import dữ liệu mẫu (các chuyên khoa, tài khoản bác sĩ, bệnh nhân cũ) từ file `db_init/init.sql` vào database mà bạn không cần import thủ công.
+* **Thời gian khởi chạy lần đầu:** Khoảng từ **3 đến 5 phút** (để tải thư viện và build dự án). Từ lần chạy thứ 2 trở đi chỉ mất **5 - 10 giây**.
 
-## Chạy Redis
+### Bước 4: Truy cập và Trải nghiệm
+Sau khi Terminal báo `Started` ở tất cả các dịch vụ:
+* **Giao diện Web (Frontend):** **[http://localhost:5173](http://localhost:5173)**
+* **Trang tài liệu/Kiểm tra Backend:** [http://localhost:8082/api/v1/health](http://localhost:8082/api/v1/health)
 
-Tạo container Redis:
+---
 
-```powershell
-docker run --name booking-redis -p 6379:6379 -d redis:7
-```
+## ⚙️ Hướng dẫn khởi chạy THỦ CÔNG (Không dùng Docker)
 
-Nếu đã tạo rồi thì chỉ cần chạy:
+Nếu máy tính của bạn không cài đặt Docker, bạn có thể chạy thủ công từng phần bằng cách cài đặt môi trường trên máy của bạn.
 
-```powershell
-docker start booking-redis
-```
+### Yêu cầu chuẩn bị
+Trước khi chạy, máy tính của bạn bắt buộc phải có sẵn:
+1. **Java Development Kit (JDK) 21**: Dùng để biên dịch và chạy Backend.
+2. **Node.js (phiên bản 18 trở lên)**: Dùng để chạy Frontend.
+3. **MySQL Server (cổng 3306)**: Có thể cài trực tiếp hoặc qua Laragon, XAMPP.
+4. **Redis Server**: Dùng để làm bộ nhớ đệm cache (nếu không cài Redis local, bạn có thể tắt tính năng cache hoặc cài đặt Redis trên Docker/WSL).
 
-Kiểm tra Redis:
+---
 
-```powershell
-docker exec -it booking-redis redis-cli
-```
+### Bước 1: Thiết lập Cơ sở dữ liệu (MySQL)
+1. Mở công cụ quản lý cơ sở dữ liệu của bạn (HeidiSQL, DBeaver, MySQL Workbench, v.v.).
+2. Tạo một database mới tên là `booking_clinic_db` bằng câu lệnh SQL:
+   ```sql
+   CREATE DATABASE booking_clinic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+3. Nhập (Import) toàn bộ bảng dữ liệu mẫu:
+   * Chọn database `booking_clinic_db` vừa tạo.
+   * Chọn mở file SQL từ đường dẫn: `db_init/init.sql` trong dự án.
+   * Chạy (Execute) toàn bộ file SQL này để nạp dữ liệu.
 
-Trong Redis CLI:
+---
 
-```redis
-ping
-keys *
-```
+### Bước 2: Cấu hình và Chạy Backend (Spring Boot)
+1. Mở file cấu hình database của Backend tại đường dẫn:
+   `Backend_API/booking-clinic/src/main/resources/application.properties`
+2. Chỉnh sửa thông tin kết nối MySQL cho đúng với thông tin máy của bạn:
+   ```properties
+   spring.datasource.url=jdbc:mysql://localhost:3306/booking_clinic_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
+   spring.datasource.username=TÊN_ĐĂNG_NHẬP_MYSQL_CỦA_BẠN (thường là root)
+   spring.datasource.password=MẬT_KHẨU_MYSQL_CỦA_BẠN (để trống nếu dùng Laragon mặc định)
+   ```
+3. Cấu hình Redis (nếu bạn có cài đặt Redis local):
+   ```properties
+   spring.cache.type=redis
+   spring.data.redis.host=localhost
+   spring.data.redis.port=6379
+   ```
+   *(Nếu không chạy Redis, hãy đổi cấu hình `spring.cache.type=none` để bỏ qua tính năng lưu cache).*
+4. Mở Terminal tại thư mục `Backend_API/booking-clinic` và chạy lệnh để khởi động Backend:
+   ```bash
+   # Dành cho Windows
+   .\mvnw.cmd clean compile spring-boot:run
 
-## Cấu Hình Backend
+   # Dành cho macOS / Linux
+   ./mvnw clean compile spring-boot:run
+   ```
+   *Backend sẽ khởi chạy thành công tại địa chỉ: **http://localhost:8082***.
 
-File cấu hình:
+---
 
-```text
-Backend_API/booking-clinic/src/main/resources/application.properties
-```
+### Bước 3: Cài đặt và Chạy Frontend (ReactJS)
+1. Mở một cửa sổ Terminal mới và di chuyển vào thư mục Frontend:
+   ```bash
+   cd Frontend_ReactJs
+   ```
+2. Cài đặt các thư viện cần thiết (chỉ cần chạy lần đầu):
+   ```bash
+   npm install
+   ```
+3. Khởi chạy máy chủ phát triển (Dev Server) của React:
+   ```bash
+   npm run dev
+   ```
+4. Mở trình duyệt và truy cập vào địa chỉ hiển thị trong terminal (thường là **[http://localhost:5173](http://localhost:5173)**).
 
-Cấu hình chính:
+---
 
-```properties
-server.port=8082
+## 💻 Hướng dẫn dành cho Lập trình viên khi phát triển (Developer Workflow)
 
-spring.datasource.url=jdbc:mysql://localhost:3306/booking_clinic_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
-spring.datasource.username=root
-spring.datasource.password=
+### Khi chỉnh sửa Code trong lúc đang chạy Docker:
+* **Khi sửa code Backend (Java):** Chạy lệnh sau để biên dịch lại mã nguồn và cập nhật riêng container Backend:
+  ```bash
+  docker-compose up -d --build backend
+  ```
+* **Khi sửa code Frontend (React):** Chạy lệnh sau để build lại các file tĩnh và cập nhật riêng container Frontend:
+  ```bash
+  docker-compose up -d --build frontend
+  ```
 
-spring.cache.type=redis
-spring.data.redis.host=localhost
-spring.data.redis.port=6379
-spring.cache.redis.time-to-live=10m
-spring.cache.redis.cache-null-values=false
-spring.data.redis.repositories.enabled=false
-```
+---
 
-## Chạy Backend
+## 🛠️ Các lệnh Docker hữu ích
 
-```powershell
-cd Backend_API\booking-clinic
-.\mvnw.cmd clean compile
-.\mvnw.cmd spring-boot:run
-```
-
-Backend chạy tại:
-
-```text
-http://localhost:8082
-```
-
-## Chạy Frontend
-
-```powershell
-cd Frontend_ReactJs
-npm install
-npm run dev
-```
-
-Frontend chạy tại:
-
-```text
-http://localhost:5173
-```
-
-## Redis Cache
-
-Redis cache đang được dùng cho các dữ liệu đọc nhiều:
-
-- chuyên khoa
-- bác sĩ
-- thuốc
-
-Cơ chế:
-
-- `@Cacheable`: lưu kết quả GET vào Redis
-- `@CacheEvict`: xóa cache khi thêm, sửa, xóa dữ liệu
-- TTL cache: 10 phút
-
-Các file chính:
-
-```text
-CacheConfig.java
-SpecialtyServiceImpl.java
-DoctorServiceImpl.java
-MedicineServiceImpl.java
-```
-
-## Test Redis Cache
-
-Xóa cache cũ:
-
-```redis
-flushall
-```
-
-Gọi các API:
-
-```http
-GET http://localhost:8082/api/v1/specialties
-GET http://localhost:8082/api/v1/doctors
-GET http://localhost:8082/api/v1/doctors?specialtyId=1
-GET http://localhost:8082/api/v1/medicines
-GET http://localhost:8082/api/v1/medicines/1
-```
-
-Kiểm tra key trong Redis:
-
-```redis
-keys *
-```
-
-Ví dụ key:
-
-```redis
-specialties::all
-doctors::null:
-doctors::1:
-medicines::all
-medicine::1
-```
-
-Kiểm tra TTL:
-
-```redis
-ttl "specialties::all"
-```
-
-Nếu trả về số giây thì cache đang hoạt động.
-
-## Tài Liệu API
-
-```text
-API_DOCUMENTATION.md
-API_DOCUMENTATION.xlsx
-```
-
+* **Kiểm tra trạng thái các dịch vụ:**
+  ```bash
+  docker-compose ps
+  ```
+* **Xem logs hệ thống theo thời gian thực (realtime):**
+  ```bash
+  docker-compose logs -f
+  ```
+* **Dừng toàn bộ hệ thống (Giữ nguyên dữ liệu):**
+  ```bash
+  docker-compose down
+  ```
+* **Dừng hệ thống và XÓA SẠCH dữ liệu database (Để chạy lại từ đầu):**
+  ```bash
+  docker-compose down -v
+  ```
