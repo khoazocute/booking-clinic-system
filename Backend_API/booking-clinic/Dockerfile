@@ -21,5 +21,5 @@ COPY --from=build /app/target/*.jar app.jar
 # value from the PORT environment variable and falls back to 8082 locally.
 EXPOSE 10000
 
-# Khởi động ứng dụng
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Khởi động ứng dụng với múi giờ Việt Nam
+ENTRYPOINT ["java", "-Duser.timezone=Asia/Ho_Chi_Minh", "-jar", "app.jar"]
