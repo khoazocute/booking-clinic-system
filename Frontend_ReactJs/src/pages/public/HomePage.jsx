@@ -1,10 +1,7 @@
-import {
-  doctorFourImage,
-  doctorOneImage,
-  doctorThreeImage,
-  doctorTwoImage,
-  heroDoctorImage,
-} from "../../assets/images/homepage";
+import { useEffect, useState } from "react";
+import { heroDoctorImage } from "../../assets/images/homepage";
+import { getDoctors } from "../../services/doctorService";
+import { SafeAvatar } from "../../components/common/SafeAvatar";
 import {
   arrowForwardIcon,
   boltIcon,
@@ -99,40 +96,7 @@ const specialties = [
   },
 ];
 
-const doctors = [
-  {
-    name: "PGS.TS. Nguy\u1ec5n V\u0103n A",
-    specialty: "Tim m\u1ea1ch",
-    experience: "15 n\u0103m kinh nghi\u1ec7m",
-    rating: "4.9",
-    fee: "300.000\u0111",
-    image: doctorOneImage,
-  },
-  {
-    name: "ThS.BS. Tr\u1ea7n Th\u1ecb B",
-    specialty: "Nhi khoa",
-    experience: "10 n\u0103m kinh nghi\u1ec7m",
-    rating: "4.8",
-    fee: "250.000\u0111",
-    image: doctorTwoImage,
-  },
-  {
-    name: "BS.CKII. L\u00ea V\u0103n C",
-    specialty: "N\u1ed9i t\u1ed5ng qu\u00e1t",
-    experience: "20 n\u0103m kinh nghi\u1ec7m",
-    rating: "5.0",
-    fee: "400.000\u0111",
-    image: doctorThreeImage,
-  },
-  {
-    name: "BS. Ph\u1ea1m Th\u1ecb D",
-    specialty: "Da li\u1ec5u",
-    experience: "8 n\u0103m kinh nghi\u1ec7m",
-    rating: "4.7",
-    fee: "200.000\u0111",
-    image: doctorFourImage,
-  },
-];
+
 
 const steps = [
   {
@@ -162,6 +126,33 @@ function IconImage({ src, alt }) {
 }
 
 export function HomePage() {
+  const [featuredDoctors, setFeaturedDoctors] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    getDoctors()
+      .then((res) => {
+        if (!active) return;
+        const allDoctors = res?.data?.items ?? res?.data ?? [];
+        const sorted = [...allDoctors].sort((a, b) => {
+          const ratingA = a.averageRating == null ? 0 : Number(a.averageRating);
+          const ratingB = b.averageRating == null ? 0 : Number(b.averageRating);
+          return ratingB - ratingA;
+        });
+        setFeaturedDoctors(sorted.slice(0, 4));
+        setLoadingDoctors(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch doctors", err);
+        if (active) setLoadingDoctors(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="home-page">
       <section className="hero-section">
@@ -240,36 +231,52 @@ export function HomePage() {
           </div>
 
           <div className="doctor-grid">
-            {doctors.map((doctor) => (
-              <article className="doctor-card" key={doctor.name}>
-                <div className="doctor-image">
-                  <img alt={doctor.name} src={doctor.image} />
-                </div>
-                <div className="doctor-body">
-                  <div className="doctor-header">
-                    <h3>{doctor.name}</h3>
-                    <span className="doctor-rating">
-                      <IconImage alt="" src={starIcon} />
-                      {doctor.rating}
-                    </span>
+            {loadingDoctors ? (
+              <p style={{ textAlign: "center", gridColumn: "1 / -1", padding: "2rem" }}>Đang tải danh sách bác sĩ...</p>
+            ) : featuredDoctors.length === 0 ? (
+              <p style={{ textAlign: "center", gridColumn: "1 / -1", padding: "2rem" }}>Chưa có dữ liệu bác sĩ.</p>
+            ) : (
+              featuredDoctors.map((doctor) => (
+                <article className="doctor-card" key={doctor.id}>
+                  <div className="doctor-image">
+                    <SafeAvatar
+                      src={doctor.avatarUrl}
+                      fallbackSrc="/default-doctor.png"
+                      name={doctor.fullName}
+                      imageClassName=""
+                      fallbackClassName="mc-avatar-initial"
+                    />
                   </div>
-                  <p className="doctor-specialty">{doctor.specialty}</p>
-                  <p className="doctor-experience">
-                    <IconImage alt="" src={workHistoryIcon} />
-                    {doctor.experience}
-                  </p>
-                </div>
-                <div className="doctor-footer">
-                  <div>
-                    <p className="doctor-fee-label">{copy.consultationFee}</p>
-                    <strong>{doctor.fee}</strong>
+                  <div className="doctor-body">
+                    <div className="doctor-header">
+                      <h3>{doctor.fullName ?? `Bác sĩ #${doctor.id}`}</h3>
+                      <span className="doctor-rating">
+                        <IconImage alt="" src={starIcon} />
+                        {doctor.averageRating != null ? Number(doctor.averageRating).toFixed(1) : "0.0"}
+                      </span>
+                    </div>
+                    <p className="doctor-specialty">{doctor.specialtyName ?? "Chuyên khoa"}</p>
+                    <p className="doctor-experience">
+                      <IconImage alt="" src={workHistoryIcon} />
+                      {doctor.experienceYears != null ? `${doctor.experienceYears} năm kinh nghiệm` : "Chưa cập nhật"}
+                    </p>
                   </div>
-                  <a className="button button--soft" href="/doctors">
-                    {copy.doctorDetails}
-                  </a>
-                </div>
-              </article>
-            ))}
+                  <div className="doctor-footer">
+                    <div>
+                      <p className="doctor-fee-label">{copy.consultationFee}</p>
+                      <strong>
+                        {doctor.consultationFee == null || Number(doctor.consultationFee) <= 0
+                          ? "Chưa cập nhật"
+                          : `${Number(doctor.consultationFee).toLocaleString("vi-VN")} đ`}
+                      </strong>
+                    </div>
+                    <a className="button button--soft" href={`/doctors/${doctor.id}`}>
+                      {copy.doctorDetails}
+                    </a>
+                  </div>
+                </article>
+              ))
+            )}
           </div>
         </div>
       </section>

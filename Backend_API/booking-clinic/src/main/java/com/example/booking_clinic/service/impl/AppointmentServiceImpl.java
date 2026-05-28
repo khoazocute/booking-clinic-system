@@ -53,8 +53,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Patient profile not found. Please complete your patient profile first."));
 
-        // Tìm DoctorSchedule với pessimistic lock để tránh race condition
-        DoctorSchedule schedule = doctorScheduleRepository.findByIdWithLock(request.scheduleId())
+        // Tìm DoctorSchedule (bỏ pessimistic lock do lỗi MariaDB không hỗ trợ FOR UPDATE OF alias)
+        DoctorSchedule schedule = doctorScheduleRepository.findById(request.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found"));
 
         // Kiểm tra bệnh nhân chưa có lịch ACTIVE trên khung giờ này

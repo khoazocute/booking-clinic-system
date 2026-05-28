@@ -224,6 +224,7 @@ function DoctorCard({ doctor }) {
         <div className="doctor-directory-card__avatar">
           <SafeAvatar
             src={doctor.avatarUrl}
+            fallbackSrc="/default-doctor.png"
             alt={doctor.fullName}
             name={doctor.fullName}
             imageClassName=""

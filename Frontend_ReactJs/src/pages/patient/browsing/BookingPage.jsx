@@ -489,8 +489,8 @@ export function BookingPage() {
                 <form className="mc-summary-body" onSubmit={handleConfirm}>
                   <div className="mc-summary-doctor">
                     <div className="mc-summary-avatar">
-                      {doctor.avatarUrl ? (
-                        <img src={doctor.avatarUrl} alt={doctor.fullName} />
+                      {doctor.avatarUrl || "/default-doctor.png" ? (
+                        <img src={doctor.avatarUrl || "/default-doctor.png"} alt={doctor.fullName} />
                       ) : (
                         <span className="mc-summary-avatar-initial">{doctor.fullName?.[0] ?? "B"}</span>
                       )}
@@ -697,7 +697,7 @@ export function BookingPage() {
                   <div className="mc-summary-avatar">
                     <SafeAvatar
                       src={doctor.avatarUrl}
-                      alt={doctor.fullName}
+                      fallbackSrc="/default-doctor.png"
                       name={doctor.fullName}
                       imageClassName=""
                       fallbackClassName="mc-summary-avatar-initial"

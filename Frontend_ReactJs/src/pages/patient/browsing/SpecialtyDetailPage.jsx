@@ -168,6 +168,7 @@ function DoctorCard({ doctor }) {
       <div className="doctor-image doctor-image--placeholder">
         <SafeAvatar
           src={doctor.avatarUrl}
+          fallbackSrc="/default-doctor.png"
           alt={doctor.fullName}
           name={doctor.fullName}
           imageClassName=""

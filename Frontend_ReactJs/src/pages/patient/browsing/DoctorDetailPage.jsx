@@ -116,6 +116,7 @@ export function DoctorDetailPage() {
             <div className="mc-hero-avatar">
               <SafeAvatar
                 src={doctor.avatarUrl}
+                fallbackSrc="/default-doctor.png"
                 alt={doctor.fullName}
                 name={doctor.fullName}
                 imageClassName=""

@@ -59,4 +59,11 @@ public class AiKnowledgeServiceImpl implements AiKnowledgeService {
     private String nullToEmpty(String value) {
         return value == null ? "" : value;
     }
+
+    @jakarta.annotation.PostConstruct
+    public void init() {
+        if (aiDocumentRepository.count() == 0) {
+            rebuildIndex();
+        }
+    }
 }
