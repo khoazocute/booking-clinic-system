@@ -53,8 +53,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Patient profile not found. Please complete your patient profile first."));
 
-        // Tìm DoctorSchedule với pessimistic lock để tránh race condition
-        DoctorSchedule schedule = doctorScheduleRepository.findByIdWithLock(request.scheduleId())
+        // Tìm DoctorSchedule (bỏ pessimistic lock do lỗi MariaDB không hỗ trợ FOR UPDATE OF alias)
+        DoctorSchedule schedule = doctorScheduleRepository.findById(request.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found"));
 
         // Kiểm tra bệnh nhân chưa có lịch ACTIVE trên khung giờ này
@@ -307,6 +307,9 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
         }
 
         // Tính hoàn tiền dựa vào giờ còn lại trước lịch khám
+        Patient patient = patientRepository.findById(appointment.getPatient().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found"));
+
         DoctorSchedule schedule = appointment.getSchedule();
         int refundPercent = 0;
         BigDecimal refundAmount = BigDecimal.ZERO;
@@ -341,6 +344,21 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
             refundNote = "Khong co thong tin lich - khong hoan tien";
         }
 
+        // Cộng tiền hoàn vào ví bệnh nhân
+        if (refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+            BigDecimal current = patient.getWalletBalance() != null ? patient.getWalletBalance() : BigDecimal.ZERO;
+            patient.setWalletBalance(current.add(refundAmount));
+            patientRepository.save(patient);
+        }
+
+        // Huỷ các payment PENDING chưa được xác nhận
+        paymentRepository.findByAppointment_Id(appointment.getId()).stream()
+                .filter(p -> "PENDING".equals(p.getStatus()))
+                .forEach(p -> {
+                    p.setStatus("CANCELLED");
+                    paymentRepository.save(p);
+                });
+
         // Trả lại khung giờ
         if (schedule != null) {
             schedule.setStatus("AVAILABLE");
@@ -354,21 +372,27 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
         notificationService.createNotification(
                 appointment.getDoctor().getUser(),
                 "Benh nhan da huy lich",
-                "Benh nhan " + appointment.getPatient().getUser().getFullName() + " da huy lich kham",
+                "Benh nhan " + patient.getUser().getFullName() + " da huy lich kham",
                 "APPOINTMENT_CANCELLED",
                 "APPOINTMENT",
                 appointment.getId()
         );
         notificationService.createNotificationForAdmins(
                 "Benh nhan huy lich",
-                "Benh nhan " + appointment.getPatient().getUser().getFullName()
+                "Benh nhan " + patient.getUser().getFullName()
                         + " da tu huy lich kham #" + appointment.getId(),
                 "APPOINTMENT_CANCELLED",
                 "APPOINTMENT",
                 appointment.getId()
         );
 
-        return new CancelAppointmentResponse(appointment.getId(), refundPercent, refundAmount, refundNote);
+        return new CancelAppointmentResponse(
+                appointment.getId(),
+                refundPercent,
+                refundAmount,
+                refundNote,
+                patient.getWalletBalance()
+        );
     }
 
     private User getCurrentUser() {

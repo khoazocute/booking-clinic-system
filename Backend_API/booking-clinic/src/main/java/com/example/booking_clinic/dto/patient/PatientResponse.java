@@ -1,5 +1,6 @@
 package com.example.booking_clinic.dto.patient;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record PatientResponse(
@@ -16,6 +17,7 @@ public record PatientResponse(
         String identityNumber,
         String insuranceNumber,
         String emergencyContactPhone,
-        String medicalHistoryNote
+        String medicalHistoryNote,
+        BigDecimal walletBalance
 ) {
 }

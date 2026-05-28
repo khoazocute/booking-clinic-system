@@ -98,7 +98,8 @@ public class PatientServiceImpl implements PatientService {
                 patient.getIdentityNumber(),
                 patient.getInsuranceNumber(),
                 patient.getEmergencyContactPhone(),
-                patient.getMedicalHistoryNote()
+                patient.getMedicalHistoryNote(),
+                patient.getWalletBalance() != null ? patient.getWalletBalance() : java.math.BigDecimal.ZERO
         );
     }
 }

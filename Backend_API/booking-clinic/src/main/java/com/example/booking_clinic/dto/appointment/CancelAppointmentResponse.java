@@ -6,5 +6,6 @@ public record CancelAppointmentResponse(
         Long appointmentId,
         int refundPercent,
         BigDecimal refundAmount,
-        String refundNote
+        String refundNote,
+        BigDecimal newWalletBalance
 ) {}

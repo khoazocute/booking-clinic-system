@@ -108,6 +108,19 @@ export function PatientProfilePage() {
                 <span className="pp-role-chip">Bệnh nhân</span>
               </div>
 
+              {profile && (
+                <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 18px", borderRadius: "12px", background: "rgba(22,163,74,0.07)", border: "1.5px solid rgba(22,163,74,0.25)", margin: "16px 0" }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: "26px", color: "#16a34a", fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>Số dư ví</p>
+                    <p style={{ margin: 0, fontSize: "18px", fontWeight: 700, color: "#16a34a" }}>{Number(profile?.walletBalance ?? 0).toLocaleString("vi-VN")} ₫</p>
+                  </div>
+                  <p style={{ margin: "0 0 0 auto", fontSize: "12px", color: "#9ca3af", maxWidth: "150px", textAlign: "right" }}>
+                    Tiền hoàn từ lịch hẹn đã hủy
+                  </p>
+                </div>
+              )}
+
               <div className="pp-divider" />
 
               <div className="pp-section">

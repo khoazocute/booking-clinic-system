@@ -217,6 +217,10 @@ public class PaymentServiceImpl implements PaymentService {
 
         // BOOKING payment → PAID : xác nhận appointment
         if ("PAID".equals(newStatus) && "BOOKING".equals(payment.getPaymentType())) {
+            if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+                throw new IllegalArgumentException(
+                        "Cannot confirm payment: appointment has already been cancelled");
+            }
             if (appointment.getStatus() == AppointmentStatus.PENDING) {
                 appointment.setStatus(AppointmentStatus.CONFIRMED);
                 appointmentRepository.save(appointment);

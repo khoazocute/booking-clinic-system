@@ -38,6 +38,7 @@ export function PatientProfilePage() {
   const returnTo = searchParams.get("returnTo");
 
   const [form, setForm] = useState(EMPTY);
+  const [walletBalance, setWalletBalance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -58,6 +59,7 @@ export function PatientProfilePage() {
             emergencyContactPhone: p.emergencyContactPhone ?? "",
             medicalHistoryNote: p.medicalHistoryNote ?? "",
           });
+          setWalletBalance(p.walletBalance ?? 0);
         }
       })
       .catch(() => {})
@@ -106,6 +108,19 @@ export function PatientProfilePage() {
   return (
     <div className="browse-page">
       <div className="mc-container" style={{ maxWidth: 720, padding: "48px 0 80px" }}>
+        {walletBalance != null && (
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "16px 20px", borderRadius: "12px", background: "rgba(22,163,74,0.07)", border: "1.5px solid rgba(22,163,74,0.25)", marginBottom: "24px" }}>
+            <span className="material-symbols-outlined" style={{ fontSize: "28px", color: "#16a34a", fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+            <div>
+              <p style={{ margin: 0, fontSize: "13px", color: "#6b7280" }}>Số dư ví của bạn</p>
+              <p style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#16a34a" }}>{Number(walletBalance).toLocaleString("vi-VN")} ₫</p>
+            </div>
+            <p style={{ margin: "0 0 0 auto", fontSize: "12px", color: "#9ca3af", maxWidth: "160px", textAlign: "right" }}>
+              Số tiền hoàn từ các lịch hẹn đã hủy
+            </p>
+          </div>
+        )}
+
         <div className="mc-section-card">
           <div className="mc-section-heading">
             <h2>Hồ sơ bệnh nhân</h2>

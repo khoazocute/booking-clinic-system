@@ -29,7 +29,6 @@ public class AiConsultationController {
             @Valid @RequestBody AiConsultRequest request) {
 
         return ResponseEntity.ok(
-                ApiResponse.success("AI consultation completed", aiConsultationService.consult(request))
-        );
+                ApiResponse.success("AI consultation completed", aiConsultationService.consult(request)));
     }
 }

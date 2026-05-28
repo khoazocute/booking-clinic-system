@@ -9,11 +9,8 @@ import {
   creditCardIcon,
   faceIcon,
   factCheckIcon,
-  locationOnIcon,
-  mailIcon,
   medicalServicesIcon,
   personSearchIcon,
-  phoneIcon,
   securityIcon,
   starIcon,
   stethoscopeIcon,
@@ -26,97 +23,97 @@ import { getDoctorAvatar } from "../../utils/doctorHelpers";
 
 const copy = {
   heroTitle:
-    "Ch\u0103m s\u00f3c s\u1ee9c kh\u1ecfe to\u00e0n di\u1ec7n, \u0111\u1eb7t l\u1ecbch nhanh ch\u00f3ng",
+    "Chăm sóc sức khỏe toàn diện, đặt lịch nhanh chóng",
   heroDescription:
-    "Gi\u1ea3i ph\u00e1p \u0111\u1eb7t l\u1ecbch kh\u00e1m online, ch\u1ecdn b\u00e1c s\u0129 chuy\u00ean khoa \u0111\u1ea7u ng\u00e0nh, theo d\u00f5i b\u1ec7nh \u00e1n v\u00e0 nh\u1eadn \u0111\u01a1n thu\u1ed1c \u0111i\u1ec7n t\u1eed ngay t\u1ea1i nh\u00e0.",
-  heroPrimaryCta: "\u0110\u1eb7t l\u1ecbch ngay",
-  heroSecondaryCta: "Xem b\u00e1c s\u0129",
-  heroImageAlt: "B\u00e1c s\u0129 t\u01b0 v\u1ea5n",
-  specialtiesHeading: "Chuy\u00ean khoa n\u1ed5i b\u1eadt",
-  specialtiesDescription: "C\u00e1c d\u1ecbch v\u1ee5 kh\u00e1m ch\u1eefa b\u1ec7nh h\u00e0ng \u0111\u1ea7u",
-  viewAll: "Xem t\u1ea5t c\u1ea3",
-  viewMore: "Xem th\u00eam",
-  doctorsHeading: "B\u00e1c s\u0129 ti\u00eau bi\u1ec3u",
-  doctorsDescription: "\u0110\u1ed9i ng\u0169 chuy\u00ean gia uy t\u00edn h\u00e0ng \u0111\u1ea7u",
-  consultationFee: "Ph\u00ed t\u01b0 v\u1ea5n",
-  doctorDetails: "Xem chi ti\u1ebft",
-  processHeading: "Quy tr\u00ecnh \u0111\u1eb7t l\u1ecbch \u0111\u01a1n gi\u1ea3n",
+    "Giải pháp đặt lịch khám online, chọn bác sĩ chuyên khoa đầu ngành, theo dõi bệnh án và nhận đơn thuốc điện tử ngay tại nhà.",
+  heroPrimaryCta: "Đặt lịch ngay",
+  heroSecondaryCta: "Xem bác sĩ",
+  heroImageAlt: "Bác sĩ tư vấn",
+  specialtiesHeading: "Chuyên khoa nổi bật",
+  specialtiesDescription: "Các dịch vụ khám chữa bệnh hàng đầu",
+  viewAll: "Xem tất cả",
+  viewMore: "Xem thêm",
+  doctorsHeading: "Bác sĩ tiêu biểu",
+  doctorsDescription: "Đội ngũ chuyên gia uy tín hàng đầu",
+  consultationFee: "Phí tư vấn",
+  doctorDetails: "Xem chi tiết",
+  processHeading: "Quy trình đặt lịch đơn giản",
   processDescription:
-    "Ch\u1ec9 v\u1edbi 4 b\u01b0\u1edbc nhanh ch\u00f3ng \u0111\u1ec3 k\u1ebft n\u1ed1i v\u1edbi b\u00e1c s\u0129 chuy\u00ean khoa",
-  ctaHeading: "S\u1eb5n s\u00e0ng \u0111\u1ec3 b\u1eaft \u0111\u1ea7u h\u00e0nh tr\u00ecnh s\u1ee9c kh\u1ecfe c\u1ee7a b\u1ea1n?",
+    "Chỉ với 4 bước nhanh chóng để kết nối với bác sĩ chuyên khoa",
+  ctaHeading: "Sẵn sàng để bắt đầu hành trình sức khỏe của bạn?",
   ctaDescription:
-    "\u0110\u0103ng k\u00fd t\u00e0i kho\u1ea3n ngay h\u00f4m nay \u0111\u1ec3 tr\u1ea3i nghi\u1ec7m d\u1ecbch v\u1ee5 ch\u0103m s\u00f3c s\u1ee9c kh\u1ecfe to\u00e0n di\u1ec7n v\u00e0 ti\u1ec7n l\u1ee3i nh\u1ea5t.",
-  ctaPrimary: "B\u1eaft \u0111\u1ea7u ngay",
-  ctaSecondary: "\u0110\u0103ng k\u00fd t\u00e0i kho\u1ea3n",
-  copyright: "\u00a9 2024 MediCare. Bảo lưu mọi quyền.",
+    "Đăng ký tài khoản ngay hôm nay để trải nghiệm dịch vụ chăm sóc sức khỏe toàn diện và tiện lợi nhất.",
+  ctaPrimary: "Bắt đầu ngay",
+  ctaSecondary: "Đăng ký tài khoản",
+  copyright: "© 2024 MediCare. Bảo lưu mọi quyền.",
 };
 
 const benefits = [
   {
-    title: "\u0110\u1eb7t l\u1ecbch nhanh",
+    title: "Đặt lịch nhanh",
     icon: boltIcon,
-    description: "Ti\u1ebft ki\u1ec7m th\u1eddi gian ch\u1edd \u0111\u1ee3i.",
+    description: "Tiết kiệm thời gian chờ đợi.",
   },
   {
-    title: "B\u00e1c s\u0129 chuy\u00ean gia",
+    title: "Bác sĩ chuyên gia",
     icon: workspacePremiumIcon,
-    description: "\u0110\u1ed9i ng\u0169 b\u00e1c s\u0129 gi\u00e0u kinh nghi\u1ec7m t\u1eeb c\u00e1c b\u1ec7nh vi\u1ec7n l\u1edbn.",
+    description: "Đội ngũ bác sĩ giàu kinh nghiệm từ các bệnh viện lớn.",
   },
   {
-    title: "H\u1ed3 s\u01a1 b\u1ea3o m\u1eadt",
+    title: "Hồ sơ bảo mật",
     icon: securityIcon,
-    description: "Qu\u1ea3n l\u00fd l\u1ecbch s\u1eed kh\u00e1m v\u00e0 \u0111\u01a1n thu\u1ed1c tr\u1ef1c tuy\u1ebfn an to\u00e0n.",
+    description: "Quản lý lịch sử khám và đơn thuốc trực tuyến an toàn.",
   },
   {
-    title: "Thanh to\u00e1n linh ho\u1ea1t",
+    title: "Thanh toán linh hoạt",
     icon: creditCardIcon,
-    description: "\u0110a d\u1ea1ng ph\u01b0\u01a1ng th\u1ee9c thanh to\u00e1n online ti\u1ec7n l\u1ee3i.",
+    description: "Đa dạng phương thức thanh toán online tiện lợi.",
   },
 ];
 
 const specialties = [
   {
-    title: "N\u1ed9i t\u1ed5ng qu\u00e1t",
+    title: "Nội tổng quát",
     icon: stethoscopeIcon,
-    description: "Ch\u0103m s\u00f3c s\u1ee9c kh\u1ecfe ban \u0111\u1ea7u to\u00e0n di\u1ec7n.",
+    description: "Chăm sóc sức khỏe ban đầu toàn diện.",
   },
   {
-    title: "Da li\u1ec5u",
+    title: "Da liễu",
     icon: faceIcon,
-    description: "\u0110i\u1ec1u tr\u1ecb c\u00e1c v\u1ea5n \u0111\u1ec1 v\u1ec1 da li\u1ec5u th\u1ea9m m\u1ef9.",
+    description: "Điều trị các vấn đề về da liễu thẩm mỹ.",
   },
   {
-    title: "Tim m\u1ea1ch",
+    title: "Tim mạch",
     icon: cardiologyIcon,
-    description: "Chuy\u00ean khoa tim m\u1ea1ch k\u1ef9 thu\u1eadt cao.",
+    description: "Chuyên khoa tim mạch kỹ thuật cao.",
   },
   {
     title: "Nhi khoa",
     icon: childCareIcon,
-    description: "Ch\u0103m s\u00f3c s\u1ee9c kh\u1ecfe nhi \u0111\u1ed3ng t\u1eadn t\u00e2m.",
+    description: "Chăm sóc sức khỏe nhi đồng tận tâm.",
   },
 ];
 
 const steps = [
   {
-    title: "Ch\u1ecdn b\u00e1c s\u0129",
+    title: "Chọn bác sĩ",
     icon: personSearchIcon,
-    description: "T\u00ecm ki\u1ebfm theo khoa ho\u1eb7c t\u00ean.",
+    description: "Tìm kiếm theo khoa hoặc tên.",
   },
   {
-    title: "Ch\u1ecdn khung gi\u1edd",
+    title: "Chọn khung giờ",
     icon: calendarMonthIcon,
-    description: "L\u1ecbch kh\u00e1m tr\u1ed1ng c\u1eadp nh\u1eadt th\u1eddi gian th\u1ef1c.",
+    description: "Lịch khám trống cập nhật thời gian thực.",
   },
   {
-    title: "X\u00e1c nh\u1eadn \u0111\u1eb7t l\u1ecbch",
+    title: "Xác nhận đặt lịch",
     icon: factCheckIcon,
-    description: "Nh\u1eadn th\u00f4ng b\u00e1o qua SMS ho\u1eb7c email.",
+    description: "Nhận thông báo qua SMS hoặc email.",
   },
   {
-    title: "Kh\u00e1m v\u00e0 nh\u1eadn \u0111\u01a1n",
+    title: "Khám và nhận đơn",
     icon: medicalServicesIcon,
-    description: "\u0110\u1ebfn kh\u00e1m \u0111\u00fang gi\u1edd v\u00e0 xem \u0111\u01a1n thu\u1ed1c tr\u00ean \u1ee9ng d\u1ee5ng.",
+    description: "Đến khám đúng giờ và xem đơn thuốc trên ứng dụng.",
   },
 ];
 

@@ -700,7 +700,6 @@ export function BookingPage() {
                   <div className="mc-summary-avatar">
                     <SafeAvatar
                       src={doctor.avatarUrl}
-                      alt={doctor.fullName}
                       name={doctor.fullName}
                       imageClassName=""
                       fallbackClassName="mc-summary-avatar-initial"

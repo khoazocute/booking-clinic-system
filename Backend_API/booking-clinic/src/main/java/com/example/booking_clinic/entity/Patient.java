@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
@@ -57,4 +58,8 @@ public class Patient {
 
     @Column(name = "medical_history_note", columnDefinition = "TEXT")
     private String medicalHistoryNote;
+
+    @Builder.Default
+    @Column(name = "wallet_balance", precision = 12, scale = 2)
+    private BigDecimal walletBalance = BigDecimal.ZERO;
 }
