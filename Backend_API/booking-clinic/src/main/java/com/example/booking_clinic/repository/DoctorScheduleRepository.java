@@ -56,8 +56,7 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
     @Query("UPDATE DoctorSchedule s SET s.status = 'AVAILABLE' WHERE s.id = :id AND s.status = 'BOOKED'")
     int releaseSchedule(@Param("id") Long id);
 
-    // Pessimistic write lock: đảm bảo không có race condition khi booking
-    @Query("SELECT s FROM DoctorSchedule s WHERE s.id = :id")
-    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    // Pessimistic write lock: đảm bảo không có race condition khi booking (dùng native query tương thích TiDB và MySQL)
+    @Query(value = "SELECT * FROM doctor_schedules WHERE id = :id FOR UPDATE", nativeQuery = true)
     Optional<DoctorSchedule> findByIdWithLock(@Param("id") Long id);
 }
