@@ -1,5 +1,7 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8082/api/v1";
+const rawApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8082/api/v1";
+export const API_BASE_URL = rawApiBaseUrl.startsWith("/")
+  ? window.location.origin + rawApiBaseUrl
+  : rawApiBaseUrl;
 
 export function getWebSocketUrl() {
   if (import.meta.env.VITE_WS_URL) {
