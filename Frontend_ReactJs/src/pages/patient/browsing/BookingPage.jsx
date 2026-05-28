@@ -6,6 +6,7 @@ import { createAppointment } from "../../../services/appointmentService";
 import { createPayment } from "../../../services/paymentService";
 import { getAccessToken } from "../../../services/authService";
 import { buildVNPayUrl } from "../../../services/vnpayService";
+import { getDoctorAvatar } from "../../../utils/doctorHelpers";
 
 const DAYS_AHEAD = 30;
 
@@ -489,11 +490,13 @@ export function BookingPage() {
                 <form className="mc-summary-body" onSubmit={handleConfirm}>
                   <div className="mc-summary-doctor">
                     <div className="mc-summary-avatar">
-                      {doctor.avatarUrl || "/default-doctor.png" ? (
-                        <img src={doctor.avatarUrl || "/default-doctor.png"} alt={doctor.fullName} />
-                      ) : (
-                        <span className="mc-summary-avatar-initial">{doctor.fullName?.[0] ?? "B"}</span>
-                      )}
+                      <SafeAvatar
+                        src={doctor.avatarUrl}
+                        alt={doctor.fullName}
+                        name={doctor.fullName}
+                        fallbackClassName="mc-summary-avatar-initial"
+                        defaultSrc={getDoctorAvatar(doctor.id)}
+                      />
                     </div>
                     <div>
                       <p className="mc-summary-doc-name">{doctor.fullName}</p>
@@ -697,10 +700,10 @@ export function BookingPage() {
                   <div className="mc-summary-avatar">
                     <SafeAvatar
                       src={doctor.avatarUrl}
-                      fallbackSrc="/default-doctor.png"
                       name={doctor.fullName}
                       imageClassName=""
                       fallbackClassName="mc-summary-avatar-initial"
+                      defaultSrc={getDoctorAvatar(doctor.id)}
                     />
                   </div>
                   <div>

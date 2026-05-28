@@ -17,26 +17,21 @@ export function SafeAvatar({
   name,
   imageClassName,
   fallbackClassName,
-  fallbackSrc,
+  defaultSrc,
 }) {
   const [hasError, setHasError] = useState(false);
-  const [fallbackError, setFallbackError] = useState(false);
 
   useEffect(() => {
     setHasError(false);
-    setFallbackError(false);
   }, [src]);
 
-  const actualSrc = src === "null" || src === "undefined" || !src ? null : src;
-
-  if (!actualSrc || hasError) {
-    if (fallbackSrc && !fallbackError) {
+  if (!src || hasError) {
+    if (defaultSrc) {
       return (
         <img
           className={imageClassName}
-          src={fallbackSrc}
+          src={defaultSrc}
           alt={alt ?? name ?? "Avatar"}
-          onError={() => setFallbackError(true)}
         />
       );
     }
@@ -46,7 +41,7 @@ export function SafeAvatar({
   return (
     <img
       className={imageClassName}
-      src={actualSrc}
+      src={src}
       alt={alt ?? name ?? "Avatar"}
       onError={() => setHasError(true)}
     />
