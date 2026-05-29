@@ -247,6 +247,41 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
                 schedule.setStatus("AVAILABLE");
                 doctorScheduleRepository.save(schedule);
             }
+
+            // Hoàn tiền 100% khi Bác sĩ/Admin hủy lịch
+            Patient patient = appointment.getPatient();
+            List<Payment> bookingPayments = paymentRepository.findByAppointment_Id(appointment.getId());
+            BigDecimal paidAmount = bookingPayments.stream()
+                    .filter(p -> "BOOKING".equals(p.getPaymentType()) && "PAID".equals(p.getStatus()))
+                    .map(Payment::getAmount)
+                    .findFirst()
+                    .orElse(BigDecimal.ZERO);
+
+            if (paidAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal current = patient.getWalletBalance() != null ? patient.getWalletBalance() : BigDecimal.ZERO;
+                patient.setWalletBalance(current.add(paidAmount));
+                patientRepository.save(patient);
+
+                if (!paymentRepository.existsByAppointment_IdAndPaymentType(appointment.getId(), "REFUND")) {
+                    Payment refundPayment = Payment.builder()
+                            .appointment(appointment)
+                            .patient(patient)
+                            .amount(paidAmount)
+                            .paymentMethod("WALLET_REFUND")
+                            .paymentType("REFUND")
+                            .status("REFUNDED")
+                            .build();
+                    paymentRepository.save(refundPayment);
+                }
+            }
+
+            // Huỷ các payment PENDING chưa được xác nhận
+            paymentRepository.findByAppointment_Id(appointment.getId()).stream()
+                    .filter(p -> "PENDING".equals(p.getStatus()))
+                    .forEach(p -> {
+                        p.setStatus("CANCELLED");
+                        paymentRepository.save(p);
+                    });
         }
 
         appointment.setStatus(newStatus);

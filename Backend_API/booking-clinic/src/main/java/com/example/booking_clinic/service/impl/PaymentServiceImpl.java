@@ -124,16 +124,13 @@ public class PaymentServiceImpl implements PaymentService {
 
         Payment saved = paymentRepository.save(payment);
 
-        // ─── Sau khi tạo BOOKING payment → confirm appointment ─────────
+        // ─── Sau khi tạo BOOKING payment → Không tự động confirm lịch hẹn, giữ nguyên PENDING cho tới khi bác sĩ xác nhận ─────────
         if ("BOOKING".equals(paymentType)) {
-            appointment.setStatus(AppointmentStatus.CONFIRMED);
-            appointmentRepository.save(appointment);
-
             notificationService.createNotification(
                     patient.getUser(),
                     "Dat lich thanh cong",
-                    "Lich kham cua ban da duoc xac nhan. Phuong thuc thanh toan: " + method,
-                    "APPOINTMENT_CONFIRMED",
+                    "Lich kham cua ban da duoc ghi nhan va dang cho bac si xac nhan. Phuong thuc thanh toan: " + method,
+                    "APPOINTMENT_CREATED",
                     "APPOINTMENT",
                     appointment.getId()
             );
@@ -216,20 +213,16 @@ public class PaymentServiceImpl implements PaymentService {
 
         Appointment appointment = payment.getAppointment();
 
-        // BOOKING payment → PAID : xác nhận appointment
+        // BOOKING payment → PAID : giữ nguyên PENDING cho tới khi bác sĩ xác nhận
         if ("PAID".equals(newStatus) && "BOOKING".equals(payment.getPaymentType())) {
             if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
                 throw new IllegalArgumentException(
                         "Cannot confirm payment: appointment has already been cancelled");
             }
-            if (appointment.getStatus() == AppointmentStatus.PENDING) {
-                appointment.setStatus(AppointmentStatus.CONFIRMED);
-                appointmentRepository.save(appointment);
-            }
             notificationService.createNotification(
                     payment.getPatient().getUser(),
                     "Thanh toan thanh cong",
-                    "Khoan thanh toan dat lich cua ban da duoc xac nhan",
+                    "Khoan thanh toan dat lich cua ban da duoc xac nhan. Vui long cho bac si xac nhan.",
                     "PAYMENT_COMPLETED",
                     "PAYMENT",
                     saved.getId()
@@ -305,6 +298,19 @@ public class PaymentServiceImpl implements PaymentService {
                     "PAYMENT",
                     saved.getId()
             );
+
+            // Gửi thông báo cho bác sĩ phụ trách
+            if (appointment.getDoctor() != null && appointment.getDoctor().getUser() != null) {
+                notificationService.createNotification(
+                        appointment.getDoctor().getUser(),
+                        "Benh nhan da thanh toan don thuoc",
+                        "Benh nhan " + payment.getPatient().getUser().getFullName()
+                                + " da thanh toan thanh cong don thuoc cho lich kham #" + appointment.getId(),
+                        "PAYMENT_COMPLETED",
+                        "PAYMENT",
+                        saved.getId()
+                );
+            }
         }
 
         return toResponse(saved);

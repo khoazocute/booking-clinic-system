@@ -20,6 +20,8 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
 
     List<DoctorSchedule> findByDoctor_IdAndWorkDateOrderByCreatedAtDescIdDesc(Long doctorId, LocalDate workDate);
 
+    List<DoctorSchedule> findByWorkDateBeforeAndStatusIn(LocalDate today, List<String> statuses);
+
     // Kiểm tra xem có bị trùng/giao lấn thời gian với các lịch đã có không
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +
            "FROM DoctorSchedule s " +

@@ -140,3 +140,12 @@ Trước khi chạy, máy tính của bạn bắt buộc phải có sẵn:
   ```bash
   docker-compose down -v
   ```
+##Demo Redis bằng terminal 
+- docker-compose ps
+- docker exec -it booking-clinic-redis redis-cli ping => Nếu hiện PONG là redis container đang hiện bình thường
+- Demo Redis cache dữ liệu :  docker exec -it booking-clinic-redis redis-cli keys "*" 
+ + Nếu chưa thấy thì vào xem chuyên khoa/bác sĩ , và chạy lại lệnh đó
+ + Sẽ thấy các key như bên dưới thì redis cache đã hoạt động
+specialties::all
+doctors::all
+medicines::all
