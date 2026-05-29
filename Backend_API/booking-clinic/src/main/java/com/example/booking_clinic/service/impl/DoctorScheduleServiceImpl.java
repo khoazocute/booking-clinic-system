@@ -16,18 +16,23 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class DoctorScheduleServiceImpl implements DoctorScheduleService {
 
+    private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+
     private final DoctorScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
 
     //Validate dữ liệu
     private void validateScheduleTime(LocalDate workDate, LocalTime startTime, LocalTime endTime) {
-        if (workDate.isBefore(LocalDate.now())) {
+        LocalDate today = LocalDate.now(APP_ZONE);
+
+        if (workDate.isBefore(today)) {
             throw new IllegalArgumentException("Work date cannot be in the past");
         }
 
@@ -35,7 +40,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 
-        if (workDate.isEqual(LocalDate.now()) && !startTime.isAfter(LocalTime.now())) {
+        if (workDate.isEqual(today) && !startTime.isAfter(LocalTime.now(APP_ZONE))) {
             throw new IllegalArgumentException("Start time must be in the future for today's schedule");
         }
     }

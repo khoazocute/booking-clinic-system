@@ -15,12 +15,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class AppointmentExpiryScheduler {
+
+    private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final AppointmentRepository appointmentRepository;
     private final DoctorScheduleRepository doctorScheduleRepository;
@@ -30,7 +33,7 @@ public class AppointmentExpiryScheduler {
     @Transactional
     public void cancelExpiredPendingAppointments() {
         List<Appointment> expired = appointmentRepository.findExpiredPendingAppointments(
-                AppointmentStatus.PENDING, LocalDateTime.now());
+                AppointmentStatus.PENDING, LocalDateTime.now(APP_ZONE));
 
         if (expired.isEmpty()) return;
 
@@ -61,7 +64,7 @@ public class AppointmentExpiryScheduler {
     @Scheduled(fixedRate = 60_000)
     @Transactional
     public void cancelPastAppointmentsAndSchedules() {
-        LocalDate today = LocalDate.now();
+        LocalDate today = LocalDate.now(APP_ZONE);
 
         List<Appointment> pastAppointments = appointmentRepository.findPastActiveAppointments(
                 List.of(
