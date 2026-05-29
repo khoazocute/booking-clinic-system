@@ -13,6 +13,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -55,5 +56,54 @@ public class AppointmentExpiryScheduler {
         }
 
         appointmentRepository.saveAll(expired);
+    }
+
+    @Scheduled(fixedRate = 60_000)
+    @Transactional
+    public void cancelPastAppointmentsAndSchedules() {
+        LocalDate today = LocalDate.now();
+
+        List<Appointment> pastAppointments = appointmentRepository.findPastActiveAppointments(
+                List.of(
+                        AppointmentStatus.PENDING,
+                        AppointmentStatus.CONFIRMED,
+                        AppointmentStatus.REQUESTED,
+                        AppointmentStatus.SCHEDULED
+                ),
+                today
+        );
+
+        if (!pastAppointments.isEmpty()) {
+            log.info("Cancelling {} past active appointments", pastAppointments.size());
+            for (Appointment appointment : pastAppointments) {
+                appointment.setStatus(AppointmentStatus.CANCELLED);
+                appointment.setCancelReason("Tự động huỷ: lịch khám đã qua ngày");
+
+                DoctorSchedule schedule = appointment.getSchedule();
+                if (schedule != null) {
+                    schedule.setStatus("CANCELLED");
+                    doctorScheduleRepository.save(schedule);
+                }
+
+                paymentRepository.findByAppointment_Id(appointment.getId()).stream()
+                        .filter(p -> "PENDING".equals(p.getStatus()))
+                        .forEach(p -> {
+                            p.setStatus("CANCELLED");
+                            paymentRepository.save(p);
+                        });
+            }
+            appointmentRepository.saveAll(pastAppointments);
+        }
+
+        List<DoctorSchedule> pastSchedules = doctorScheduleRepository.findByWorkDateBeforeAndStatusIn(
+                today,
+                List.of("AVAILABLE", "BOOKED")
+        );
+
+        if (!pastSchedules.isEmpty()) {
+            log.info("Cancelling {} past doctor schedules", pastSchedules.size());
+            pastSchedules.forEach(schedule -> schedule.setStatus("CANCELLED"));
+            doctorScheduleRepository.saveAll(pastSchedules);
+        }
     }
 }

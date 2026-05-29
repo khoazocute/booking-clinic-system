@@ -221,7 +221,7 @@ export function DoctorAppointmentDetailPage() {
                     <span>Xem hồ sơ bệnh án</span>
                     <span className="material-symbols-outlined">chevron_right</span>
                   </Link>
-                ) : (
+                ) : appointment.status === "CONFIRMED" ? (
                   <Link
                     className="doctor-case-action doctor-case-action--primary"
                     to={`/doctor/medical-records/create/${appointment.id}`}
@@ -230,6 +230,11 @@ export function DoctorAppointmentDetailPage() {
                     <span>Tạo hồ sơ bệnh án</span>
                     <span className="material-symbols-outlined">chevron_right</span>
                   </Link>
+                ) : (
+                  <div className="doctor-case-action doctor-case-action--disabled">
+                    <span className="material-symbols-outlined">lock</span>
+                    <span>Cần xác nhận lịch hẹn trước khi tạo bệnh án</span>
+                  </div>
                 )}
 
                 {prescription ? (

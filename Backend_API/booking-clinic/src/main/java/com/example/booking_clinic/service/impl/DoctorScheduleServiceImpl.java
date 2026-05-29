@@ -34,6 +34,10 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
         if (!startTime.isBefore(endTime)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
+
+        if (workDate.isEqual(LocalDate.now()) && !startTime.isAfter(LocalTime.now())) {
+            throw new IllegalArgumentException("Start time must be in the future for today's schedule");
+        }
     }
 
     @Override
