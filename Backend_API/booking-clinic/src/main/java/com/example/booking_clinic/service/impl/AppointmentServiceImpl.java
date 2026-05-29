@@ -28,13 +28,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AppointmentServiceImpl implements AppointmentService {
+
+    private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
@@ -57,6 +62,13 @@ public class AppointmentServiceImpl implements AppointmentService {
         // Tìm DoctorSchedule (bỏ pessimistic lock do lỗi MariaDB không hỗ trợ FOR UPDATE OF alias)
         DoctorSchedule schedule = doctorScheduleRepository.findById(request.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found"));
+
+        LocalDate today = LocalDate.now(APP_ZONE);
+        LocalTime now = LocalTime.now(APP_ZONE);
+        if (schedule.getWorkDate().isBefore(today)
+                || (schedule.getWorkDate().isEqual(today) && !schedule.getStartTime().isAfter(now))) {
+            throw new IllegalArgumentException("Cannot book a schedule slot in the past");
+        }
 
         // Kiểm tra bệnh nhân chưa có lịch ACTIVE trên khung giờ này
         if (appointmentRepository.existsByPatient_IdAndSchedule_IdAndStatusIn(
@@ -82,7 +94,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Doctor doctor = schedule.getDoctor();
 
         // Tạo Appointment với deadline thanh toán 10 phút
-        LocalDateTime deadline = LocalDateTime.now().plusMinutes(10);
+        LocalDateTime deadline = LocalDateTime.now(APP_ZONE).plusMinutes(10);
         Appointment appointment = Appointment.builder()
                 .patient(patient)
                 .doctor(doctor)
