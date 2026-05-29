@@ -16,9 +16,9 @@ import java.util.Optional;
 public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, Long> {
 
     // Tìm toàn bộ lịch của 1 bác sĩ
-    List<DoctorSchedule> findByDoctor_Id(Long doctorId);
+    List<DoctorSchedule> findByDoctor_IdOrderByCreatedAtDescIdDesc(Long doctorId);
 
-    List<DoctorSchedule> findByDoctor_IdAndWorkDate(Long doctorId, LocalDate workDate);
+    List<DoctorSchedule> findByDoctor_IdAndWorkDateOrderByCreatedAtDescIdDesc(Long doctorId, LocalDate workDate);
 
     // Kiểm tra xem có bị trùng/giao lấn thời gian với các lịch đã có không
     @Query("SELECT CASE WHEN COUNT(s) > 0 THEN true ELSE false END " +

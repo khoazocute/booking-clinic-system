@@ -43,7 +43,7 @@ function getStatusMeta(status) {
 function formatMoney(value) {
   const amount = Number(value ?? 0);
   if (!Number.isFinite(amount) || amount <= 0) return "--";
-  return `${amount.toLocaleString("vi-VN")} đ`;
+  return `${amount.toLocaleString("vi-VN")}\u00a0đ`;
 }
 
 export function AdminDoctorsPage() {
