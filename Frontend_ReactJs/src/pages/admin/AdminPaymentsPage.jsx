@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AdminWorkspace } from "../../layouts/AdminWorkspace";
 import { apiClient } from "../../services/apiClient";
 
-const STATUS_LIST = ["ALL", "PENDING", "PAID", "FAILED", "CANCELLED"];
+const STATUS_LIST = ["ALL", "PENDING", "PAID", "REFUNDED", "FAILED", "CANCELLED"];
 
 const DATE_RANGES = [
   { key: "ALL",   label: "Tất cả thời gian" },
@@ -25,6 +25,7 @@ function isInRange(dateStr, rangeKey) {
 const STATUS_META = {
   PENDING:   { label: "Chờ thanh toán", color: "#d97706", bg: "rgba(217,119,6,0.1)" },
   PAID:      { label: "Đã thanh toán",  color: "#16a34a", bg: "rgba(22,163,74,0.1)" },
+  REFUNDED:  { label: "Đã hoàn tiền",   color: "#0f766e", bg: "rgba(15,118,110,0.1)" },
   FAILED:    { label: "Thất bại",       color: "#dc2626", bg: "rgba(220,38,38,0.1)" },
   CANCELLED: { label: "Đã huỷ",        color: "#6b7280", bg: "rgba(107,114,128,0.1)" },
 };
@@ -71,6 +72,7 @@ const METHOD_LABEL = {
 const TYPE_META = {
   BOOKING:      { label: "Đặt lịch",  color: "#3b82f6", bg: "rgba(59,130,246,0.1)" },
   PRESCRIPTION: { label: "Đơn thuốc", color: "#8b5cf6", bg: "rgba(139,92,246,0.1)" },
+  REFUND:       { label: "Hoàn tiền", color: "#0f766e", bg: "rgba(15,118,110,0.1)" },
 };
 
 function TypeBadge({ type }) {
@@ -80,6 +82,17 @@ function TypeBadge({ type }) {
       {meta.label}
     </span>
   );
+}
+
+function getRevenueAmount(payment) {
+  const amount = Number(payment.amount ?? 0);
+  if (payment.status === "REFUNDED" || payment.paymentType === "REFUND") {
+    return -amount;
+  }
+  if (payment.status === "PAID") {
+    return amount;
+  }
+  return 0;
 }
 
 export function AdminPaymentsPage() {
@@ -148,8 +161,7 @@ export function AdminPaymentsPage() {
     paid: payments.filter((p) => p.status === "PAID").length,
     pending: payments.filter((p) => p.status === "PENDING").length,
     totalRevenue: payments
-      .filter((p) => p.status === "PAID")
-      .reduce((sum, p) => sum + Number(p.amount ?? 0), 0),
+      .reduce((sum, p) => sum + getRevenueAmount(p), 0),
   };
 
   return (

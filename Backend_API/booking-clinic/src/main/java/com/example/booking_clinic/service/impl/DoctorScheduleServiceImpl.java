@@ -41,9 +41,9 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
     public List<DoctorScheduleResponse> getSchedulesByDoctor(Long doctorId, LocalDate workDate) {
         List<DoctorSchedule> schedules;
         if (workDate != null) {
-            schedules = scheduleRepository.findByDoctor_IdAndWorkDate(doctorId, workDate);
+            schedules = scheduleRepository.findByDoctor_IdAndWorkDateOrderByCreatedAtDescIdDesc(doctorId, workDate);
         } else {
-            schedules = scheduleRepository.findByDoctor_Id(doctorId);
+            schedules = scheduleRepository.findByDoctor_IdOrderByCreatedAtDescIdDesc(doctorId);
         }
 
         return schedules.stream().map(this::toResponse).toList();

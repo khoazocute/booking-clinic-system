@@ -23,6 +23,7 @@ import com.example.booking_clinic.service.MedicineService;
 import com.example.booking_clinic.service.NotificationService;
 import com.example.booking_clinic.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -182,7 +183,7 @@ public class PaymentServiceImpl implements PaymentService {
         User currentUser = getCurrentUser();
         String role = currentUser.getRole().getName().trim().toUpperCase();
 
-        List<Payment> payments = paymentRepository.findByAppointment_Id(appointmentId);
+        List<Payment> payments = paymentRepository.findByAppointment_IdOrderByCreatedAtDescIdDesc(appointmentId);
 
         if ("PATIENT".equals(role)) {
             payments.stream().findFirst().ifPresent(p -> {
@@ -205,9 +206,9 @@ public class PaymentServiceImpl implements PaymentService {
 
         String newStatus = request.status().trim().toUpperCase();
 
-        if (!List.of("PAID", "FAILED", "CANCELLED", "PENDING").contains(newStatus)) {
+        if (!List.of("PAID", "FAILED", "CANCELLED", "PENDING", "REFUNDED").contains(newStatus)) {
             throw new IllegalArgumentException(
-                    "Invalid status. Allowed: PAID, FAILED, CANCELLED, PENDING");
+                    "Invalid status. Allowed: PAID, FAILED, CANCELLED, PENDING, REFUNDED");
         }
 
         payment.setStatus(newStatus);
@@ -317,7 +318,13 @@ public class PaymentServiceImpl implements PaymentService {
         if (!"ADMIN".equals(role)) {
             throw new AccessDeniedException("Only ADMIN can view all payments");
         }
-        return paymentRepository.findAll().stream().map(this::toResponse).toList();
+        return paymentRepository.findAll(Sort.by(
+                        Sort.Order.desc("createdAt"),
+                        Sort.Order.desc("id")
+                ))
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     private PaymentResponse toResponse(Payment payment) {

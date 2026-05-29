@@ -12,6 +12,7 @@ const APPOINTMENT_STATUSES = [
 
 const PAYMENT_STATUSES = [
   { key: "PAID", label: "Đã thanh toán", color: "#0b5bd3" },
+  { key: "REFUNDED", label: "Đã hoàn tiền", color: "#d97706" },
   { key: "PENDING", label: "Chờ thanh toán", color: "#0f7a8f" },
   { key: "FAILED", label: "Thất bại", color: "#4b5563" },
   { key: "CANCELLED", label: "Đã hủy", color: "#c81e1e" },
@@ -27,6 +28,7 @@ const APPOINTMENT_LABELS = {
 const PAYMENT_LABELS = {
   PENDING: "Chờ thanh toán",
   PAID: "Đã thanh toán",
+  REFUNDED: "Đã hoàn tiền",
   FAILED: "Thất bại",
   CANCELLED: "Đã hủy",
 };
@@ -104,6 +106,24 @@ function percent(count, total) {
   return Math.round((count / total) * 100);
 }
 
+function getRevenueAmount(payment) {
+  const amount = Number(payment.amount ?? 0);
+  if (payment.status === "REFUNDED" || payment.paymentType === "REFUND") {
+    return -amount;
+  }
+  if (payment.status === "PAID") {
+    return amount;
+  }
+  return 0;
+}
+
+function getNewestFirst(left, right) {
+  const leftTime = new Date(left.createdAt ?? 0).getTime();
+  const rightTime = new Date(right.createdAt ?? 0).getTime();
+  if (rightTime !== leftTime) return rightTime - leftTime;
+  return Number(right.id ?? 0) - Number(left.id ?? 0);
+}
+
 function getInitials(name) {
   if (!name) return "NA";
   return String(name)
@@ -170,7 +190,7 @@ export function AdminDashboardPage() {
 
   const summary = useMemo(() => {
     const paidPayments = dashboard.payments.filter((payment) => payment.status === "PAID");
-    const revenue = paidPayments.reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
+    const revenue = dashboard.payments.reduce((sum, payment) => sum + getRevenueAmount(payment), 0);
     const paidPercent = percent(paidPayments.length, dashboard.payments.length);
 
     return {
@@ -180,10 +200,10 @@ export function AdminDashboardPage() {
       totalRevenue: revenue,
       paidPercent,
       recentAppointments: [...dashboard.appointments]
-        .sort((a, b) => Number(b.id ?? 0) - Number(a.id ?? 0))
+        .sort(getNewestFirst)
         .slice(0, 4),
       recentPayments: [...dashboard.payments]
-        .sort((a, b) => Number(b.id ?? 0) - Number(a.id ?? 0))
+        .sort(getNewestFirst)
         .slice(0, 4),
     };
   }, [dashboard]);

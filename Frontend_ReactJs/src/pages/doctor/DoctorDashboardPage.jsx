@@ -22,6 +22,17 @@ function getInitials(name) {
     .join("");
 }
 
+function getRevenueAmount(payment) {
+  const amount = Number(payment.amount ?? 0);
+  if (payment.status === "REFUNDED" || payment.paymentType === "REFUND") {
+    return -amount;
+  }
+  if (payment.status === "PAID") {
+    return amount;
+  }
+  return 0;
+}
+
 export function DoctorDashboardPage() {
   const [doctor, setDoctor] = useState(null);
   const [appointments, setAppointments] = useState([]);
@@ -74,8 +85,7 @@ export function DoctorDashboardPage() {
 
   const today = new Date().toISOString().slice(0, 10);
   const paidRevenue = payments
-    .filter((payment) => payment.status === "PAID")
-    .reduce((sum, payment) => sum + Number(payment.amount ?? 0), 0);
+    .reduce((sum, payment) => sum + getRevenueAmount(payment), 0);
   const stats = [
     {
       label: "Lịch hẹn",
@@ -110,9 +120,10 @@ export function DoctorDashboardPage() {
   const upcomingAppointments = useMemo(() => {
     return [...appointments]
       .sort((a, b) => {
-        const aDateTime = new Date(`${a.appointmentDate}T${a.startTime ?? "00:00:00"}`).getTime();
-        const bDateTime = new Date(`${b.appointmentDate}T${b.startTime ?? "00:00:00"}`).getTime();
-        return bDateTime - aDateTime;
+        const aCreatedAt = new Date(a.createdAt ?? 0).getTime();
+        const bCreatedAt = new Date(b.createdAt ?? 0).getTime();
+        if (bCreatedAt !== aCreatedAt) return bCreatedAt - aCreatedAt;
+        return Number(b.id ?? 0) - Number(a.id ?? 0);
       })
       .slice(0, 4);
   }, [appointments]);

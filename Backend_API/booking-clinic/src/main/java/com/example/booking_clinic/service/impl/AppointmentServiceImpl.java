@@ -21,6 +21,7 @@ import com.example.booking_clinic.repository.UserRepository;
 import com.example.booking_clinic.service.AppointmentService;
 import com.example.booking_clinic.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -156,7 +157,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         Patient patient = patientRepository.findByUser_Id(currentUser.getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found"));
 
-        return appointmentRepository.findByPatient_Id(patient.getId())
+        return appointmentRepository.findByPatient_IdOrderByCreatedAtDescIdDesc(patient.getId())
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -178,7 +179,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalArgumentException("Invalid role");
         }
 
-        return appointmentRepository.findByDoctor_Id(doctorId)
+        return appointmentRepository.findByDoctor_IdOrderByCreatedAtDescIdDesc(doctorId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -187,7 +188,10 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional(readOnly = true)
     public List<AppointmentResponse> getAllAppointments() {
-        return appointmentRepository.findAll()
+        return appointmentRepository.findAll(Sort.by(
+                        Sort.Order.desc("createdAt"),
+                        Sort.Order.desc("id")
+                ))
                 .stream()
                 .map(this::toResponse)
                 .toList();
@@ -349,6 +353,18 @@ System.out.println("2. ID Bác sĩ đang Login: " + currentDoctor.getId());
             BigDecimal current = patient.getWalletBalance() != null ? patient.getWalletBalance() : BigDecimal.ZERO;
             patient.setWalletBalance(current.add(refundAmount));
             patientRepository.save(patient);
+
+            if (!paymentRepository.existsByAppointment_IdAndPaymentType(appointment.getId(), "REFUND")) {
+                Payment refundPayment = Payment.builder()
+                        .appointment(appointment)
+                        .patient(patient)
+                        .amount(refundAmount)
+                        .paymentMethod("WALLET_REFUND")
+                        .paymentType("REFUND")
+                        .status("REFUNDED")
+                        .build();
+                paymentRepository.save(refundPayment);
+            }
         }
 
         // Huỷ các payment PENDING chưa được xác nhận
