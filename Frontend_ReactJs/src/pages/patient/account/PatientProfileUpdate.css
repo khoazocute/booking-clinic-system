@@ -385,3 +385,47 @@
   color: var(--error);
   border-radius: var(--radius-md);
 }
+
+@media (max-width: 600px) {
+  .profile-header {
+    padding: 10px 14px;
+  }
+
+  .profile-title {
+    font-size: 20px;
+  }
+
+  .profile-main {
+    padding: 14px;
+  }
+
+  .profile-nav {
+    overflow-x: auto;
+    flex-direction: row;
+    padding-bottom: 4px;
+  }
+
+  .profile-nav-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .profile-content {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .profile-section-header h2 {
+    font-size: 23px;
+  }
+
+  .profile-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .profile-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+}

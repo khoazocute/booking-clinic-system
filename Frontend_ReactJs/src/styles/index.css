@@ -12590,3 +12590,579 @@ a {
 .patient-layout-bg > .pp-page {
   background: transparent;
 }
+
+/* ======================================================================
+   RESPONSIVE FOUNDATION
+   Shared laptop, tablet and mobile behavior for public, patient and portal UI.
+   ====================================================================== */
+
+.site-mobile-menu-button,
+.admin-mobile-menu-button,
+.admin-sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 1180px) {
+  .site-container {
+    width: min(calc(100% - 40px), var(--container-width));
+  }
+
+  .benefit-grid,
+  .specialty-grid,
+  .doctor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-page-header,
+  .admin-page-body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .doctor-dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-shell,
+  .doctor-shell {
+    display: block;
+  }
+
+  .admin-sidebar,
+  .doctor-portal .admin-sidebar {
+    display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 80;
+    width: min(280px, 84vw);
+    height: 100vh;
+    transform: translateX(-105%);
+    transition: transform 180ms ease;
+  }
+
+  .admin-sidebar--open,
+  .doctor-portal .admin-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    border: 0;
+    background: rgba(15, 23, 42, 0.5);
+  }
+
+  .admin-sidebar-backdrop--open {
+    display: block;
+  }
+
+  .admin-main,
+  .doctor-portal .admin-main {
+    margin-left: 0;
+    min-width: 0;
+  }
+
+  .admin-mobile-menu-button {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--outline-soft, #e5e7eb);
+    border-radius: 8px;
+    background: white;
+    color: var(--text);
+  }
+
+  .admin-topbar {
+    padding: 12px 16px;
+  }
+
+  .admin-topbar__search {
+    max-width: none;
+  }
+
+  .admin-topbar__profile > div:last-child {
+    display: none;
+  }
+
+  .admin-page-header {
+    padding-top: 20px;
+  }
+
+  .admin-page-header,
+  .patient-portal-header {
+    flex-direction: column;
+  }
+
+  .admin-page-header__actions,
+  .patient-portal-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .admin-page-header__actions > *,
+  .patient-portal-actions > * {
+    max-width: 100%;
+  }
+
+  .doctor-profile-view,
+  .doctor-profile-editor,
+  .doctor-review-grid,
+  .doctor-detail-layout,
+  .patient-detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-clinical-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-prescription-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .doctor-prescription-row__wide {
+    grid-column: 1 / -1;
+  }
+
+  .patient-layout-bg,
+  .doctor-directory-page,
+  .admin-portal {
+    background-attachment: scroll;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-container {
+    width: min(calc(100% - 28px), var(--container-width));
+  }
+
+  .site-header__inner {
+    position: relative;
+    min-height: 64px;
+    gap: 8px;
+  }
+
+  .brand-mark strong {
+    font-size: 19px;
+  }
+
+  .site-mobile-menu-button {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    border: 1px solid rgba(0, 80, 203, 0.18);
+    border-radius: 10px;
+    background: rgba(0, 80, 203, 0.06);
+    color: var(--primary);
+  }
+
+  .site-nav {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: -14px;
+    right: -14px;
+    display: none;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 14px 14px;
+    border-bottom: 1px solid rgba(194, 198, 216, 0.55);
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+  }
+
+  .site-nav--open {
+    display: flex;
+  }
+
+  .site-nav__link {
+    padding: 10px 12px;
+  }
+
+  .site-actions {
+    gap: 6px;
+  }
+
+  .site-actions .button {
+    min-height: 40px;
+    padding: 0 11px;
+    border-radius: 9px;
+    font-size: 13px;
+  }
+
+  .site-user {
+    display: none;
+  }
+
+  .site-icon-link {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+
+  .hero-section {
+    padding: 48px 0;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .hero-title {
+    font-size: 2.35rem;
+  }
+
+  .hero-description {
+    font-size: 16px;
+  }
+
+  .hero-visual {
+    min-height: 260px;
+    border-radius: 16px;
+  }
+
+  .section-block,
+  .cta-strip {
+    padding: 48px 0;
+  }
+
+  .section-heading--row,
+  .footer-shell {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .step-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+  }
+
+  .step-list::before {
+    display: none;
+  }
+
+  .site-footer__inner {
+    grid-template-columns: 1fr;
+    padding: 38px 20px 0;
+  }
+
+  .site-footer__brand-col {
+    grid-column: auto;
+  }
+
+  .site-footer__bottom {
+    margin-top: 32px;
+    padding: 18px 20px;
+  }
+
+  .admin-page-header,
+  .admin-page-body {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .admin-page-body {
+    padding-top: 18px;
+    padding-bottom: 32px;
+    gap: 16px;
+  }
+
+  .admin-page-header h1 {
+    font-size: 23px;
+  }
+
+  .admin-topbar__search {
+    min-width: 0;
+  }
+
+  .admin-stats-row,
+  .doctor-dashboard-stats,
+  .doctor-mini-stats,
+  .patient-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-table-toolbar,
+  .doctor-list-toolbar,
+  .doctor-review-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-search-box,
+  .admin-table-toolbar .admin-search-box {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .admin-modal-backdrop {
+    padding: 10px;
+  }
+
+  .admin-modal {
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    border-radius: 12px;
+  }
+
+  .admin-modal__header,
+  .admin-modal__body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .doctor-notification-popup {
+    position: fixed;
+    top: 62px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+    max-height: calc(100vh - 80px);
+  }
+
+  .patient-portal-wrap {
+    width: min(calc(100% - 28px), var(--container-width));
+  }
+
+  .patient-portal-header {
+    gap: 14px;
+  }
+
+  .patient-portal-header h1 {
+    font-size: 28px;
+  }
+
+  .patient-toolbar {
+    padding: 14px;
+  }
+
+  .patient-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 3px;
+  }
+
+  .patient-tab {
+    flex: 0 0 auto;
+  }
+
+  .patient-appointment-card,
+  .patient-mini-card {
+    padding: 16px;
+  }
+
+  .patient-appointment-card__main {
+    align-items: flex-start;
+  }
+
+  .patient-row-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .patient-meta-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .patient-card-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .patient-card-actions .mc-btn {
+    flex: 1 1 160px;
+  }
+
+  .mc-container {
+    width: min(calc(100% - 28px), var(--container-width));
+  }
+
+  .mc-hero-card,
+  .mc-location-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mc-hero-stats,
+  .mc-location-actions,
+  .booking-success__actions {
+    flex-wrap: wrap;
+  }
+
+  .mc-booking-wrap {
+    padding-top: 24px;
+    padding-bottom: 40px;
+  }
+
+  .specialties-hero-search {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .specialties-hero-search__button {
+    width: 100%;
+  }
+
+  .doctor-directory-layout {
+    width: min(calc(100% - 28px), var(--container-width));
+  }
+
+  .doctor-directory-card__top {
+    padding: 18px 18px 14px;
+  }
+
+  .doctor-directory-card__stats,
+  .doctor-directory-card__actions {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 540px) {
+  .site-actions .button--primary {
+    display: none;
+  }
+
+  .benefit-grid,
+  .specialty-grid,
+  .doctor-grid,
+  .browse-grid--3,
+  .step-list {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions,
+  .cta-banner__actions,
+  .doctor-form__actions,
+  .profile-footer,
+  .cp-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .hero-actions .button,
+  .cta-banner__actions .button,
+  .doctor-form__actions .button,
+  .profile-footer button,
+  .cp-footer button {
+    width: 100%;
+  }
+
+  .admin-topbar {
+    gap: 8px;
+  }
+
+  .admin-topbar__search {
+    padding: 7px 9px;
+  }
+
+  .admin-topbar__search input {
+    font-size: 12px;
+  }
+
+  .admin-topbar__actions {
+    gap: 6px;
+  }
+
+  .admin-topbar__icon-btn {
+    width: 34px;
+    height: 34px;
+  }
+
+  .admin-topbar__profile {
+    display: none;
+  }
+
+  .admin-page-header__actions .button {
+    width: 100%;
+  }
+
+  .doctor-prescription-row {
+    grid-template-columns: 1fr;
+  }
+
+  .doctor-directory-hero {
+    min-height: auto;
+    padding: 38px 0 46px;
+  }
+
+  .doctor-directory-hero h1,
+  .specialties-hero--image h1 {
+    font-size: 2rem;
+  }
+
+  .doctor-directory-search {
+    margin-top: 22px;
+    padding: 7px;
+  }
+
+  .doctor-directory-card__actions,
+  .doctor-directory-card__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .patient-avatar-token {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+  }
+
+  .pp-main,
+  .profile-main,
+  .cp-main {
+    padding: 14px;
+  }
+
+  .pp-content,
+  .profile-content,
+  .cp-content {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .pp-edit-btn {
+    position: static;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  .pp-user-name {
+    font-size: 26px;
+  }
+
+  .pp-section-title,
+  .profile-section-header h2,
+  .cp-section-header h2 {
+    font-size: 22px;
+  }
+
+  .pp-nav,
+  .profile-nav,
+  .cp-nav {
+    overflow-x: auto;
+    flex-direction: row;
+    padding-bottom: 4px;
+  }
+
+  .pp-nav-link,
+  .profile-nav-link,
+  .cp-nav-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+}

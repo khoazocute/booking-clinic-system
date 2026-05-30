@@ -33,6 +33,7 @@ function getInitials(name) {
 export function DoctorWorkspace({ eyebrow, title, description, actions, children }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef(null);
   const { notifications, loading: notificationsLoading, markOneAsRead } = useNotifications();
@@ -99,7 +100,7 @@ export function DoctorWorkspace({ eyebrow, title, description, actions, children
   return (
     <div className="admin-portal doctor-portal">
       <div className="admin-shell doctor-shell doctor-shell--portal">
-        <aside className="admin-sidebar">
+        <aside className={`admin-sidebar${isSidebarOpen ? " admin-sidebar--open" : ""}`}>
           <div className="admin-sidebar__brand">
             <div className="admin-sidebar__logo">
               <span className="material-symbols-outlined">local_hospital</span>
@@ -131,9 +132,24 @@ export function DoctorWorkspace({ eyebrow, title, description, actions, children
             <span>Đăng xuất</span>
           </button>
         </aside>
+        <button
+          className={`admin-sidebar-backdrop${isSidebarOpen ? " admin-sidebar-backdrop--open" : ""}`}
+          type="button"
+          aria-label="Đóng menu"
+          onClick={() => setIsSidebarOpen(false)}
+        />
 
         <section className="admin-main">
           <header className="admin-topbar">
+            <button
+              className="admin-mobile-menu-button"
+              type="button"
+              aria-label="Mở menu"
+              aria-expanded={isSidebarOpen}
+              onClick={() => setIsSidebarOpen((current) => !current)}
+            >
+              <span className="material-symbols-outlined">menu</span>
+            </button>
             <label className="admin-topbar__search" aria-label="Tìm kiếm">
               <span className="material-symbols-outlined">search</span>
               <input type="search" placeholder="Tìm bệnh nhân, lịch hẹn..." />
