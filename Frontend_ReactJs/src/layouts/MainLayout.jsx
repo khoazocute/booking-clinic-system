@@ -18,6 +18,7 @@ export function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentUser, setCurrentUser] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
 
   const isPatientPage = [
@@ -64,6 +65,10 @@ export function MainLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
+
   function handleLogout() {
     clearAccessToken();
     setCurrentUser(null);
@@ -78,7 +83,22 @@ export function MainLayout() {
             <strong>MediCare</strong>
           </NavLink>
 
-          <nav className="site-nav" aria-label="Điều hướng chính">
+          <button
+            className="site-mobile-menu-button"
+            type="button"
+            aria-label="Mở menu"
+            aria-expanded={isMobileMenuOpen}
+            onClick={() => setIsMobileMenuOpen((current) => !current)}
+          >
+            <span className="material-symbols-outlined">
+              {isMobileMenuOpen ? "close" : "menu"}
+            </span>
+          </button>
+
+          <nav
+            className={`site-nav${isMobileMenuOpen ? " site-nav--open" : ""}`}
+            aria-label="Điều hướng chính"
+          >
             {publicNavigation.map((item) => (
               <NavLink
                 key={item.label}

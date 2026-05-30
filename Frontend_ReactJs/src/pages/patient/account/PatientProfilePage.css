@@ -355,3 +355,49 @@
   color: var(--text-soft);
   font-family: "Inter", sans-serif;
 }
+
+@media (max-width: 600px) {
+  .pp-header {
+    height: 56px;
+    padding: 0 14px;
+  }
+
+  .pp-page-title {
+    font-size: 20px;
+  }
+
+  .pp-main {
+    padding: 14px;
+  }
+
+  .pp-nav {
+    overflow-x: auto;
+    flex-direction: row;
+    padding-bottom: 4px;
+  }
+
+  .pp-nav-link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .pp-content {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .pp-edit-btn {
+    position: static;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  .pp-user-name {
+    font-size: 26px;
+  }
+
+  .pp-section-title {
+    font-size: 21px;
+  }
+}

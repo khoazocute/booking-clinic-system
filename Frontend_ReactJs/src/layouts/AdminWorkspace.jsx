@@ -28,6 +28,7 @@ function getInitials(name) {
 function AdminWorkspaceInner({ eyebrow, title, description, actions, children }) {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { notifications } = useAdminNotificationContext();
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -48,7 +49,7 @@ function AdminWorkspaceInner({ eyebrow, title, description, actions, children })
     <div className="admin-portal">
       <div className="admin-shell">
         {/* Sidebar */}
-        <aside className="admin-sidebar">
+        <aside className={`admin-sidebar${isSidebarOpen ? " admin-sidebar--open" : ""}`}>
           <div className="admin-sidebar__brand">
             <div className="admin-sidebar__logo">
               <span className="material-symbols-outlined">admin_panel_settings</span>
@@ -80,11 +81,26 @@ function AdminWorkspaceInner({ eyebrow, title, description, actions, children })
             <span>Đăng xuất</span>
           </button>
         </aside>
+        <button
+          className={`admin-sidebar-backdrop${isSidebarOpen ? " admin-sidebar-backdrop--open" : ""}`}
+          type="button"
+          aria-label="Đóng menu"
+          onClick={() => setIsSidebarOpen(false)}
+        />
 
         {/* Main content */}
         <section className="admin-main">
           {/* Topbar */}
           <header className="admin-topbar">
+            <button
+              className="admin-mobile-menu-button"
+              type="button"
+              aria-label="Mở menu"
+              aria-expanded={isSidebarOpen}
+              onClick={() => setIsSidebarOpen((current) => !current)}
+            >
+              <span className="material-symbols-outlined">menu</span>
+            </button>
             <label className="admin-topbar__search" aria-label="Tìm kiếm">
               <span className="material-symbols-outlined">search</span>
               <input type="search" placeholder="Tìm kiếm..." />
