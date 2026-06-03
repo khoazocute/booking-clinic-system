@@ -1132,10 +1132,11 @@ a {
 .login-card__header h2 {
   margin: 0 0 12px;
   font-family: "Manrope", sans-serif;
-  font-size: 64px;
+  font-size: 48px;
   font-weight: 700;
   line-height: 1.05;
   color: var(--text);
+  white-space: nowrap;
 }
 
 .login-card__header p {
@@ -4633,7 +4634,7 @@ a {
   }
 
   .login-card__header h2 {
-    font-size: 46px;
+    font-size: 38px;
   }
 
   .doctor-shell {
@@ -4823,7 +4824,7 @@ a {
   }
 
   .login-card__header h2 {
-    font-size: 38px;
+    font-size: 30px;
   }
 
   .auth-social {
