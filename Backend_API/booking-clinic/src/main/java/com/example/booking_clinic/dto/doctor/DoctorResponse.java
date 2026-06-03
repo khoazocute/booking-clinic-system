@@ -1,6 +1,7 @@
 package com.example.booking_clinic.dto.doctor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public record DoctorResponse(
@@ -14,6 +15,9 @@ public record DoctorResponse(
         String specialtyName,
         Integer experienceYears,
         String qualification,
+        String licenseNumber,
+        LocalDate licenseExpiryDate,
+        String licenseStatus,
         String biography,
         String clinicRoom,
         BigDecimal averageRating,

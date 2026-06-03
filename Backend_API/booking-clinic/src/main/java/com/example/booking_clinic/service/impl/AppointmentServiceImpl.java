@@ -92,6 +92,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         // Lấy Doctor từ schedule
         Doctor doctor = schedule.getDoctor();
+        validateDoctorForBooking(doctor, today);
 
         // Tạo Appointment với deadline thanh toán 10 phút
         LocalDateTime deadline = LocalDateTime.now(APP_ZONE).plusMinutes(10);
@@ -126,6 +127,21 @@ public class AppointmentServiceImpl implements AppointmentService {
         );
 
         return toResponse(savedAppointment);
+    }
+
+    private void validateDoctorForBooking(Doctor doctor, LocalDate today) {
+        if (!"ACTIVE".equalsIgnoreCase(doctor.getStatus())) {
+            throw new IllegalArgumentException("Doctor is not accepting appointments");
+        }
+
+        String licenseStatus = doctor.getLicenseStatus();
+        if ("EXPIRED".equalsIgnoreCase(licenseStatus) || "SUSPENDED".equalsIgnoreCase(licenseStatus)) {
+            throw new IllegalArgumentException("Doctor practicing license is not active");
+        }
+
+        if (doctor.getLicenseExpiryDate() != null && doctor.getLicenseExpiryDate().isBefore(today)) {
+            throw new IllegalArgumentException("Doctor practicing license has expired");
+        }
     }
 
     @Override

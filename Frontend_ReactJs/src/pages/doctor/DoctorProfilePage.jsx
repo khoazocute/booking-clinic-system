@@ -164,12 +164,16 @@ export function DoctorProfilePage() {
 
               <div className="doctor-license-card">
                 <div>
-                  <span>Số chứng chỉ</span>
-                  <strong>{doctor.id ? `MD-${String(doctor.id).padStart(5, "0")}` : "--"}</strong>
+                  <span>Số giấy phép hành nghề</span>
+                  <strong>{doctor.licenseNumber || "Chưa cập nhật"}</strong>
                 </div>
                 <div>
-                  <span>Đơn vị cấp</span>
-                  <strong>{doctor.qualification || "Hội đồng chuyên môn"}</strong>
+                  <span>Hạn giấy phép</span>
+                  <strong>{doctor.licenseExpiryDate || "Chưa cập nhật"}</strong>
+                </div>
+                <div>
+                  <span>Trạng thái giấy phép</span>
+                  <strong>{doctor.licenseStatus || "Chưa cập nhật"}</strong>
                 </div>
               </div>
             </article>

@@ -9154,6 +9154,25 @@ a {
   background: #eef1f6;
 }
 
+.admin-license-note {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.admin-license-note--success {
+  color: #0f6b3f;
+}
+
+.admin-license-note--danger {
+  color: #ba1a1a;
+}
+
+.admin-license-note--neutral {
+  color: var(--text-soft);
+}
+
 .patient-alert {
   margin: 0 0 16px;
   padding: 12px 14px;
@@ -12505,9 +12524,30 @@ a {
   background: rgba(0, 80, 203, 0.06);
 }
 
-.doctor-directory-card__actions a:last-child {
+.doctor-directory-card__actions .doctor-directory-card__book {
   background: var(--primary);
   color: #fff;
+}
+
+.doctor-directory-card__disabled {
+  min-height: 44px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef1f6;
+  color: var(--text-soft);
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.mc-btn--disabled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: not-allowed;
+  background: #eef1f6;
+  color: var(--text-soft);
 }
 
 .doctor-directory-state {

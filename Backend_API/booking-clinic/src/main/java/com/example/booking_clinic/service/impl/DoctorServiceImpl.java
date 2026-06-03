@@ -26,10 +26,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class DoctorServiceImpl implements DoctorService {
+
+    private static final Set<String> LICENSE_STATUSES = Set.of("ACTIVE", "EXPIRED", "SUSPENDED");
 
     private final DoctorRepository doctorRepository;
     private final UserRepository userRepository;
@@ -67,11 +70,8 @@ public class DoctorServiceImpl implements DoctorService {
         }
 
         if (request.experienceYears() != null) doctor.setExperienceYears(request.experienceYears());
-        if (request.qualification() != null) doctor.setQualification(request.qualification());
         if (request.biography() != null) doctor.setBiography(request.biography());
         if (request.clinicRoom() != null) doctor.setClinicRoom(request.clinicRoom());
-        if (request.averageRating() != null) doctor.setAverageRating(BigDecimal.valueOf(request.averageRating()));
-        if (request.status() != null) doctor.setStatus(request.status());
 
         doctor = doctorRepository.save(doctor);
         return toResponse(doctor);
@@ -144,6 +144,9 @@ public class DoctorServiceImpl implements DoctorService {
                         .specialty(specialty)
                         .experienceYears(request.experienceYears())
                         .qualification(request.qualification())
+                        .licenseNumber(request.licenseNumber())
+                        .licenseExpiryDate(request.licenseExpiryDate())
+                        .licenseStatus(normalizeLicenseStatus(request.licenseStatus()))
                         .biography(request.biography())
                         .clinicRoom(request.clinicRoom())
                         .averageRating(BigDecimal.ZERO.setScale(2))
@@ -174,6 +177,18 @@ public class DoctorServiceImpl implements DoctorService {
 
         if (request.qualification() != null && !request.qualification().isBlank()) {
             doctor.setQualification(request.qualification());
+        }
+
+        if (request.licenseNumber() != null && !request.licenseNumber().isBlank()) {
+            doctor.setLicenseNumber(request.licenseNumber());
+        }
+
+        if (request.licenseExpiryDate() != null) {
+            doctor.setLicenseExpiryDate(request.licenseExpiryDate());
+        }
+
+        if (request.licenseStatus() != null && !request.licenseStatus().isBlank()) {
+            doctor.setLicenseStatus(normalizeLicenseStatus(request.licenseStatus()));
         }
 
         if (request.biography() != null && !request.biography().isBlank()) {
@@ -214,6 +229,9 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getSpecialty() != null ? doctor.getSpecialty().getName() : null,
                 doctor.getExperienceYears(),
                 doctor.getQualification(),
+                doctor.getLicenseNumber(),
+                doctor.getLicenseExpiryDate(),
+                doctor.getLicenseStatus(),
                 doctor.getBiography(),
                 doctor.getClinicRoom(),
                 doctor.getAverageRating(),
@@ -222,5 +240,17 @@ public class DoctorServiceImpl implements DoctorService {
                 doctor.getCreatedAt(),
                 doctor.getUpdatedAt()
         );
+    }
+
+    private String normalizeLicenseStatus(String status) {
+        String normalizedStatus = status == null || status.isBlank()
+                ? "ACTIVE"
+                : status.trim().toUpperCase();
+
+        if (!LICENSE_STATUSES.contains(normalizedStatus)) {
+            throw new IllegalArgumentException("Invalid doctor license status");
+        }
+
+        return normalizedStatus;
     }
 }

@@ -3,6 +3,7 @@ package com.example.booking_clinic.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,6 +33,15 @@ public class Doctor {
     @Column(length = 255)
     private String qualification;
 
+    @Column(name = "license_number", length = 50, unique = true)
+    private String licenseNumber;
+
+    @Column(name = "license_expiry_date")
+    private LocalDate licenseExpiryDate;
+
+    @Column(name = "license_status", length = 20)
+    private String licenseStatus;
+
     @Column(columnDefinition = "TEXT")
     private String biography;
 
@@ -58,6 +68,9 @@ public class Doctor {
         LocalDateTime now = LocalDateTime.now();
         createdAt = now;
         updatedAt = now;
+        if (licenseStatus == null || licenseStatus.isBlank()) {
+            licenseStatus = "ACTIVE";
+        }
     }
 
     @PreUpdate

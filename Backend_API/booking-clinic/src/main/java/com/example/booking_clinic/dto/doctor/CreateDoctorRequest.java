@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record CreateDoctorRequest(
         @NotNull(message = "User ID is required")
@@ -19,6 +20,14 @@ public record CreateDoctorRequest(
 
         @NotBlank(message = "Qualification is required")
         String qualification,
+
+        @NotBlank(message = "License number is required")
+        String licenseNumber,
+
+        @NotNull(message = "License expiry date is required")
+        LocalDate licenseExpiryDate,
+
+        String licenseStatus,
 
         @NotBlank(message = "Biography is required")
         String biography,

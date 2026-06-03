@@ -16,11 +16,28 @@ const STATUS_OPTIONS = [
   { value: "INACTIVE", label: "Ngưng hoạt động" },
 ];
 
+const QUALIFICATION_OPTIONS = [
+  "Bác sĩ",
+  "Bác sĩ nội trú",
+  "Bác sĩ CKI",
+  "Bác sĩ CKII",
+  "Thạc sĩ y học",
+  "Tiến sĩ y học",
+];
+const LICENSE_STATUS_OPTIONS = [
+  { value: "ACTIVE", label: "Đang hiệu lực" },
+  { value: "EXPIRED", label: "Hết hạn" },
+  { value: "SUSPENDED", label: "Tạm đình chỉ" },
+];
+
 const defaultForm = {
   userId: "",
   specialtyId: "",
   experienceYears: "",
   qualification: "",
+  licenseNumber: "",
+  licenseExpiryDate: "",
+  licenseStatus: "ACTIVE",
   biography: "",
   clinicRoom: "",
   consultationFee: "",
@@ -38,6 +55,17 @@ function getStatusMeta(status) {
   const normalized = String(status ?? "").toUpperCase();
   if (normalized === "INACTIVE") return { label: "Ngưng hoạt động", tone: "neutral" };
   return { label: "Hoạt động", tone: "success" };
+}
+
+function getLicenseMeta(doctor) {
+  const status = String(doctor.licenseStatus ?? "").toUpperCase();
+  const today = new Date().toISOString().slice(0, 10);
+  const expiredByDate = doctor.licenseExpiryDate && doctor.licenseExpiryDate < today;
+
+  if (status === "SUSPENDED") return { label: "GP tạm đình chỉ", tone: "danger" };
+  if (status === "EXPIRED" || expiredByDate) return { label: "GP hết hạn", tone: "danger" };
+  if (doctor.licenseNumber) return { label: "GP đã xác minh", tone: "success" };
+  return { label: "GP chưa cập nhật", tone: "neutral" };
 }
 
 function formatMoney(value) {
@@ -185,6 +213,9 @@ export function AdminDoctorsPage() {
       specialtyId: String(doctor.specialtyId ?? ""),
       experienceYears: String(doctor.experienceYears ?? ""),
       qualification: doctor.qualification ?? "",
+      licenseNumber: doctor.licenseNumber ?? "",
+      licenseExpiryDate: doctor.licenseExpiryDate ?? "",
+      licenseStatus: doctor.licenseStatus ?? "ACTIVE",
       biography: doctor.biography ?? "",
       clinicRoom: doctor.clinicRoom ?? "",
       consultationFee: String(doctor.consultationFee ?? ""),
@@ -214,6 +245,9 @@ export function AdminDoctorsPage() {
           specialtyId: Number(form.specialtyId),
           experienceYears: Number(form.experienceYears),
           qualification: form.qualification.trim(),
+          licenseNumber: form.licenseNumber.trim(),
+          licenseExpiryDate: form.licenseExpiryDate,
+          licenseStatus: form.licenseStatus,
           biography: form.biography.trim(),
           clinicRoom: form.clinicRoom.trim(),
           consultationFee: Number(form.consultationFee),
@@ -225,6 +259,9 @@ export function AdminDoctorsPage() {
           specialtyId: Number(form.specialtyId),
           experienceYears: Number(form.experienceYears),
           qualification: form.qualification.trim(),
+          licenseNumber: form.licenseNumber.trim(),
+          licenseExpiryDate: form.licenseExpiryDate,
+          licenseStatus: form.licenseStatus,
           biography: form.biography.trim(),
           clinicRoom: form.clinicRoom.trim(),
           consultationFee: Number(form.consultationFee),
@@ -369,6 +406,7 @@ export function AdminDoctorsPage() {
               ) : (
                 pagedDoctors.map((doctor) => {
                   const status = getStatusMeta(doctor.status);
+                  const license = getLicenseMeta(doctor);
                   return (
                     <tr key={doctor.id}>
                       <td className="admin-doctor-col-name">
@@ -394,6 +432,9 @@ export function AdminDoctorsPage() {
                         <span className={`patient-badge patient-badge--${status.tone}`}>
                           {status.label}
                         </span>
+                        <div className={`admin-license-note admin-license-note--${license.tone}`}>
+                          {license.label}
+                        </div>
                       </td>
                       <td className="admin-doctor-col-actions">
                         <div className="admin-table__actions">
@@ -500,13 +541,57 @@ export function AdminDoctorsPage() {
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
-              Bằng cấp
-              <input
+              Trình độ chuyên môn
+              <select
                 required
                 value={form.qualification}
                 onChange={(event) => handleFormChange("qualification", event.target.value)}
                 style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
+              >
+                <option value="">Chọn trình độ</option>
+                {QUALIFICATION_OPTIONS.map((qualification) => (
+                  <option key={qualification} value={qualification}>
+                    {qualification}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label style={{ display: "grid", gap: 6 }}>
+              Số giấy phép hành nghề
+              <input
+                required
+                value={form.licenseNumber}
+                onChange={(event) => handleFormChange("licenseNumber", event.target.value)}
+                style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
               />
+            </label>
+
+            <label style={{ display: "grid", gap: 6 }}>
+              Hạn giấy phép
+              <input
+                required
+                type="date"
+                value={form.licenseExpiryDate}
+                onChange={(event) => handleFormChange("licenseExpiryDate", event.target.value)}
+                style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
+              />
+            </label>
+
+            <label style={{ display: "grid", gap: 6 }}>
+              Trạng thái giấy phép
+              <select
+                required
+                value={form.licenseStatus}
+                onChange={(event) => handleFormChange("licenseStatus", event.target.value)}
+                style={{ minHeight: 40, borderRadius: 8, border: "1px solid #e5e7eb", padding: "0 10px" }}
+              >
+                {LICENSE_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label style={{ display: "grid", gap: 6 }}>
