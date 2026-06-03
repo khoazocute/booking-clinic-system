@@ -93,7 +93,6 @@ export function EditDoctorProfilePage() {
       await updateCurrentDoctorProfile({
         specialtyId: form.specialtyId ? Number(form.specialtyId) : null,
         experienceYears: form.experienceYears ? Number(form.experienceYears) : null,
-        qualification: form.qualification,
         biography: form.biography,
         clinicRoom: form.clinicRoom,
       });
@@ -200,8 +199,9 @@ export function EditDoctorProfilePage() {
                       name="qualification"
                       type="text"
                       value={form.qualification}
-                      onChange={handleChange}
+                      disabled
                     />
+                    <small>Trình độ chuyên môn do quản trị viên xác minh và cập nhật.</small>
                   </label>
 
                   <label>

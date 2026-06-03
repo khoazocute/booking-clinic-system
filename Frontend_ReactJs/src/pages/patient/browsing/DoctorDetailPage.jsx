@@ -18,6 +18,17 @@ function toMapQuery(value) {
   return encodeURIComponent(value);
 }
 
+function getLicenseMeta(doctor) {
+  const status = String(doctor?.licenseStatus ?? "").toUpperCase();
+  const today = new Date().toISOString().slice(0, 10);
+  const expiredByDate = doctor?.licenseExpiryDate && doctor.licenseExpiryDate < today;
+
+  if (status === "SUSPENDED") return { label: "Giấy phép hành nghề đang tạm đình chỉ", canBook: false };
+  if (status === "EXPIRED" || expiredByDate) return { label: "Giấy phép hành nghề đã hết hạn", canBook: false };
+  if (doctor?.licenseNumber) return { label: "Giấy phép hành nghề đã xác minh", canBook: true };
+  return { label: "Thông tin giấy phép đang được cập nhật", canBook: true };
+}
+
 export function DoctorDetailPage() {
   const { id } = useParams();
   const [doctor, setDoctor] = useState(null);
@@ -104,6 +115,8 @@ export function DoctorDetailPage() {
   }
 
   const clinicAddress = getClinicAddress(doctor);
+  const license = getLicenseMeta(doctor);
+  const canBook = String(doctor.status ?? "").toUpperCase() === "ACTIVE" && license.canBook;
   const embeddedMapUrl = `https://www.google.com/maps?q=${toMapQuery(clinicAddress)}&output=embed`;
   const mapsSearchUrl = `https://www.google.com/maps/search/?api=1&query=${toMapQuery(clinicAddress)}`;
 
@@ -185,6 +198,17 @@ export function DoctorDetailPage() {
                     )}
                   </div>
                 </li>
+                <li className="mc-credential-item">
+                  <div className="mc-credential-icon">
+                    <span className="material-symbols-outlined">verified_user</span>
+                  </div>
+                  <div>
+                    <p className="mc-credential-title">{license.label}</p>
+                    {doctor.licenseExpiryDate && (
+                      <p className="mc-credential-sub">Hiệu lực đến {doctor.licenseExpiryDate}</p>
+                    )}
+                  </div>
+                </li>
               </ul>
             </div>
           )}
@@ -254,14 +278,20 @@ export function DoctorDetailPage() {
                   </div>
                 </div>
               )}
-              <Link
-                className="mc-btn mc-btn--primary"
-                to={`/booking?doctorId=${doctor.id}`}
-                style={{ width: "100%", minHeight: "48px", fontSize: "15px" }}
-              >
-                Đặt lịch ngay
-                <span className="material-symbols-outlined">arrow_forward</span>
-              </Link>
+              {canBook ? (
+                <Link
+                  className="mc-btn mc-btn--primary"
+                  to={`/booking?doctorId=${doctor.id}`}
+                  style={{ width: "100%", minHeight: "48px", fontSize: "15px" }}
+                >
+                  Đặt lịch ngay
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </Link>
+              ) : (
+                <span className="mc-btn mc-btn--disabled" style={{ width: "100%", minHeight: "48px", fontSize: "15px" }}>
+                  Tạm ngừng nhận lịch
+                </span>
+              )}
             </div>
           </div>
         </aside>

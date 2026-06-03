@@ -15,6 +15,17 @@ function getRating(doctor) {
   return doctor.averageRating == null ? 0 : Number(doctor.averageRating);
 }
 
+function canBookDoctor(doctor) {
+  const licenseStatus = String(doctor.licenseStatus ?? "").toUpperCase();
+  const today = new Date().toISOString().slice(0, 10);
+  const expiredByDate = doctor.licenseExpiryDate && doctor.licenseExpiryDate < today;
+
+  return String(doctor.status ?? "").toUpperCase() === "ACTIVE"
+    && licenseStatus !== "EXPIRED"
+    && licenseStatus !== "SUSPENDED"
+    && !expiredByDate;
+}
+
 export function DoctorsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [doctors, setDoctors] = useState([]);
@@ -219,6 +230,8 @@ export function DoctorsPage() {
 }
 
 function DoctorCard({ doctor }) {
+  const canBook = canBookDoctor(doctor);
+
   return (
     <article className="doctor-directory-card">
       <div className="doctor-directory-card__top">
@@ -263,7 +276,11 @@ function DoctorCard({ doctor }) {
 
       <div className="doctor-directory-card__actions">
         <Link to={`/doctors/${doctor.id}`}>Xem hồ sơ</Link>
-        <Link to={`/booking?doctorId=${doctor.id}`}>Đặt lịch</Link>
+        {canBook ? (
+          <Link className="doctor-directory-card__book" to={`/booking?doctorId=${doctor.id}`}>Đặt lịch</Link>
+        ) : (
+          <span className="doctor-directory-card__disabled">Tạm ngừng</span>
+        )}
       </div>
     </article>
   );
