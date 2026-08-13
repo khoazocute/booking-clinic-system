@@ -1,151 +1,265 @@
-# Booking Clinic System 🏥
+# Booking Clinic System
 
-Hệ thống quản lý và đặt lịch khám bệnh trực tuyến được phát triển trên kiến trúc Fullstack, hỗ trợ chạy Docker hóa hoàn toàn giúp triển khai nhanh chóng.
+A comprehensive online clinic management and appointment booking system developed with a Fullstack architecture, fully containerized with Docker for seamless deployment.
 
 ---
 
-## 🚀 Hướng dẫn khởi chạy bằng DOCKER (Khuyên dùng - Nhanh nhất)
+## Project Overview
 
-Dành cho bạn bè hoặc người dùng mới muốn chạy dự án này bằng Docker trên máy cá nhân:
+### Key Features
 
-### Bước 1: Chuẩn bị môi trường trên máy cá nhân
-Hãy đảm bảo máy tính của bạn đã cài đặt sẵn các phần mềm sau:
-1. **Git**: Dùng để tải mã nguồn dự án. [Tải Git tại đây](https://git-scm.com/).
-2. **Docker Desktop**: Công cụ bắt buộc để chạy toàn bộ hệ thống. [Tải Docker Desktop tại đây](https://www.docker.com/products/docker-desktop/).
-   * *Lưu ý*: Sau khi cài đặt, hãy **mở ứng dụng Docker Desktop lên** trước khi thực hiện các bước tiếp theo.
-3. **Giải phóng cổng kết nối**: Đảm bảo bạn đã tắt các ứng dụng chạy MySQL local (Laragon, XAMPP, v.v.) đang chiếm dụng cổng `3306`, và Redis local ở cổng `6379`.
+- **Doctor Management**: Manage doctor profiles, work schedules, specialties, and availability for efficient clinic operations
+- **Patient Management**: Maintain patient records, health information, consultation history, and personal care data securely
+- **Smart Appointment Booking**: Provide an optimized appointment scheduling flow with doctor availability matching and booking workflow support
+- **AI Online Consultation**: Offer AI-assisted health consultation and guidance to support faster patient decision-making
+- **Multi-Role Clinic System**: Support different user roles such as patients, doctors, and administrators with role-based access and workflows
+- **Medicine & Health Services**: Manage medicines, health service information, and treatment-related data within the clinic platform
+- **Secure Payment Integration**: Enable safe online transactions using VNPay with a trusted payment gateway workflow
+- **Review & Ratings**: Collect patient feedback and quality assessments to improve service performance and trust
+- **Real-time Notifications**: Send appointment, update, and reminder notifications to improve patient engagement and communication
+- **High-Performance Architecture**: Improve responsiveness and scalability with Redis caching, Dockerized deployment, and modern fullstack technologies
 
-### Bước 2: Tải dự án (Clone Project) về máy
-Mở Terminal (CMD, PowerShell hoặc Git Bash) và chạy các lệnh sau:
+### Technology Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Backend** | Spring Boot 3.x, Java 21 |
+| **Frontend** | React 18+, Vite, Tailwind CSS |
+| **Database** | MySQL 8.0 |
+| **Cache** | Redis |
+| **Authentication** | JWT Token |
+| **Payment Gateway** | VNPay API |
+| **API Documentation** | Swagger/OpenAPI |
+| **Containerization** | Docker & Docker Compose |
+
+
+### Project Structure
+
+```
+booking-clinic-system/
+├── Backend_API/
+│   └── booking-clinic/                          # Spring Boot Application (Java 21)
+│       ├── src/
+│       │   ├── main/
+│       │   │   ├── java/com/example/booking_clinic/
+│       │   │   │   ├── controller/              # REST API Controllers
+│       │   │   │   ├── service/                 # Business Logic Services
+│       │   │   │   │   └── impl/               # Service Implementations
+│       │   │   │   ├── repository/              # Data Access Layer (Spring Data JPA)
+│       │   │   │   ├── entity/                  # JPA Entity Models
+│       │   │   │   ├── dto/                     # Data Transfer Objects
+│       │   │   │   ├── exception/               # Custom Exceptions
+│       │   │   │   ├── config/                  # Configuration Classes
+│       │   │   │   ├── security/                # Security/Authentication
+│       │   │   │   └── util/                    # Utility Classes
+│       │   │   └── resources/
+│       │   │       ├── application.properties   # Spring Boot Configuration
+│       │   │       ├── db/                      # Database Migrations
+│       │   │       └── [Configuration Files]
+│       │   └── test/
+│       │       ├── java/com/example/booking_clinic/
+│       │       │   ├── controller/              # Controller Tests
+│       │       │   ├── service/                 # Service Unit Tests
+│       │       │   └── repository/              # Repository Tests
+│       │       └── resources/
+│       ├── pom.xml                             # Maven Dependencies & Build Config
+│       ├── Dockerfile                          # Docker Container Configuration
+│       └── target/                             # Build Output (generated)
+│
+├── Frontend_ReactJs/                           # React Application
+│   ├── src/
+│   │   ├── components/                         # Reusable UI Components
+│   │   ├── pages/                              # Page Components
+│   │   ├── services/                           # API Service Layer
+│   │   ├── contexts/                           # React Context API
+│   │   ├── hooks/                              # Custom React Hooks
+│   │   ├── layouts/                            # Layout Components
+│   │   ├── styles/                             # CSS & Tailwind Styles
+│   │   ├── assets/                             # Static Assets
+│   │   ├── utils/                              # Utility Functions
+│   │   ├── App.jsx                             # Root Component
+│   │   └── main.jsx                            # Entry Point
+│   ├── public/                                 # Static Public Files
+│   ├── package.json                            # NPM Dependencies
+│   ├── vite.config.js                          # Vite Configuration
+│   ├── tailwind.config.js                      # Tailwind CSS Configuration
+│   ├── Dockerfile                              # Docker Container Configuration
+│   └── nginx.conf                              # Nginx Configuration (production)
+│
+├── db_init/
+│   └── init.sql                                # Database Initialization Scripts
+│
+├── docker-compose.yml                          # Docker Compose Multi-container Setup
+│
+└── README.md                                   # Project Documentation
+```
+
+---
+
+## Getting Started with Docker (Recommended - Fastest)
+
+For users and developers who want to run this project using Docker:
+
+### Step 1: Prepare Your Environment
+
+Ensure your computer has the following software installed:
+
+1. **Git**: Required to clone the project source code. [Download Git](https://git-scm.com/)
+2. **Docker Desktop**: Essential tool for running the entire system. [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
+   - *Note*: After installation, **launch Docker Desktop** before proceeding with the following steps
+3. **Free up connection ports**: Ensure you have stopped any local applications running MySQL (Laragon, XAMPP, etc.) on port `3306` and Redis on port `6379`
+
+### Step 2: Clone the Project
+
+Open Terminal (CMD, PowerShell, or Git Bash) and run the following commands:
+
 ```bash
 git clone https://github.com/khoazocute/booking-clinic-system.git
 cd booking-clinic-system
 ```
 
-### Bước 3: Khởi chạy dự án bằng Docker (Một lệnh duy nhất)
-Chạy lệnh:
+### Step 3: Start the Application with Docker
+
+Run the command:
+
 ```bash
 docker-compose up -d --build
 ```
-* **Cách hoạt động**: Lệnh này sẽ tự động tải các base image, build source code Frontend/Backend và tự động import dữ liệu mẫu (các chuyên khoa, tài khoản bác sĩ, bệnh nhân cũ) từ file `db_init/init.sql` vào database mà bạn không cần import thủ công.
-* **Thời gian khởi chạy lần đầu:** Khoảng từ **3 đến 5 phút** (để tải thư viện và build dự án). Từ lần chạy thứ 2 trở đi chỉ mất **5 - 10 giây**.
 
-### Bước 4: Truy cập và Trải nghiệm
-Sau khi Terminal báo `Started` ở tất cả các dịch vụ:
-* **Giao diện Web (Frontend):** **[http://localhost:5173](http://localhost:5173)**
-* **Trang tài liệu/Kiểm tra Backend:** [http://localhost:8082/api/v1/health](http://localhost:8082/api/v1/health)
+**How it works**: This command automatically downloads base images, builds both Frontend and Backend source code, and imports sample data (specialties, doctor accounts, existing patients) from `db_init/init.sql` into the database without manual import.
 
----
+**Initial startup time**: Approximately **3 to 5 minutes** (for downloading dependencies and building the project). Subsequent runs take only **5 - 10 seconds**.
 
-## ⚙️ Hướng dẫn khởi chạy THỦ CÔNG (Không dùng Docker)
+### Step 4: Access and Explore
 
-Nếu máy tính của bạn không cài đặt Docker, bạn có thể chạy thủ công từng phần bằng cách cài đặt môi trường trên máy của bạn.
+Once the Terminal displays `Started` for all services:
 
-### Yêu cầu chuẩn bị
-Trước khi chạy, máy tính của bạn bắt buộc phải có sẵn:
-1. **Java Development Kit (JDK) 21**: Dùng để biên dịch và chạy Backend.
-2. **Node.js (phiên bản 18 trở lên)**: Dùng để chạy Frontend.
-3. **MySQL Server (cổng 3306)**: Có thể cài trực tiếp hoặc qua Laragon, XAMPP.
-4. **Redis Server**: Dùng để làm bộ nhớ đệm cache (nếu không cài Redis local, bạn có thể tắt tính năng cache hoặc cài đặt Redis trên Docker/WSL).
+- **Web Interface (Frontend)**: [http://localhost:5173](http://localhost:5173)
+- **API Health Check**: [http://localhost:8082/api/v1/health](http://localhost:8082/api/v1/health)
 
 ---
 
-### Bước 1: Thiết lập Cơ sở dữ liệu (MySQL)
-1. Mở công cụ quản lý cơ sở dữ liệu của bạn (HeidiSQL, DBeaver, MySQL Workbench, v.v.).
-2. Tạo một database mới tên là `booking_clinic_db` bằng câu lệnh SQL:
+## Manual Setup (Without Docker)
+
+If Docker is not available on your machine, you can run the application manually by setting up the environment on your local system.
+
+### Prerequisites
+
+Before running the application, ensure your computer has the following installed:
+
+1. **Java Development Kit (JDK) 21**: Required to compile and run the Backend
+2. **Node.js (version 18 or higher)**: Required to run the Frontend
+3. **MySQL Server (port 3306)**: Can be installed directly or via Laragon, XAMPP
+4. **Redis Server**: Used for caching. If not installed locally, you can disable caching or use Docker/WSL to run Redis
+
+---
+
+### Step 1: Set Up the Database (MySQL)
+
+1. Open your database management tool (HeidiSQL, DBeaver, MySQL Workbench, etc.)
+2. Create a new database named `booking_clinic_db` using SQL:
    ```sql
    CREATE DATABASE booking_clinic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
-3. Nhập (Import) toàn bộ bảng dữ liệu mẫu:
-   * Chọn database `booking_clinic_db` vừa tạo.
-   * Chọn mở file SQL từ đường dẫn: `db_init/init.sql` trong dự án.
-   * Chạy (Execute) toàn bộ file SQL này để nạp dữ liệu.
+3. Import all sample tables:
+   - Select the newly created `booking_clinic_db` database
+   - Open the SQL file: `db_init/init.sql` from the project
+   - Execute all SQL statements to load the data
 
 ---
 
-### Bước 2: Cấu hình và Chạy Backend (Spring Boot)
-1. Mở file cấu hình database của Backend tại đường dẫn:
-   `Backend_API/booking-clinic/src/main/resources/application.properties`
-2. Chỉnh sửa thông tin kết nối MySQL cho đúng với thông tin máy của bạn:
+### Step 2: Configure and Run Backend (Spring Boot)
+
+1. Open the Backend database configuration file at:
+   ```
+   Backend_API/booking-clinic/src/main/resources/application.properties
+   ```
+2. Update the MySQL connection information to match your local setup:
    ```properties
    spring.datasource.url=jdbc:mysql://localhost:3306/booking_clinic_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
-   spring.datasource.username=TÊN_ĐĂNG_NHẬP_MYSQL_CỦA_BẠN (thường là root)
-   spring.datasource.password=MẬT_KHẨU_MYSQL_CỦA_BẠN (để trống nếu dùng Laragon mặc định)
+   spring.datasource.username=YOUR_MYSQL_USERNAME (typically root)
+   spring.datasource.password=YOUR_MYSQL_PASSWORD (leave empty if using Laragon defaults)
    ```
-3. Cấu hình Redis (nếu bạn có cài đặt Redis local):
+3. Configure Redis (if you have Redis installed locally):
    ```properties
    spring.cache.type=redis
    spring.data.redis.host=localhost
    spring.data.redis.port=6379
    ```
-   *(Nếu không chạy Redis, hãy đổi cấu hình `spring.cache.type=none` để bỏ qua tính năng lưu cache).*
-4. Mở Terminal tại thư mục `Backend_API/booking-clinic` và chạy lệnh để khởi động Backend:
+   *(If not using Redis, change the configuration to `spring.cache.type=none` to disable caching)*
+4. Open Terminal in the `Backend_API/booking-clinic` directory and run:
    ```bash
-   # Dành cho Windows
+   # For Windows
    .\mvnw.cmd clean compile spring-boot:run
 
-   # Dành cho macOS / Linux
+   # For macOS / Linux
    ./mvnw clean compile spring-boot:run
    ```
-   *Backend sẽ khởi chạy thành công tại địa chỉ: **http://localhost:8082***.
+   The Backend will successfully start at: **http://localhost:8082**
 
 ---
 
-### Bước 3: Cài đặt và Chạy Frontend (ReactJS)
-1. Mở một cửa sổ Terminal mới và di chuyển vào thư mục Frontend:
+### Step 3: Install and Run Frontend (ReactJS)
+
+1. Open a new Terminal window and navigate to the Frontend directory:
    ```bash
    cd Frontend_ReactJs
    ```
-2. Cài đặt các thư viện cần thiết (chỉ cần chạy lần đầu):
+2. Install required dependencies (only run on first setup):
    ```bash
    npm install
    ```
-3. Khởi chạy máy chủ phát triển (Dev Server) của React:
+3. Start the React development server:
    ```bash
    npm run dev
    ```
-4. Mở trình duyệt và truy cập vào địa chỉ hiển thị trong terminal (thường là **[http://localhost:5173](http://localhost:5173)**).
+4. Open your browser and access the address shown in the terminal (typically **http://localhost:5173**)
 
 ---
 
-## 💻 Hướng dẫn dành cho Lập trình viên khi phát triển (Developer Workflow)
+## Development Workflow
 
-### Khi chỉnh sửa Code trong lúc đang chạy Docker:
-* **Khi sửa code Backend (Java):** Chạy lệnh sau để biên dịch lại mã nguồn và cập nhật riêng container Backend:
+### When Modifying Code While Docker is Running
+
+- **For Backend (Java) changes**: Run the following command to recompile the source code and update the Backend container:
   ```bash
   docker-compose up -d --build backend
   ```
-* **Khi sửa code Frontend (React):** Chạy lệnh sau để build lại các file tĩnh và cập nhật riêng container Frontend:
+- **For Frontend (React) changes**: Run the following command to rebuild static files and update the Frontend container:
   ```bash
   docker-compose up -d --build frontend
   ```
 
 ---
 
-## 🛠️ Các lệnh Docker hữu ích
+## Useful Docker Commands
 
-* **Kiểm tra trạng thái các dịch vụ:**
+- **Check service status**:
   ```bash
   docker-compose ps
   ```
-* **Xem logs hệ thống theo thời gian thực (realtime):**
+- **View system logs in real-time**:
   ```bash
   docker-compose logs -f
   ```
-* **Dừng toàn bộ hệ thống (Giữ nguyên dữ liệu):**
+- **Stop all services (preserves data)**:
   ```bash
   docker-compose down
   ```
-* **Dừng hệ thống và XÓA SẠCH dữ liệu database (Để chạy lại từ đầu):**
+- **Stop all services and remove database data (fresh restart)**:
   ```bash
   docker-compose down -v
   ```
-##Demo Redis bằng terminal 
-- docker-compose ps
-- docker exec -it booking-clinic-redis redis-cli ping => Nếu hiện PONG là redis container đang hiện bình thường
-- Demo Redis cache dữ liệu :  docker exec -it booking-clinic-redis redis-cli keys "*" 
- + Nếu chưa thấy thì vào xem chuyên khoa/bác sĩ , và chạy lại lệnh đó
- + Sẽ thấy các key như bên dưới thì redis cache đã hoạt động
-specialties::all
-doctors::all
-medicines::all
+
+## Redis Demonstration via Terminal
+
+- `docker-compose ps`
+- `docker exec -it booking-clinic-redis redis-cli ping` - If you see PONG, the Redis container is running normally
+- Demo Redis cache data: `docker exec -it booking-clinic-redis redis-cli keys "*"`
+  - If no keys appear initially, visit the specialties/doctors page, then run the command again
+  - You should see keys like those below if Redis caching is working:
+    ```
+    specialties::all
+    doctors::all
+    medicines::all
+    ```
