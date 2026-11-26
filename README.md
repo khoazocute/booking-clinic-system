@@ -1,265 +1,144 @@
-# Booking Clinic System
+# Booking Clinic
 
-A comprehensive online clinic management and appointment booking system developed with a Fullstack architecture, fully containerized with Docker for seamless deployment.
+[![CI](https://github.com/khoazocute/booking-clinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/khoazocute/booking-clinic-system/actions/workflows/ci.yml)
 
----
+A clinic appointment platform with an **AI booking assistant**. Patients describe their symptoms, get a suggested
+specialty, see real doctors and free slots, and confirm a booking. Payment is through VNPay, and a member of staff
+takes over when the assistant can't help.
 
-## Project Overview
-
-### Key Features
-
-- **Doctor Management**: Manage doctor profiles, work schedules, specialties, and availability for efficient clinic operations
-- **Patient Management**: Maintain patient records, health information, consultation history, and personal care data securely
-- **Smart Appointment Booking**: Provide an optimized appointment scheduling flow with doctor availability matching and booking workflow support
-- **AI Online Consultation**: Offer AI-assisted health consultation and guidance to support faster patient decision-making
-- **Multi-Role Clinic System**: Support different user roles such as patients, doctors, and administrators with role-based access and workflows
-- **Medicine & Health Services**: Manage medicines, health service information, and treatment-related data within the clinic platform
-- **Secure Payment Integration**: Enable safe online transactions using VNPay with a trusted payment gateway workflow
-- **Review & Ratings**: Collect patient feedback and quality assessments to improve service performance and trust
-- **Real-time Notifications**: Send appointment, update, and reminder notifications to improve patient engagement and communication
-- **High-Performance Architecture**: Improve responsiveness and scalability with Redis caching, Dockerized deployment, and modern fullstack technologies
-
-### Technology Stack
-
-| Component | Technology |
-|-----------|-----------|
-| **Backend** | Spring Boot 3.x, Java 21 |
-| **Frontend** | React 18+, Vite, Tailwind CSS |
-| **Database** | MySQL 8.0 |
-| **Cache** | Redis |
-| **Authentication** | JWT Token |
-| **Payment Gateway** | VNPay API |
-| **API Documentation** | Swagger/OpenAPI |
-| **Containerization** | Docker & Docker Compose |
-
-
-### Project Structure
-
-```
-booking-clinic-system/
-├── Backend_API/
-│   └── booking-clinic/                          # Spring Boot Application (Java 21)
-│       ├── src/
-│       │   ├── main/
-│       │   │   ├── java/com/example/booking_clinic/
-│       │   │   │   ├── controller/              # REST API Controllers
-│       │   │   │   ├── service/                 # Business Logic Services
-│       │   │   │   │   └── impl/               # Service Implementations
-│       │   │   │   ├── repository/              # Data Access Layer (Spring Data JPA)
-│       │   │   │   ├── entity/                  # JPA Entity Models
-│       │   │   │   ├── dto/                     # Data Transfer Objects
-│       │   │   │   ├── exception/               # Custom Exceptions
-│       │   │   │   ├── config/                  # Configuration Classes
-│       │   │   │   ├── security/                # Security/Authentication
-│       │   │   │   └── util/                    # Utility Classes
-│       │   │   └── resources/
-│       │   │       ├── application.properties   # Spring Boot Configuration
-│       │   │       ├── db/                      # Database Migrations
-│       │   │       └── [Configuration Files]
-│       │   └── test/
-│       │       ├── java/com/example/booking_clinic/
-│       │       │   ├── controller/              # Controller Tests
-│       │       │   ├── service/                 # Service Unit Tests
-│       │       │   └── repository/              # Repository Tests
-│       │       └── resources/
-│       ├── pom.xml                             # Maven Dependencies & Build Config
-│       ├── Dockerfile                          # Docker Container Configuration
-│       └── target/                             # Build Output (generated)
-│
-├── Frontend_ReactJs/                           # React Application
-│   ├── src/
-│   │   ├── components/                         # Reusable UI Components
-│   │   ├── pages/                              # Page Components
-│   │   ├── services/                           # API Service Layer
-│   │   ├── contexts/                           # React Context API
-│   │   ├── hooks/                              # Custom React Hooks
-│   │   ├── layouts/                            # Layout Components
-│   │   ├── styles/                             # CSS & Tailwind Styles
-│   │   ├── assets/                             # Static Assets
-│   │   ├── utils/                              # Utility Functions
-│   │   ├── App.jsx                             # Root Component
-│   │   └── main.jsx                            # Entry Point
-│   ├── public/                                 # Static Public Files
-│   ├── package.json                            # NPM Dependencies
-│   ├── vite.config.js                          # Vite Configuration
-│   ├── tailwind.config.js                      # Tailwind CSS Configuration
-│   ├── Dockerfile                              # Docker Container Configuration
-│   └── nginx.conf                              # Nginx Configuration (production)
-│
-├── db_init/
-│   └── init.sql                                # Database Initialization Scripts
-│
-├── docker-compose.yml                          # Docker Compose Multi-container Setup
-│
-└── README.md                                   # Project Documentation
-```
+**Spring Boot 4 · Java 21 · React 18 · Python FastAPI · OpenAI · MySQL · pgvector · Redis · Docker Compose**
 
 ---
 
-## Getting Started with Docker (Recommended - Fastest)
+## Engineering highlights
 
-For users and developers who want to run this project using Docker:
+### 1. No double booking, verified under concurrency
+Two patients pressing "Book" on the same slot at the same moment is a *read-then-write* race. Booking runs in one
+transaction that **locks the slot row** (`SELECT … FOR UPDATE`). A concurrent request waits for that transaction to
+commit, then sees the slot as `BOOKED` and gets **HTTP 409**. A patient also cannot hold two visits at overlapping
+times, even with different doctors.
 
-### Step 1: Prepare Your Environment
+| 50 patients book one slot at the same instant | Result |
+|---|---|
+| With the row lock | **1 booked, 49 × 409**, exactly one appointment in the database |
+| Same test with the lock removed | **10 patients got the same slot** (the test fails, as it should) |
 
-Ensure your computer has the following software installed:
+The test ([`BookingConcurrencyTestBase`](Backend_API/booking-clinic/src/test/java/com/example/booking_clinic/booking/BookingConcurrencyTestBase.java))
+runs on H2 and on **MySQL 8 via Testcontainers in CI**. An unpaid booking holds the slot for 10 minutes, then a
+scheduler releases it. A paid booking is never auto-cancelled.
 
-1. **Git**: Required to clone the project source code. [Download Git](https://git-scm.com/)
-2. **Docker Desktop**: Essential tool for running the entire system. [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
-   - *Note*: After installation, **launch Docker Desktop** before proceeding with the following steps
-3. **Free up connection ports**: Ensure you have stopped any local applications running MySQL (Laragon, XAMPP, etc.) on port `3306` and Redis on port `6379`
+### 2. AI assistant: agentic RAG with guardrails ([details](AI_Service/README.md))
+- **The agent picks its tools:** retrieval over clinic rules, specialty triage, live doctors and slots from the
+  backend, and a booking *proposal*. **The AI never writes data.** The booking happens only when the patient clicks
+  confirm, through the normal booking API with the patient's own JWT.
+- **Hybrid retrieval:** pgvector (HNSW) plus BM25, fused with Reciprocal Rank Fusion. Indexing is incremental by
+  content hash.
+- **Safety outside the model:** emergency red flags are caught by rules *before* the LLM, which answers with a fixed
+  "call 115" message. Personal data is redacted before anything is sent to OpenAI. A dosage guard runs on the output,
+  and citations the model invents are dropped.
+- **Streaming:** text is released one *checked sentence* at a time, so unfiltered tokens never reach the patient.
+- **Measured, with dev/test splits:**
 
-### Step 2: Clone the Project
+  | What | Result (test split) |
+  |---|---|
+  | Specialty triage, BM25 + symptom profiles | **91.4% Top-1**, 0% false answers (baseline keyword router: 40%) |
+  | Emergency detection | 100% recall, 0% false alarms |
+  | Knowledge retrieval, hybrid (local e5 embeddings) | **Recall@5 97.5%**, MRR 0.88 over 40 questions |
+  | Context cost with RAG vs whole knowledge base in the prompt | **about 19× fewer tokens per LLM call** |
 
-Open Terminal (CMD, PowerShell, or Git Bash) and run the following commands:
+  The datasets were written by the same author as the system, so treat these numbers as an upper bound. A reranker
+  was evaluated and **kept off**: it gave no gain on the test split and added 1–2.5 s of latency.
+
+### 3. LLMOps dashboard
+Every assistant turn records the answer path (agent / streaming / fallback), tools called, tokens, estimated cost,
+latency, guardrail outcomes and the patient's 👍/👎. The admin dashboard shows satisfaction, p95 latency, cost per
+turn, fallback and handoff rates, and a per-conversation trace. Costs are capped per patient per day and across the
+system; when the system cap is reached, the assistant switches to a free keyword fallback instead of failing.
+
+### 4. Human handoff and agent assist
+The assistant can **offer** a member of staff, but never claims to have contacted one. The patient chooses whether to
+share the AI conversation. Staff answer from a realtime inbox (STOMP over WebSocket, with polling as a fallback). They
+can start from an **AI draft reply** grounded in clinic rules, with citations. The draft is never sent automatically,
+and the share of replies that used a draft is measured.
+
+### 5. Payments and security
+- **VNPay is signed and verified on the server:** HMAC-SHA512, the amount taken from the database, and an IPN
+  endpoint. Recording is idempotent. A client can no longer mark a payment as "paid".
+- **No secrets in the repository:** a weak or missing `JWT_SECRET` stops the backend from starting. There is no
+  default admin account. The database and Redis listen on loopback only. WebSocket origins are allow-listed. Routes
+  are guarded by role in the UI as well as on the API.
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    B[React SPA<br/>nginx] -- JWT --> S[Spring Boot API]
+    B -. STOMP / SSE .-> S
+    S --> M[(MySQL)]
+    S --> R[(Redis<br/>cache + rate limits)]
+    S -- internal token --> A[AI service<br/>FastAPI]
+    A --> V[(pgvector)]
+    A --> O[OpenAI]
+    A -- public read APIs --> S
+    S --> P[VNPay]
+```
+
+| Service | Responsibility |
+|---|---|
+| `Frontend_ReactJs` | Patient, doctor and admin UIs; assistant widget; admin AI dashboard and support inbox |
+| `Backend_API/booking-clinic` | Auth, booking, payments, notifications, conversations and telemetry; gateway to the AI service with fallback |
+| `AI_Service` | Agent, retrieval, triage, guardrails, staff assist, evaluation harnesses. It has no published port and is reachable only from the backend |
+
+## Features by role
+- **Patient:** search doctors and specialties, book and pay (VNPay, cash, bank transfer), cancel with refund rules,
+  medical records and prescriptions, reviews, notifications, the AI assistant, and live support.
+- **Doctor:** schedules, appointments, medical records, prescriptions, reviews.
+- **Admin:** users, doctors (licence verification), specialties, medicines and stock, appointments, payments, the
+  support inbox, and the AI quality dashboard.
+
+---
+
+## Run locally
+
+Requires Docker Desktop.
 
 ```bash
 git clone https://github.com/khoazocute/booking-clinic-system.git
 cd booking-clinic-system
+cp .env.example .env        # then fill in the values below
+docker compose up -d --build
 ```
 
-### Step 3: Start the Application with Docker
+Minimum `.env`:
 
-Run the command:
-
-```bash
-docker-compose up -d --build
+```env
+JWT_SECRET=<openssl rand -hex 32>
+AI_INTERNAL_TOKEN=<openssl rand -hex 32>
+ADMIN_EMAIL=admin@example.com      # first admin, created only on an empty database
+ADMIN_PASSWORD=<at least 12 characters>
+OPENAI_API_KEY=                     # optional: without it the assistant runs in free fallback mode
 ```
 
-**How it works**: This command automatically downloads base images, builds both Frontend and Backend source code, and imports sample data (specialties, doctor accounts, existing patients) from `db_init/init.sql` into the database without manual import.
+- App: http://localhost:5173 · API health: http://127.0.0.1:8082/api/v1/health
+- VNPay sandbox: set `VNPAY_TMN_CODE` and `VNPAY_HASH_SECRET`.
+- Reminder emails: set `MAIL_USERNAME` and `MAIL_PASSWORD`. Without them, reminders are in-app only.
+- All options are listed in [`.env.example`](.env.example).
 
-**Initial startup time**: Approximately **3 to 5 minutes** (for downloading dependencies and building the project). Subsequent runs take only **5 - 10 seconds**.
+## Tests
 
-### Step 4: Access and Explore
+| Suite | Command | Notes |
+|---|---|---|
+| Backend | `cd Backend_API/booking-clinic && ./mvnw test` | The MySQL concurrency test runs when Docker is available |
+| AI service | `cd AI_Service && python -m pytest` | Fake models only: **tests never call OpenAI** |
+| Offline evals | `python -m eval.run_eval --router all-offline` · `python -m eval.retrieval_eval --retriever bm25` | Free; paid evals require `--allow-paid-api` |
+| Frontend | `cd Frontend_ReactJs && npm run build` | |
 
-Once the Terminal displays `Started` for all services:
+CI runs all of the above on every push, with real MySQL (Testcontainers) and real pgvector.
 
-- **Web Interface (Frontend)**: [http://localhost:5173](http://localhost:5173)
-- **API Health Check**: [http://localhost:8082/api/v1/health](http://localhost:8082/api/v1/health)
-
----
-
-## Manual Setup (Without Docker)
-
-If Docker is not available on your machine, you can run the application manually by setting up the environment on your local system.
-
-### Prerequisites
-
-Before running the application, ensure your computer has the following installed:
-
-1. **Java Development Kit (JDK) 21**: Required to compile and run the Backend
-2. **Node.js (version 18 or higher)**: Required to run the Frontend
-3. **MySQL Server (port 3306)**: Can be installed directly or via Laragon, XAMPP
-4. **Redis Server**: Used for caching. If not installed locally, you can disable caching or use Docker/WSL to run Redis
-
----
-
-### Step 1: Set Up the Database (MySQL)
-
-1. Open your database management tool (HeidiSQL, DBeaver, MySQL Workbench, etc.)
-2. Create a new database named `booking_clinic_db` using SQL:
-   ```sql
-   CREATE DATABASE booking_clinic_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-3. Import all sample tables:
-   - Select the newly created `booking_clinic_db` database
-   - Open the SQL file: `db_init/init.sql` from the project
-   - Execute all SQL statements to load the data
-
----
-
-### Step 2: Configure and Run Backend (Spring Boot)
-
-1. Open the Backend database configuration file at:
-   ```
-   Backend_API/booking-clinic/src/main/resources/application.properties
-   ```
-2. Update the MySQL connection information to match your local setup:
-   ```properties
-   spring.datasource.url=jdbc:mysql://localhost:3306/booking_clinic_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=UTC
-   spring.datasource.username=YOUR_MYSQL_USERNAME (typically root)
-   spring.datasource.password=YOUR_MYSQL_PASSWORD (leave empty if using Laragon defaults)
-   ```
-3. Configure Redis (if you have Redis installed locally):
-   ```properties
-   spring.cache.type=redis
-   spring.data.redis.host=localhost
-   spring.data.redis.port=6379
-   ```
-   *(If not using Redis, change the configuration to `spring.cache.type=none` to disable caching)*
-4. Open Terminal in the `Backend_API/booking-clinic` directory and run:
-   ```bash
-   # For Windows
-   .\mvnw.cmd clean compile spring-boot:run
-
-   # For macOS / Linux
-   ./mvnw clean compile spring-boot:run
-   ```
-   The Backend will successfully start at: **http://localhost:8082**
-
----
-
-### Step 3: Install and Run Frontend (ReactJS)
-
-1. Open a new Terminal window and navigate to the Frontend directory:
-   ```bash
-   cd Frontend_ReactJs
-   ```
-2. Install required dependencies (only run on first setup):
-   ```bash
-   npm install
-   ```
-3. Start the React development server:
-   ```bash
-   npm run dev
-   ```
-4. Open your browser and access the address shown in the terminal (typically **http://localhost:5173**)
-
----
-
-## Development Workflow
-
-### When Modifying Code While Docker is Running
-
-- **For Backend (Java) changes**: Run the following command to recompile the source code and update the Backend container:
-  ```bash
-  docker-compose up -d --build backend
-  ```
-- **For Frontend (React) changes**: Run the following command to rebuild static files and update the Frontend container:
-  ```bash
-  docker-compose up -d --build frontend
-  ```
-
----
-
-## Useful Docker Commands
-
-- **Check service status**:
-  ```bash
-  docker-compose ps
-  ```
-- **View system logs in real-time**:
-  ```bash
-  docker-compose logs -f
-  ```
-- **Stop all services (preserves data)**:
-  ```bash
-  docker-compose down
-  ```
-- **Stop all services and remove database data (fresh restart)**:
-  ```bash
-  docker-compose down -v
-  ```
-
-## Redis Demonstration via Terminal
-
-- `docker-compose ps`
-- `docker exec -it booking-clinic-redis redis-cli ping` - If you see PONG, the Redis container is running normally
-- Demo Redis cache data: `docker exec -it booking-clinic-redis redis-cli keys "*"`
-  - If no keys appear initially, visit the specialties/doctors page, then run the command again
-  - You should see keys like those below if Redis caching is working:
-    ```
-    specialties::all
-    doctors::all
-    medicines::all
-    ```
+## Limitations and next steps
+- The answer quality of the full chat agent is scored by an LLM-as-judge harness that is written but not yet run,
+  because it needs paid API calls.
+- The evaluation sets are small and were written by the same author. The next step is an independent question set.
+- Production deployment (HTTPS reverse proxy, demo data, backups) is in progress.
