@@ -1,27 +1,57 @@
 package com.example.booking_clinic.service.impl;
 
+import com.example.booking_clinic.common.exception.AiServiceUnavailableException;
 import com.example.booking_clinic.dto.ai.AiConsultRequest;
 import com.example.booking_clinic.dto.ai.AiConsultResponse;
 import com.example.booking_clinic.dto.ai.AiSuggestionResponse;
+import com.example.booking_clinic.dto.ai.AiTriageResult;
 import com.example.booking_clinic.entity.AiDocument;
 import com.example.booking_clinic.repository.AiDocumentRepository;
 import com.example.booking_clinic.service.AiConsultationService;
 import com.example.booking_clinic.service.AiEmbeddingService;
+import com.example.booking_clinic.service.AiServiceGateway;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * Specialty triage. Delegates to the Python AI_Service (red-flag rules + evaluated router) and falls
+ * back to the local keyword router when AI_Service is disabled or unreachable, so the feature never
+ * goes down with it.
+ */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiConsultationServiceImpl implements AiConsultationService {
 
     private final AiDocumentRepository aiDocumentRepository;
     private final AiEmbeddingService aiEmbeddingService;
+    private final AiServiceGateway aiServiceGateway;
 
     @Override
     public AiConsultResponse consult(AiConsultRequest request) {
+        if (aiServiceGateway.isEnabled()) {
+            try {
+                return fromAiService(aiServiceGateway.triage(request.message()));
+            } catch (AiServiceUnavailableException e) {
+                log.warn("AI_Service triage unavailable, using local keyword router: {}", e.getMessage());
+            }
+        }
+        return consultLocally(request);
+    }
+
+    private AiConsultResponse fromAiService(AiTriageResult result) {
+        List<AiSuggestionResponse> suggestions = result.suggestions() == null ? List.of() : result.suggestions().stream()
+                .map(s -> new AiSuggestionResponse("SPECIALTY", s.specialtyId(), s.name(), "", s.score()))
+                .toList();
+        return new AiConsultResponse(result.answer(), suggestions, result.emergency(), "ai-service");
+    }
+
+    /** Local keyword router (no emergency detection): only used when AI_Service is unavailable. */
+    AiConsultResponse consultLocally(AiConsultRequest request) {
         List<Double> queryVector = aiEmbeddingService.embed(request.message());
 
         if (!hasClinicalSignal(queryVector)) {

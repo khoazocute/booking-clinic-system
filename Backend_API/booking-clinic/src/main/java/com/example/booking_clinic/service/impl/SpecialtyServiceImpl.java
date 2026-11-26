@@ -10,6 +10,8 @@ import com.example.booking_clinic.service.SpecialtyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import com.example.booking_clinic.event.AiKnowledgeChangedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
@@ -21,6 +23,7 @@ import java.util.List;
 public class SpecialtyServiceImpl implements SpecialtyService {
 
     private final SpecialtyRepository specialtyRepository;
+    private final ApplicationEventPublisher eventPublisher;
 //Thêm các annotation @Cacheable vào các phương thức getAllSpecialties và getSpecialtyById
 // để lưu trữ kết quả trả về trong cache.
     @Override
@@ -56,6 +59,7 @@ public class SpecialtyServiceImpl implements SpecialtyService {
                         .build()
         );
 
+        eventPublisher.publishEvent(new AiKnowledgeChangedEvent("specialty created"));
         return toResponse(specialty);
     }
 
@@ -77,7 +81,9 @@ public class SpecialtyServiceImpl implements SpecialtyService {
             specialty.setDescription(request.description());
         }
 
-        return toResponse(specialtyRepository.save(specialty));
+        SpecialtyResponse updated = toResponse(specialtyRepository.save(specialty));
+        eventPublisher.publishEvent(new AiKnowledgeChangedEvent("specialty updated"));
+        return updated;
     }
 
     @Override
@@ -90,6 +96,7 @@ public class SpecialtyServiceImpl implements SpecialtyService {
         try {
             specialtyRepository.delete(specialty);
             specialtyRepository.flush();
+            eventPublisher.publishEvent(new AiKnowledgeChangedEvent("specialty deleted"));
         } catch (DataIntegrityViolationException e) {
             throw new IllegalStateException("Cannot delete specialty because it is still referenced by one or more doctors");
         }

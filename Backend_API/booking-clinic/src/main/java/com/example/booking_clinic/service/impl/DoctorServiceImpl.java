@@ -22,6 +22,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import com.example.booking_clinic.event.AiKnowledgeChangedEvent;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -38,6 +40,7 @@ public class DoctorServiceImpl implements DoctorService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final SpecialtyRepository specialtyRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     // --- API CỦA BẠN (Cập nhật hồ sơ cá nhân) ---
     @Override
@@ -74,6 +77,7 @@ public class DoctorServiceImpl implements DoctorService {
         if (request.clinicRoom() != null) doctor.setClinicRoom(request.clinicRoom());
 
         doctor = doctorRepository.save(doctor);
+        eventPublisher.publishEvent(new AiKnowledgeChangedEvent("doctor profile updated"));
         return toResponse(doctor);
     }
 
@@ -155,6 +159,7 @@ public class DoctorServiceImpl implements DoctorService {
                         .build()
         );
 
+        eventPublisher.publishEvent(new AiKnowledgeChangedEvent("doctor created"));
         return toResponse(doctor);
     }
 
@@ -203,7 +208,9 @@ public class DoctorServiceImpl implements DoctorService {
             doctor.setConsultationFee(request.consultationFee());
         }
 
-        return toResponse(doctorRepository.save(doctor));
+        DoctorResponse updated = toResponse(doctorRepository.save(doctor));
+        eventPublisher.publishEvent(new AiKnowledgeChangedEvent("doctor updated"));
+        return updated;
     }
 
     @Override
@@ -214,7 +221,9 @@ public class DoctorServiceImpl implements DoctorService {
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor not found with id: " + id));
 
         doctor.setStatus(request.status().trim().toUpperCase());
-        return toResponse(doctorRepository.save(doctor));
+        DoctorResponse updated = toResponse(doctorRepository.save(doctor));
+        eventPublisher.publishEvent(new AiKnowledgeChangedEvent("doctor status updated"));
+        return updated;
     }
 
     private DoctorResponse toResponse(Doctor doctor) {

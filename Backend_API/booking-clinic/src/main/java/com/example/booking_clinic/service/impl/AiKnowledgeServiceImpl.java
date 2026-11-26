@@ -24,8 +24,8 @@ public class AiKnowledgeServiceImpl implements AiKnowledgeService {
     @Override
     @Transactional
     public int rebuildIndex() {
-        aiDocumentRepository.deleteAll();
-
+        // Embed everything first: if the embedding provider fails, the old index is kept
+        // instead of being wiped.
         List<AiDocument> documents = new ArrayList<>();
 
         for (Specialty specialty : specialtyRepository.findAll()) {
@@ -40,6 +40,7 @@ public class AiKnowledgeServiceImpl implements AiKnowledgeService {
             ));
         }
 
+        aiDocumentRepository.deleteAll();
         aiDocumentRepository.saveAll(documents);
         return documents.size();
     }
@@ -60,10 +61,13 @@ public class AiKnowledgeServiceImpl implements AiKnowledgeService {
         return value == null ? "" : value;
     }
 
+    /**
+     * The index is derived data (specialty descriptions -> vectors), so it is always rebuilt on
+     * startup. Otherwise vectors computed by an older embedding version (e.g. the ones seeded in
+     * db_init/init.sql) would silently disagree with how queries are embedded now.
+     */
     @jakarta.annotation.PostConstruct
     public void init() {
-        if (aiDocumentRepository.count() == 0) {
-            rebuildIndex();
-        }
+        rebuildIndex();
     }
 }
