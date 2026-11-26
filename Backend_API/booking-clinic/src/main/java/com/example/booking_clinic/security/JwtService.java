@@ -14,8 +14,22 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    @Value("${app.jwt.secret:${JWT_SECRET:12345678901234567890123456789012}}")
+    /** Required: there is no default, so a deployment can never run with a secret published in the repo. */
+    @Value("${app.jwt.secret}")
     private String secretKey;
+
+    private static final java.util.Set<String> KNOWN_WEAK_SECRETS = java.util.Set.of(
+            "12345678901234567890123456789012", "DayLaChuoiBiMatCuaHeThongBookingClinicRatDaiVaKhoDoan123!@#");
+
+    @jakarta.annotation.PostConstruct
+    void validateSecret() {
+        if (secretKey == null || secretKey.getBytes(StandardCharsets.UTF_8).length < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 32 bytes (use: openssl rand -hex 32)");
+        }
+        if (KNOWN_WEAK_SECRETS.contains(secretKey)) {
+            throw new IllegalStateException("JWT_SECRET is a value published in the repository; set a random one");
+        }
+    }
 
     @Value("${app.jwt.access-token-expiration:${JWT_ACCESS_TOKEN_EXPIRATION:900000}}")
     private long accessTokenExpiration;

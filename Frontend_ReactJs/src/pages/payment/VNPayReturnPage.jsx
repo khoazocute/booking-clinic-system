@@ -1,25 +1,52 @@
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { parseVNPayReturn } from "../../services/vnpayService";
-import { createPayment } from "../../services/paymentService";
+import { verifyVnpayReturn } from "../../services/vnpayService";
 
+const SERVER_MESSAGES = {
+  INVALID_SIGNATURE: "Chữ ký giao dịch không hợp lệ: thanh toán không được ghi nhận.",
+  INVALID_AMOUNT: "Số tiền giao dịch không khớp với phí khám: thanh toán không được ghi nhận.",
+  ORDER_NOT_FOUND: "Không tìm thấy lịch hẹn của giao dịch này.",
+  NOT_RECORDED: "VNPay đã xử lý giao dịch nhưng lịch hẹn không còn chờ thanh toán. Phòng khám sẽ liên hệ để hoàn tiền.",
+  NOT_CONFIGURED: "Cổng VNPay chưa được cấu hình trên máy chủ.",
+};
+
+/** The page shows only what the server verified; the query string alone proves nothing. */
 export function VNPayReturnPage() {
   const [searchParams] = useSearchParams();
-  const result = parseVNPayReturn(searchParams);
-  const [paymentCreated, setPaymentCreated] = useState(false);
-  const [paymentError, setPaymentError] = useState("");
+  const [verified, setVerified] = useState(null);
+  const [verifyError, setVerifyError] = useState("");
   const calledRef = useRef(false);
 
   useEffect(() => {
-    if (!result.success || calledRef.current) return;
+    if (calledRef.current) return;
     calledRef.current = true;
-    const appointmentId = sessionStorage.getItem("pendingAppointmentId");
-    sessionStorage.removeItem("pendingAppointmentId");
-    if (!appointmentId) { setPaymentCreated(true); return; }
-    createPayment({ appointmentId: Number(appointmentId), paymentMethod: "E_WALLET", paymentType: "BOOKING" })
-      .then(() => setPaymentCreated(true))
-      .catch((err) => setPaymentError(err.message));
-  }, [result.success]);
+    verifyVnpayReturn(searchParams)
+      .then(setVerified)
+      .catch((err) => setVerifyError(err.message || "Không xác minh được giao dịch."));
+  }, [searchParams]);
+
+  if (!verified && !verifyError) {
+    return (
+      <div className="vnpay-return-page">
+        <div className="vnpay-return-card">
+          <h2 className="vnpay-return-title">Đang xác minh giao dịch...</h2>
+          <p className="vnpay-return-sub">Máy chủ đang kiểm tra chữ ký và số tiền với VNPay.</p>
+        </div>
+      </div>
+    );
+  }
+
+  const result = {
+    success: Boolean(verified?.success),
+    responseCode: verified?.responseCode ?? searchParams.get("vnp_ResponseCode"),
+    txnRef: verified?.txnRef ?? searchParams.get("vnp_TxnRef"),
+    amount: verified?.amount ?? null,
+    transactionNo: verified?.transactionNo,
+    bankCode: verified?.bankCode,
+    payDate: verified?.payDate,
+  };
+  const paymentCreated = result.success;
+  const paymentError = "";
 
   const formattedAmount = result.amount != null
     ? Number(result.amount).toLocaleString("vi-VN") + " ₫"
@@ -98,7 +125,10 @@ export function VNPayReturnPage() {
     "99": "Lỗi không xác định.",
   };
 
-  const errMsg = errorMessages[result.responseCode] ?? `Giao dịch thất bại (Mã lỗi: ${result.responseCode}).`;
+  const errMsg = verifyError
+    || (verified?.status && SERVER_MESSAGES[verified.status])
+    || errorMessages[result.responseCode]
+    || `Giao dịch thất bại (Mã lỗi: ${result.responseCode}).`;
 
   return (
     <div className="vnpay-return-page">

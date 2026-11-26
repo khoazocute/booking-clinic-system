@@ -48,6 +48,9 @@ public class SecurityConfig {
                 })
                 )
                 .authorizeHttpRequests(auth -> auth
+                        // async (SSE completion) and error dispatches re-enter the chain without the JWT filter;
+                        // the original request was already authorised
+                        .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ASYNC, jakarta.servlet.DispatcherType.ERROR).permitAll()
                         .requestMatchers("/api/v1/auth/**", "/api/v1/health").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/v1/test/admin").hasRole("ADMIN")
@@ -115,6 +118,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/notifications/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/notifications/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         // Payment
+                        // VNPay: signing / verification are server-side; the IPN is authenticated by its HMAC signature
+                        .requestMatchers(HttpMethod.GET, "/api/v1/payments/vnpay/ipn").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/payments/vnpay/url", "/api/v1/payments/vnpay/verify").hasRole("PATIENT")
                         .requestMatchers(HttpMethod.POST, "/api/v1/payments").hasAnyRole("PATIENT", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/v1/payments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/payments/**").hasRole("ADMIN")
@@ -122,6 +128,16 @@ public class SecurityConfig {
                         //ai
                         .requestMatchers(HttpMethod.POST, "/api/v1/ai/rebuild-index").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/ai/consult").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/ai/chat", "/api/v1/ai/chat/stream").hasRole("PATIENT")
+                        .requestMatchers("/api/v1/ai/conversations/**", "/api/v1/ai/messages/**").hasRole("PATIENT")
+                        .requestMatchers("/api/v1/ai/admin/**").hasRole("ADMIN")
+
+                        // human handoff: patients open tickets, admins (clinic staff) answer them
+                        .requestMatchers(HttpMethod.POST, "/api/v1/support/tickets").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/support/tickets/me/active").hasRole("PATIENT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/support/tickets").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/support/tickets/*/assist").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/support/tickets/**").hasAnyRole("PATIENT", "ADMIN")
                         
                         .anyRequest().authenticated()
                 )

@@ -37,6 +37,17 @@ public class AppointmentExpiryScheduler {
 
         if (expired.isEmpty()) return;
 
+        // Defence in depth (and repair of rows created before PaymentServiceImpl cleared the deadline):
+        // an appointment whose booking payment was submitted is waiting for the doctor, not "unpaid".
+        List<Appointment> paid = expired.stream().filter(this::hasActiveBookingPayment).toList();
+        if (!paid.isEmpty()) {
+            log.info("Keeping {} PENDING appointments that already have a booking payment", paid.size());
+            paid.forEach(appointment -> appointment.setPaymentDeadline(null));
+            appointmentRepository.saveAll(paid);
+        }
+        expired = expired.stream().filter(appointment -> !paid.contains(appointment)).toList();
+        if (expired.isEmpty()) return;
+
         log.info("Cancelling {} expired PENDING appointments", expired.size());
 
         for (Appointment appointment : expired) {
@@ -59,6 +70,13 @@ public class AppointmentExpiryScheduler {
         }
 
         appointmentRepository.saveAll(expired);
+    }
+
+    /** A BOOKING payment that is paid, or submitted and awaiting admin confirmation (cash / bank transfer). */
+    private boolean hasActiveBookingPayment(Appointment appointment) {
+        return paymentRepository.findByAppointment_Id(appointment.getId()).stream()
+                .anyMatch(p -> "BOOKING".equals(p.getPaymentType())
+                        && ("PAID".equals(p.getStatus()) || "PENDING".equals(p.getStatus())));
     }
 
     @Scheduled(fixedRate = 60_000)

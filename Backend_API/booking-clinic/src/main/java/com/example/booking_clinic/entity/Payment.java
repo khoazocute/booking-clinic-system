@@ -61,6 +61,10 @@ public class Payment {
     @Column(length = 20)
     private String status;
 
+    /** Gateway transaction number (VNPay vnp_TransactionNo), recorded only after the signature was verified. */
+    @Column(name = "transaction_code", length = 50)
+    private String transactionCode;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

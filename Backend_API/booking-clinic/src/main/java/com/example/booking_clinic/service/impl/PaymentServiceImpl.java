@@ -108,11 +108,55 @@ public class PaymentServiceImpl implements PaymentService {
             throw new IllegalArgumentException("Invalid payment type. Allowed: BOOKING, PRESCRIPTION");
         }
 
-        // ─── Xác định status ban đầu ────────────────────────────────────
-        // VNPay (E_WALLET) → PAID ngay; còn lại → PENDING (admin xác nhận sau)
-        String method = request.paymentMethod().toUpperCase();
-        String initialStatus = "E_WALLET".equals(method) ? "PAID" : "PENDING";
+        // ─── Phương thức ────────────────────────────────────────────────
+        // E_WALLET (VNPay) is never accepted from the client: anyone could claim "paid". It is recorded by
+        // recordVerifiedVnpayPayment after the server verifies VNPay's signature. Cash / bank transfer start
+        // PENDING until an admin confirms the money arrived.
+        String method = request.paymentMethod().trim().toUpperCase();
+        if ("E_WALLET".equals(method)) {
+            throw new IllegalArgumentException(
+                    "Thanh toán VNPay được ghi nhận tự động sau khi VNPay xác thực giao dịch");
+        }
+        if (!List.of("CASH", "BANK_TRANSFER").contains(method)) {
+            throw new IllegalArgumentException("Invalid payment method. Allowed: CASH, BANK_TRANSFER");
+        }
 
+        return toResponse(savePayment(appointment, patient, amount, method, paymentType, "PENDING", null));
+    }
+
+    @Override
+    // own transaction: the caller (VnpayService) only reads; the admin alert must survive the exception
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW,
+            noRollbackFor = InvalidAppointmentStateException.class)
+    public PaymentResponse recordVerifiedVnpayPayment(Long appointmentId, BigDecimal amount, String transactionNo) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + appointmentId));
+
+        Optional<Payment> existing = paymentRepository.findByAppointment_Id(appointmentId).stream()
+                .filter(p -> "BOOKING".equals(p.getPaymentType()))
+                .findFirst();
+        if (existing.isPresent()) {
+            Payment payment = existing.get();
+            if ("PAID".equals(payment.getStatus()) && transactionNo.equals(payment.getTransactionCode())) {
+                return toResponse(payment); // same transaction delivered twice (return URL + IPN)
+            }
+            throw new PaymentAlreadyExistsException("A booking payment already exists for appointment " + appointmentId);
+        }
+        if (appointment.getStatus() != AppointmentStatus.PENDING) {
+            // money was taken but the slot expired meanwhile: never lose it silently
+            notificationService.createNotificationForAdmins("VNPay: cần hoàn tiền thủ công",
+                    "Lịch hẹn #" + appointmentId + " đã " + appointment.getStatus() + " nhưng VNPay báo đã thu "
+                            + amount + " đ (GD " + transactionNo + ")",
+                    "PAYMENT_ISSUE", "APPOINTMENT", appointmentId);
+            throw new InvalidAppointmentStateException(
+                    "Appointment " + appointmentId + " is " + appointment.getStatus() + "; the payment needs a manual refund");
+        }
+        Payment saved = savePayment(appointment, appointment.getPatient(), amount, "E_WALLET", "BOOKING", "PAID", transactionNo);
+        return toResponse(saved);
+    }
+
+    private Payment savePayment(Appointment appointment, Patient patient, BigDecimal amount, String method,
+                                String paymentType, String initialStatus, String transactionCode) {
         Payment payment = Payment.builder()
                 .appointment(appointment)
                 .patient(patient)
@@ -120,9 +164,18 @@ public class PaymentServiceImpl implements PaymentService {
                 .paymentMethod(method)
                 .paymentType(paymentType)
                 .status(initialStatus)
+                .transactionCode(transactionCode)
                 .build();
 
         Payment saved = paymentRepository.save(payment);
+
+        // The 10-minute window is for submitting the booking payment. Once it exists (VNPay paid, or cash /
+        // bank transfer awaiting admin confirmation), the appointment must not be auto-cancelled while it
+        // waits for the doctor: AppointmentExpiryScheduler only cancels appointments that still have a deadline.
+        if ("BOOKING".equals(paymentType)) {
+            appointment.setPaymentDeadline(null);
+            appointmentRepository.save(appointment);
+        }
 
         // ─── Sau khi tạo BOOKING payment → Không tự động confirm lịch hẹn, giữ nguyên PENDING cho tới khi bác sĩ xác nhận ─────────
         if ("BOOKING".equals(paymentType)) {
@@ -147,7 +200,7 @@ public class PaymentServiceImpl implements PaymentService {
             );
         }
 
-        return toResponse(saved);
+        return saved;
     }
 
     @Override

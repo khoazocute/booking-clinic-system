@@ -77,6 +77,11 @@ export function MainLayout() {
 
   return (
     <div className="site-shell">
+      {import.meta.env.VITE_DEMO_BANNER !== "false" ? (
+        <div className="demo-banner" role="note">
+          Bản demo phục vụ portfolio: dữ liệu bác sĩ là giả lập. Vui lòng không nhập thông tin sức khoẻ hay giấy tờ thật.
+        </div>
+      ) : null}
       <header className="site-header">
         <div className="site-container site-header__inner">
           <NavLink to="/" end className="brand-mark">

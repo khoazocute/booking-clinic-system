@@ -2,10 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { SafeAvatar } from "../../../components/common/SafeAvatar";
 import { getDoctorById, getDoctorSchedules } from "../../../services/doctorService";
-import { createAppointment } from "../../../services/appointmentService";
+import { createAppointment, getAppointmentById } from "../../../services/appointmentService";
 import { createPayment } from "../../../services/paymentService";
 import { getAccessToken } from "../../../services/authService";
-import { buildVNPayUrl } from "../../../services/vnpayService";
+import { createVnpayPaymentUrl } from "../../../services/vnpayService";
 import { getDoctorAvatar } from "../../../utils/doctorHelpers";
 
 const DAYS_AHEAD = 30;
@@ -73,12 +73,17 @@ export function BookingPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const doctorId = searchParams.get("doctorId");
+  // set when the patient confirms a proposal from the AI assistant: pre-select that slot
+  const proposedScheduleId = searchParams.get("scheduleId");
+  const proposedReason = searchParams.get("reason");
+  // set when the patient already booked from the AI chat: open the payment step for that appointment
+  const pendingAppointmentId = searchParams.get("appointmentId");
 
   const [doctor, setDoctor] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [reason, setReason] = useState("");
+  const [reason, setReason] = useState(proposedReason ?? "");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -112,14 +117,41 @@ export function BookingPage() {
     Promise.all([
       getDoctorById(doctorId),
       getDoctorSchedules(doctorId, { fromDate, toDate }),
+      pendingAppointmentId ? getAppointmentById(pendingAppointmentId) : Promise.resolve(null),
     ])
-      .then(([docRes, schedRes]) => {
+      .then(([docRes, schedRes, apptRes]) => {
         if (!active) return;
         setDoctor(docRes?.data ?? docRes ?? null);
         const slots = schedRes?.data?.items ?? schedRes?.data ?? [];
         setSchedules(slots);
         const dates = [...new Set(slots.map((s) => s.workDate ?? s.work_date))].sort();
-        if (dates.length > 0) setSelectedDate(dates[0]);
+        const proposed = proposedScheduleId
+          ? slots.find((s) => String(s.id) === proposedScheduleId)
+          : null;
+        const appt = apptRes?.data ?? null;
+        if (appt) {
+          // ownership is enforced by the backend (GET /appointments/{id})
+          if (appt.status !== "PENDING") {
+            setError("Lịch hẹn này không còn chờ thanh toán. Vui lòng xem trong mục Lịch hẹn của tôi.");
+          } else {
+            const slot = slots.find((s) => s.id === appt.scheduleId) ?? {
+              id: appt.scheduleId, workDate: appt.appointmentDate,
+              startTime: appt.startTime, endTime: appt.endTime,
+            };
+            setSelectedDate(appt.appointmentDate);
+            setSelectedSlot(slot);
+            setReason(appt.reason ?? "");
+            setAppointmentId(appt.id);
+            setPaymentDeadline(appt.paymentDeadline ?? null);
+            setStep(2);
+          }
+        } else if (proposed) {
+          // the backend re-validates availability when the appointment is created
+          setSelectedDate(proposed.workDate ?? proposed.work_date);
+          setSelectedSlot(proposed);
+        } else if (dates.length > 0) {
+          setSelectedDate(dates[0]);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -226,21 +258,14 @@ export function BookingPage() {
     } else if (paymentMethod === "BANK_TRANSFER") {
       setShowQR(true);
     } else if (paymentMethod === "E_WALLET") {
-      sessionStorage.setItem("pendingAppointmentId", String(appointmentId));
+      // the server signs the URL and takes the amount from the doctor's fee in the database
       setIsRedirecting(true);
-      const fee = Number(doctor?.consultationFee ?? 0);
-      const amount = fee > 0 ? fee : 10000;
-      const txnRef = `MC${Date.now()}`.slice(0, 20);
-      const returnUrl = `${window.location.origin}/payment/return`;
+      setSubmitError("");
       try {
-        const url = await buildVNPayUrl({
-          amount,
-          orderInfo: `Thanh toan lich kham - Ma GD ${txnRef}`,
-          txnRef,
-          returnUrl,
-        });
+        const url = await createVnpayPaymentUrl(appointmentId);
         window.location.href = url;
-      } catch {
+      } catch (err) {
+        setSubmitError(err.message || "Không tạo được liên kết thanh toán VNPay.");
         setIsRedirecting(false);
       }
     }
