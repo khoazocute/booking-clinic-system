@@ -13,6 +13,8 @@ const adminNavItems = [
   { to: "/admin/appointments", label: "Lịch hẹn", icon: "calendar_month" },
   { to: "/admin/notifications", label: "Thông báo", icon: "notifications" },
   { to: "/admin/payments", label: "Thanh toán", icon: "payments" },
+  { to: "/admin/support", label: "Hỗ trợ bệnh nhân", icon: "support_agent" },
+  { to: "/admin/ai", label: "Chất lượng AI", icon: "monitoring" },
 ];
 
 function getInitials(name) {

@@ -50,6 +50,9 @@ import { AdminDoctorsPage } from "./pages/admin/AdminDoctorsPage";
 import { AdminSpecialtiesPage } from "./pages/admin/AdminSpecialtiesPage";
 import { AdminReviewsPage } from "./pages/admin/AdminReviewsPage";
 import { AdminPaymentsPage } from "./pages/admin/AdminPaymentsPage";
+import { AdminSupportPage } from "./pages/admin/AdminSupportPage";
+import { AdminAiInsightsPage } from "./pages/admin/AdminAiInsightsPage";
+import { RequireRole } from "./components/common/RequireRole";
 
 export default function App() {
   return (
@@ -82,6 +85,7 @@ export default function App() {
           <Route path="change-password" element={<ChangePassword />} />
           <Route path="payment/return" element={<VNPayReturnPage />} />
         </Route>
+        <Route element={<RequireRole roles={["DOCTOR"]} />}>
         <Route path="/doctor" element={<DoctorDashboardPage />} />
         <Route path="/doctor/profile" element={<DoctorProfilePage />} />
         <Route path="/doctor/profile/edit" element={<EditDoctorProfilePage />} />
@@ -129,7 +133,9 @@ export default function App() {
           path="/doctor/notifications"
           element={<DoctorNotificationsPage />}
         />
+        </Route>
         {/* Admin routes */}
+        <Route element={<RequireRole roles={["ADMIN"]} />}>
         <Route path="/admin" element={<AdminDashboardPage />} />
         <Route path="/admin/users" element={<AdminUsersPage />} />
         <Route path="/admin/doctors" element={<AdminDoctorsPage />} />
@@ -158,6 +164,9 @@ export default function App() {
         } />
         
         <Route path="/admin/payments" element={<AdminPaymentsPage />} />
+        <Route path="/admin/support" element={<AdminSupportPage />} />
+        <Route path="/admin/ai" element={<AdminAiInsightsPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

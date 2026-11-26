@@ -1,2 +1,10 @@
 # Project docs (local only)
-docs/
+/docs/
+
+# Local secrets (OpenAI key, internal tokens) - never commit
+.env
+
+# Logs and local build caches
+logs.txt
+*.log
+Backend_API/booking-clinic/.m2/
