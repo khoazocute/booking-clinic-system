@@ -46,9 +46,16 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(exception.getMessage(), null));
     }
 
-    @ExceptionHandler({PrescriptionAlreadyExistsException.class, PaymentAlreadyExistsException.class, InsufficientStockException.class})
+    @ExceptionHandler({PrescriptionAlreadyExistsException.class, PaymentAlreadyExistsException.class,
+            InsufficientStockException.class, SlotUnavailableException.class})
     public ResponseEntity<ApiResponse<Object>> handleConflict(RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ApiResponse.error(exception.getMessage(), null));
+    }
+
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleTooManyRequests(TooManyRequestsException exception) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                 .body(ApiResponse.error(exception.getMessage(), null));
     }
 

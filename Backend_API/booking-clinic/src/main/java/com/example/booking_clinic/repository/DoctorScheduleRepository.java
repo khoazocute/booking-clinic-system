@@ -48,17 +48,16 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
                                                @Param("startTime") LocalTime startTime,
                                                @Param("endTime") LocalTime endTime);
 
-    // Atomic booking: chỉ cập nhật nếu vẫn còn AVAILABLE, trả về số row bị ảnh hưởng
-    @Modifying
-    @Query("UPDATE DoctorSchedule s SET s.status = 'BOOKED' WHERE s.id = :id AND s.status = 'AVAILABLE'")
-    int tryBookSchedule(@Param("id") Long id);
-
     // Trả lại AVAILABLE cho các slot bị giữ bởi lịch hẹn hết hạn
     @Modifying
     @Query("UPDATE DoctorSchedule s SET s.status = 'AVAILABLE' WHERE s.id = :id AND s.status = 'BOOKED'")
     int releaseSchedule(@Param("id") Long id);
 
-    // Pessimistic write lock: đảm bảo không có race condition khi booking (dùng native query tương thích TiDB và MySQL)
+    /**
+     * Pessimistic write lock on one slot row (SELECT ... FOR UPDATE). Concurrent bookings of the same slot queue
+     * here until the first transaction commits, then read the committed status. Native SQL because Hibernate's
+     * "FOR UPDATE OF alias" is not supported by MariaDB / TiDB.
+     */
     @Query(value = "SELECT * FROM doctor_schedules WHERE id = :id FOR UPDATE", nativeQuery = true)
     Optional<DoctorSchedule> findByIdWithLock(@Param("id") Long id);
 }

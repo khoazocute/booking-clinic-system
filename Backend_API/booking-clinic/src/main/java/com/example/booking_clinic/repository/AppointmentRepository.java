@@ -22,10 +22,38 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     boolean existsBySchedule_IdAndStatusIn(Long scheduleId, List<AppointmentStatus> statuses);
 
+    /** Does the patient already have an active appointment overlapping this time (with any doctor)? */
+    @Query("SELECT COUNT(a) > 0 FROM Appointment a JOIN a.schedule s " +
+            "WHERE a.patient.id = :patientId AND a.status IN :statuses AND s.workDate = :date " +
+            "AND s.startTime < :endTime AND s.endTime > :startTime")
+    boolean existsOverlappingForPatient(
+            @Param("patientId") Long patientId,
+            @Param("statuses") List<AppointmentStatus> statuses,
+            @Param("date") LocalDate date,
+            @Param("startTime") java.time.LocalTime startTime,
+            @Param("endTime") java.time.LocalTime endTime);
+
     @Query("SELECT a FROM Appointment a WHERE a.status = :status AND a.paymentDeadline IS NOT NULL AND a.paymentDeadline < :now")
     List<Appointment> findExpiredPendingAppointments(
             @Param("status") AppointmentStatus status,
             @Param("now") LocalDateTime now);
+
+    /** Appointments on the given days that have not been reminded yet (with everything the message needs). */
+    @Query("SELECT a FROM Appointment a JOIN FETCH a.schedule s JOIN FETCH a.patient p JOIN FETCH p.user " +
+            "JOIN FETCH a.doctor d JOIN FETCH d.user " +
+            "WHERE a.status IN :statuses AND a.reminderSentAt IS NULL AND s.workDate BETWEEN :from AND :to")
+    List<Appointment> findReminderCandidates(
+            @Param("statuses") List<AppointmentStatus> statuses,
+            @Param("from") LocalDate from,
+            @Param("to") LocalDate to);
+
+    /** Visits completed in the window that have not had their follow-up yet. */
+    @Query("SELECT a FROM Appointment a JOIN FETCH a.patient p JOIN FETCH p.user JOIN FETCH a.doctor d JOIN FETCH d.user " +
+            "WHERE a.status = :status AND a.followUpSentAt IS NULL AND a.updatedAt BETWEEN :from AND :to")
+    List<Appointment> findFollowUpCandidates(
+            @Param("status") AppointmentStatus status,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to);
 
     @Query("SELECT a FROM Appointment a " +
             "WHERE a.status IN :statuses " +

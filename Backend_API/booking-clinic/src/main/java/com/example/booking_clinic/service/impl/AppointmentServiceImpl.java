@@ -1,6 +1,7 @@
 package com.example.booking_clinic.service.impl;
 
 import com.example.booking_clinic.common.exception.ResourceNotFoundException;
+import com.example.booking_clinic.common.exception.SlotUnavailableException;
 import com.example.booking_clinic.dto.appointment.AppointmentResponse;
 import com.example.booking_clinic.dto.appointment.CancelAppointmentResponse;
 import com.example.booking_clinic.dto.appointment.CreateAppointmentRequest;
@@ -40,6 +41,10 @@ import java.util.List;
 public class AppointmentServiceImpl implements AppointmentService {
 
     private static final ZoneId APP_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
+    /** Appointments that occupy their time: a patient cannot hold two of these at overlapping times. */
+    static final List<AppointmentStatus> ACTIVE = List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED,
+            AppointmentStatus.REQUESTED, AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS);
+    static final String SLOT_TAKEN = "Khung giờ này vừa có người đặt. Vui lòng chọn khung giờ khác.";
 
     private final AppointmentRepository appointmentRepository;
     private final PatientRepository patientRepository;
@@ -59,8 +64,9 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Patient profile not found. Please complete your patient profile first."));
 
-        // Tìm DoctorSchedule (bỏ pessimistic lock do lỗi MariaDB không hỗ trợ FOR UPDATE OF alias)
-        DoctorSchedule schedule = doctorScheduleRepository.findById(request.scheduleId())
+        // 1. Khoá dòng slot (SELECT ... FOR UPDATE). Hai người cùng đặt một slot: người đến sau phải CHỜ ở đây
+        //    cho tới khi transaction của người trước commit, rồi mới đọc được trạng thái mới nhất (đã BOOKED).
+        DoctorSchedule schedule = doctorScheduleRepository.findByIdWithLock(request.scheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor schedule not found"));
 
         LocalDate today = LocalDate.now(APP_ZONE);
@@ -70,29 +76,25 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new IllegalArgumentException("Cannot book a schedule slot in the past");
         }
 
-        // Kiểm tra bệnh nhân chưa có lịch ACTIVE trên khung giờ này
-        if (appointmentRepository.existsByPatient_IdAndSchedule_IdAndStatusIn(
-                patient.getId(), schedule.getId(),
-                List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED))) {
-            throw new IllegalArgumentException("You have already booked this schedule slot");
+        // 2. Kiểm tra trên dữ liệu đã khoá: chỉ slot AVAILABLE mới đặt được.
+        //    Trạng thái này đọc bằng locking read nên luôn là bản mới nhất, không phải snapshot cũ.
+        if (!"AVAILABLE".equalsIgnoreCase(schedule.getStatus())) {
+            throw new SlotUnavailableException(SLOT_TAKEN);
         }
 
-        boolean hasActiveAppointmentForSlot = appointmentRepository.existsBySchedule_IdAndStatusIn(
-                schedule.getId(),
-                List.of(AppointmentStatus.PENDING, AppointmentStatus.CONFIRMED));
-        if (!hasActiveAppointmentForSlot && "BOOKED".equalsIgnoreCase(schedule.getStatus())) {
-            doctorScheduleRepository.releaseSchedule(schedule.getId());
-        }
-
-        // Atomic booking: chỉ cập nhật được nếu slot vẫn AVAILABLE tại thời điểm này
-        int booked = doctorScheduleRepository.tryBookSchedule(schedule.getId());
-        if (booked == 0) {
-            throw new IllegalArgumentException("This schedule slot is not available for booking");
-        }
-
-        // Lấy Doctor từ schedule
         Doctor doctor = schedule.getDoctor();
         validateDoctorForBooking(doctor, today);
+
+        // 3. Một bệnh nhân không thể có hai lịch trùng giờ, kể cả với hai bác sĩ khác nhau.
+        if (appointmentRepository.existsOverlappingForPatient(patient.getId(), ACTIVE, schedule.getWorkDate(),
+                schedule.getStartTime(), schedule.getEndTime())) {
+            throw new IllegalArgumentException("Bạn đã có một lịch khám khác trùng khung giờ này");
+        }
+
+        // 4. Đánh dấu slot đã có người và tạo lịch hẹn trong CÙNG transaction: commit cùng nhau, lỗi thì
+        //    rollback cùng nhau, nên không bao giờ có slot BOOKED mà không có lịch hẹn (hoặc ngược lại).
+        schedule.setStatus("BOOKED");
+        doctorScheduleRepository.save(schedule);
 
         // Tạo Appointment với deadline thanh toán 10 phút
         LocalDateTime deadline = LocalDateTime.now(APP_ZONE).plusMinutes(10);

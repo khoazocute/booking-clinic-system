@@ -51,6 +51,14 @@ public class Appointment {
     @Column(name = "payment_deadline")
     private LocalDateTime paymentDeadline;
 
+    /** Set once the 24-hour reminder went out (in-app, and email when SMTP is configured). */
+    @Column(name = "reminder_sent_at")
+    private LocalDateTime reminderSentAt;
+
+    /** Set once the after-visit follow-up (thanks + review link) went out. */
+    @Column(name = "follow_up_sent_at")
+    private LocalDateTime followUpSentAt;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
