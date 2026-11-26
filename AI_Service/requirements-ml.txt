@@ -1,0 +1,4 @@
+# Optional: local models for the comparisons (eval/run_eval.py --router st, eval/retrieval_eval.py --rerank)
+# and the optional runtime reranker (RERANKER_MODEL).
+-r requirements-dev.txt
+sentence-transformers

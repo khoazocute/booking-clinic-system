@@ -1,0 +1,12 @@
+[
+  { "id": 1,  "name": "Ung Thư",       "description": "Chuyên khám, tư vấn và theo dõi các bệnh lý ung thư, u bướu, khối u bất thường, sụt cân không rõ nguyên nhân, đau kéo dài, hạch to, tầm soát ung thư và hỗ trợ điều trị sau chẩn đoán." },
+  { "id": 2,  "name": "Phụ sản",       "description": "Chuyên khám về các vấn đề phụ khoa và sản khoa như rối loạn kinh nguyệt, đau bụng kinh, viêm nhiễm phụ khoa, khí hư bất thường, tư vấn thai kỳ, khám thai, chăm sóc sức khỏe sinh sản và kế hoạch hóa gia đình." },
+  { "id": 3,  "name": "Tim mạch",      "description": "Chuyên khám và tư vấn các vấn đề về tim, đau ngực, khó thở, tim đập nhanh, hồi hộp, huyết áp cao, huyết áp thấp, rối loạn nhịp tim." },
+  { "id": 4,  "name": "Da liễu",       "description": "Chuyên khám các bệnh về da như nổi mẩn, ngứa da, mụn, viêm da, dị ứng da, phát ban, nấm da." },
+  { "id": 5,  "name": "Tai mũi họng",  "description": "Chuyên khám các triệu chứng ho, đau họng, viêm họng, nghẹt mũi, sổ mũi, ù tai, đau tai, viêm xoang." },
+  { "id": 6,  "name": "Thần kinh",     "description": "Chuyên khám các vấn đề đau đầu, chóng mặt, mất ngủ, tê tay chân, co giật, đau nửa đầu, rối loạn thần kinh." },
+  { "id": 7,  "name": "Nhi khoa",      "description": "Chuyên khám cho trẻ em, em bé, trẻ sơ sinh với các triệu chứng sốt, ho, đau bụng, tiêu chảy, biếng ăn, phát ban." },
+  { "id": 8,  "name": "Hô hấp",        "description": "Chuyên khám các bệnh về đường hô hấp như ho kéo dài, khó thở, đau tức ngực, viêm phổi, hen suyễn, viêm phế quản." },
+  { "id": 9,  "name": "Tiêu hóa",      "description": "Chuyên khám các vấn đề đau bụng, buồn nôn, nôn ói, tiêu chảy, táo bón, đau dạ dày, trào ngược dạ dày, rối loạn tiêu hóa." },
+  { "id": 10, "name": "Cơ xương khớp", "description": "Chuyên khám đau lưng, đau vai gáy, đau khớp, tê bì tay chân, viêm khớp, thoái hóa khớp, chấn thương xương khớp." }
+]
