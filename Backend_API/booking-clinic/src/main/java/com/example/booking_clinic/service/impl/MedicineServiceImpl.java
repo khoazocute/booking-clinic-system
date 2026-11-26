@@ -119,19 +119,21 @@ public class MedicineServiceImpl implements MedicineService {
     @Transactional
     @CacheEvict(value = {"medicines", "medicine"}, allEntries = true)
     public void deductStock(Long medicineId, int quantity) {
-        Medicine medicine = medicineRepository.findById(medicineId)
-                .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + medicineId));
-
-        int newStock = medicine.getStockQuantity() - quantity;
-        if (newStock < 0) {
+        // Atomic update: trừ và kiểm tra đủ tồn kho trong cùng 1 câu SQL, tránh
+        // race condition nếu 2 payment của cùng 1 thuốc được confirm PAID gần như đồng thời.
+        int updated = medicineRepository.tryDeductStock(medicineId, quantity);
+        if (updated == 0) {
+            Medicine medicine = medicineRepository.findById(medicineId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + medicineId));
             throw new InsufficientStockException(
                     "Insufficient stock for: " + medicine.getName() +
                     ". Available: " + medicine.getStockQuantity() + ", Required: " + quantity
             );
         }
 
-        medicine.setStockQuantity(newStock);
-        medicineRepository.save(medicine);
+        Medicine medicine = medicineRepository.findById(medicineId)
+                .orElseThrow(() -> new ResourceNotFoundException("Medicine not found with id: " + medicineId));
+        int newStock = medicine.getStockQuantity();
 
         if (newStock <= LOW_STOCK_THRESHOLD) {
             String alertType = newStock == 0 ? "OUT_OF_STOCK" : "LOW_STOCK";

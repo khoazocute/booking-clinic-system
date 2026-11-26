@@ -106,7 +106,10 @@ public class PrescriptionServiceImpl implements PrescriptionService {
             }
         }
 
-        // Validate stock availability for each item
+        // Validate stock availability for each item.
+        // Lưu ý: kê đơn KHÔNG trừ kho ngay — tồn kho chỉ thực sự bị trừ khi
+        // thanh toán đơn thuốc được xác nhận PAID (xem PaymentServiceImpl.updatePaymentStatus()
+        // -> MedicineServiceImpl.deductStock()), vì bệnh nhân có thể chưa thanh toán.
         for (CreatePrescriptionItemRequest reqItem : request.items()) {
             Medicine m = medicineMap.get(reqItem.medicineId());
             int needed = reqItem.dosePerTime() * reqItem.timesPerDay() * reqItem.durationDays();
