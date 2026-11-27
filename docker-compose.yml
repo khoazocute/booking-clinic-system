@@ -126,6 +126,7 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_BASE_URL=/api/v1
+        - VITE_GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-256663765383-frqgep8lipvok4l26r4ov0867g1ebt38.apps.googleusercontent.com}
     container_name: booking-clinic-frontend
     restart: always
     ports:

@@ -14,6 +14,11 @@ COPY . .
 ARG VITE_API_BASE_URL=http://localhost:8082/api/v1
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
+# Google sign-in. The OAuth client ID is public (it ships in the page's JavaScript); .env is not copied into
+# the image, so it has to be passed as a build argument. Empty = the Google button is hidden.
+ARG VITE_GOOGLE_CLIENT_ID=
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
 # Build ứng dụng sang các file tĩnh (trong thư mục dist)
 RUN npm run build
 
