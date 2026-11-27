@@ -86,7 +86,8 @@ jobs:
     steps:
       - name: No server configured
         if: env.SSH_HOST == ''
-        run: echo "::notice::Images ${TAG} published to GHCR. Deploy skipped: add the SSH_* secrets (deploy/README.md)."
+        run: |
+          echo "::notice::Images ${TAG} published to GHCR. Deploy skipped - add the SSH_* secrets (deploy/README.md)."
 
       - name: Deploy over SSH
         if: env.SSH_HOST != ''

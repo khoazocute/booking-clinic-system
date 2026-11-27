@@ -99,6 +99,14 @@ jobs:
       - run: npm ci
       - run: npm run build
 
+  workflows:
+    name: Workflow lint (actionlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # a YAML mistake in a workflow fails silently on GitHub; catch it like any other bug
+      - run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7 -no-color
+
   compose:
     name: docker-compose config
     runs-on: ubuntu-latest
