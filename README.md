@@ -9,6 +9,13 @@ takes over when the assistant can't help.
 
 **Spring Boot 4 · Java 21 · React 18 · Python FastAPI · OpenAI · MySQL · pgvector · Redis · Docker Compose**
 
+**Live demo: https://3-106-10-9.sslip.io**
+
+- Register a patient account to book a slot.
+- Doctors and schedules are fictional, and free slots are refreshed every night.
+- The public demo runs the assistant in its free fallback mode (specialty suggestion and emergency rules), with no
+  OpenAI key.
+
 ---
 
 ## Engineering highlights
@@ -156,5 +163,5 @@ OPENAI_API_KEY=                     # optional: without it the assistant runs in
 - The answer quality of the full chat agent is scored by an LLM-as-judge harness that is written but not yet run,
   because it needs paid API calls.
 - The evaluation sets are small and were written by the same author. The next step is an independent question set.
-- There is no public demo deployment yet. The pipeline and the production stack are ready; demo data still has to
-  be created on a fresh database.
+- The live demo runs on a single AWS EC2 instance (t4g.small, ARM) with Docker Compose. There is no staging
+  environment and no zero-downtime deploys yet.

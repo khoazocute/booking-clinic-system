@@ -3,6 +3,7 @@
 #
 #   curl -fsSL https://raw.githubusercontent.com/khoazocute/booking-clinic-system/main/deploy/setup-server.sh -o setup-server.sh
 #   bash setup-server.sh
+#   (or without questions: SETUP_ADMIN_EMAIL=you@example.com bash setup-server.sh)
 #
 # Safe to re-run: every step checks whether it is already done.
 set -euo pipefail
@@ -65,9 +66,16 @@ if [ ! -f .env ]; then
   chmod 600 .env
   public_ip=$(curl -fsS https://ifconfig.me || true)
   default_domain="${public_ip//./-}.sslip.io"
-  read -r -p "Domain (Enter = ${default_domain}): " domain
+  # non-interactive: SETUP_DOMAIN / SETUP_ADMIN_EMAIL skip the questions
+  domain="${SETUP_DOMAIN:-}"
+  if [ -z "$domain" ]; then
+    read -r -p "Domain (Enter = ${default_domain}): " domain || true
+  fi
   domain="${domain:-$default_domain}"
-  read -r -p "Admin email for the first login: " admin_email
+  admin_email="${SETUP_ADMIN_EMAIL:-}"
+  while [ -z "$admin_email" ]; do
+    read -r -p "Admin email for the first login: " admin_email || { echo "Set SETUP_ADMIN_EMAIL when running without a terminal" >&2; exit 1; }
+  done
   admin_password=$(openssl rand -base64 18 | tr -d '/+=' | cut -c1-20)
 
   set_env DOMAIN "$domain"

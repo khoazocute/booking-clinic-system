@@ -22,7 +22,14 @@ under 50 MB each.
 3. Consider upgrading the account to **Pay As You Go**. Always Free resources stay free, and Oracle no longer
    reclaims an instance it considers idle, which a quiet demo site can be.
 
-Any other Ubuntu VPS with at least 2 GB of RAM works the same way. Skip the Oracle-specific steps.
+**AWS EC2** (the live demo uses this):
+
+- Ubuntu Server 24.04 LTS, **64-bit (Arm)**, instance type **t4g.small** (2 GB of RAM), 20 GiB gp3.
+- Security group: SSH, HTTP and HTTPS.
+- An **Elastic IP** associated with the instance, so the address and the sslip.io domain survive a restart.
+- Set a *Zero spend budget* first.
+
+Any other Ubuntu VPS with at least 2 GB of RAM works the same way. Skip the provider-specific steps.
 
 ## 2. One command on the server
 
@@ -30,7 +37,7 @@ Any other Ubuntu VPS with at least 2 GB of RAM works the same way. Skip the Orac
 ssh -i <private-key> ubuntu@<PUBLIC_IP>
 
 curl -fsSL https://raw.githubusercontent.com/khoazocute/booking-clinic-system/main/deploy/setup-server.sh -o setup-server.sh
-bash setup-server.sh
+bash setup-server.sh                       # or: SETUP_ADMIN_EMAIL=you@example.com bash setup-server.sh
 ```
 
 [`setup-server.sh`](setup-server.sh) is safe to re-run. It does the following:
