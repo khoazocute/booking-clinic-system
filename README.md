@@ -13,8 +13,8 @@ takes over when the assistant can't help.
 
 - Register a patient account to book a slot.
 - Doctors and schedules are fictional, and free slots are refreshed every night.
-- The public demo runs the assistant in its free fallback mode (specialty suggestion and emergency rules), with no
-  OpenAI key.
+- The AI assistant runs on the Gemini free tier. When the daily quota is used up, it switches to its free fallback
+  mode (specialty suggestion and emergency rules).
 
 ---
 
@@ -41,8 +41,10 @@ scheduler releases it. A paid booking is never auto-cancelled.
 - **The agent picks its tools:** retrieval over clinic rules, specialty triage, live doctors and slots from the
   backend, and a booking *proposal*. **The AI never writes data.** The booking happens only when the patient clicks
   confirm, through the normal booking API with the patient's own JWT.
-- **Hybrid retrieval:** pgvector (HNSW) plus BM25, fused with Reciprocal Rank Fusion. Indexing is incremental by
-  content hash.
+- **Retrieval:** pgvector (HNSW) with BM25, fused with Reciprocal Rank Fusion or dense-only, whichever the eval
+  measures as better for the embedding model. Indexing is incremental by content hash.
+- **Provider-agnostic LLM:** Google Gemini (free tier, preferred) or OpenAI, selected by one environment
+  variable. Model fallback and BM25 fallback keep the assistant answering on rate limits.
 - **Safety outside the model:** emergency red flags are caught by rules *before* the LLM, which answers with a fixed
   "call 115" message. Personal data is redacted before anything is sent to OpenAI. A dosage guard runs on the output,
   and citations the model invents are dropped.
@@ -54,6 +56,8 @@ scheduler releases it. A paid booking is never auto-cancelled.
   | Specialty triage, BM25 + symptom profiles | **91.4% Top-1**, 0% false answers (baseline keyword router: 40%) |
   | Emergency detection | 100% recall, 0% false alarms |
   | Knowledge retrieval, hybrid (local e5 embeddings) | **Recall@5 97.5%**, MRR 0.88 over 40 questions |
+  | Knowledge retrieval, Gemini embeddings (runtime) | **Recall@5 100%**, MRR 0.97 |
+  | **Chat agent, 24 scenarios** (facts, tools, safety, booking, handoff), Gemini | **24/24**, faithfulness 4.85/5 |
   | Context cost with RAG vs whole knowledge base in the prompt | **about 19× fewer tokens per LLM call** |
 
   The datasets were written by the same author as the system, so treat these numbers as an upper bound. A reranker
@@ -160,8 +164,8 @@ OPENAI_API_KEY=                     # optional: without it the assistant runs in
   [`deploy/README.md`](deploy/README.md).
 
 ## Limitations and next steps
-- The answer quality of the full chat agent is scored by an LLM-as-judge harness that is written but not yet run,
-  because it needs paid API calls.
+- Chat faithfulness is judged by the same model that answers, so it may be inflated. The deterministic checks are
+  not affected.
 - The evaluation sets are small and were written by the same author. The next step is an independent question set.
 - The live demo runs on a single AWS EC2 instance (t4g.small, ARM) with Docker Compose. There is no staging
   environment and no zero-downtime deploys yet.

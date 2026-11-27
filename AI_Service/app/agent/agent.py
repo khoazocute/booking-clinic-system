@@ -151,7 +151,8 @@ class ClinicAgent:
                     yield {"type": "delta", "text": piece}
                 break
             messages.append({"role": "assistant", "content": turn.content, "tool_calls": [
-                {"id": c.id, "type": "function", "function": {"name": c.name, "arguments": c.arguments}}
+                {"id": c.id, "type": "function", "function": {"name": c.name, "arguments": c.arguments},
+                 **({"extra_content": c.extra} if c.extra else {})}
                 for c in turn.tool_calls]})
             for call in turn.tool_calls:
                 yield {"type": "status", "tool": call.name}

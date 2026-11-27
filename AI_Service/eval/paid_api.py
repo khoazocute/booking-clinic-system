@@ -3,10 +3,11 @@
 
 PAID_KINDS = {"openai", "hybrid", "llm"}
 
-FLAG_HELP = "explicitly allow calls to the paid OpenAI API (costs money; off by default)"
+FLAG_HELP = ("explicitly allow calls to a real LLM API (OpenAI costs money; the Gemini free tier uses quota); "
+             "off by default")
 
 
 def require_paid_api_consent(allowed: bool, what: str) -> None:
     if not allowed:
-        raise SystemExit(f"{what} calls the paid OpenAI API and is disabled by default. "
-                         f"Re-run with --allow-paid-api if you accept the cost.")
+        raise SystemExit(f"{what} calls a real LLM API and is disabled by default. "
+                         f"Re-run with --allow-paid-api if you accept the cost / quota use.")

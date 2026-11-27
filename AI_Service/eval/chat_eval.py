@@ -102,27 +102,32 @@ def judge(judge_model: OpenAIChatModel, result) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--judge-model", default=None)
+    parser.add_argument("--provider", choices=["auto", "gemini", "openai"], default="auto")
+    parser.add_argument("--pause", type=float, default=0.0,
+                        help="seconds between scenarios (free tiers limit requests per minute)")
     parser.add_argument("--allow-paid-api", action="store_true", help=FLAG_HELP)
     args = parser.parse_args()
     require_paid_api_consent(args.allow_paid_api, "The chat eval")
 
     settings = get_settings()
-    if not settings.openai_api_key:
-        raise SystemExit("OPENAI_API_KEY is not set (put it in the repo-root .env)")
+    llm = settings.llm(args.provider)
+    if llm is None:
+        raise SystemExit("No LLM key for that provider (GEMINI_API_KEY / OPENAI_API_KEY in the repo-root .env)")
 
     backend = FixtureBackend()
-    embedder = CachedEmbedder(OpenAIEmbedder(settings.openai_api_key, settings.embedding_model),
-                              ROOT / ".cache" / "embeddings.json")
+    embedder = CachedEmbedder(llm.embedder(patient=True), ROOT / ".cache" / "embeddings.json")
     index = KnowledgeIndex(InMemoryVectorStore(), embedder)
     index.sync(all_knowledge_docs(backend.list_specialties(), backend.list_doctors()))
     tools = ClinicTools(backend, index, BM25Router(backend.list_specialties(), settings.bm25_refusal_threshold,
                                                    load_specialty_profiles()))
-    agent = ClinicAgent(OpenAIChatModel(settings.openai_api_key, settings.chat_model), tools)
-    judge_model = OpenAIChatModel(settings.openai_api_key, args.judge_model or settings.chat_model, temperature=0.0)
+    agent = ClinicAgent(llm.chat_model_instance(), tools)
+    judge_model = llm.chat_model_instance(temperature=0.0, model=args.judge_model)
 
     scenarios = json.loads((DATA_DIR / "chat_scenarios_v1.json").read_text("utf-8"))
     rows, tokens, latencies = [], 0, []
-    for s in scenarios:
+    for n, s in enumerate(scenarios):
+        if n and args.pause:
+            time.sleep(args.pause)
         history = [{"role": "user" if i % 2 == 0 else "assistant", "content": m} for i, m in enumerate(s["messages"])]
         started = time.perf_counter()
         result = agent.run(history)
@@ -139,7 +144,7 @@ def main() -> None:
     by_cat = {}
     for r in rows:
         by_cat.setdefault(r["category"], []).append(r["passed"])
-    lines = [f"# Chat eval ({settings.chat_model}, judge {args.judge_model or settings.chat_model})", "",
+    lines = [f"# Chat eval ({agent.llm.model_id}, judge {judge_model.model_id})", "",
              f"- scenarios passed: {sum(r['passed'] for r in rows)}/{len(rows)}",
              *[f"- {c}: {sum(v)}/{len(v)}" for c, v in by_cat.items()],
              f"- mean faithfulness (1-5, LLM judge, {len(scored)} answers with evidence): "
@@ -152,8 +157,9 @@ def main() -> None:
                      f"{', '.join(r['tools'])} | {'; '.join(r['failures'] + r['unsupported'])} |")
     report_dir = ROOT / "reports"
     report_dir.mkdir(exist_ok=True)
-    (report_dir / "chat-eval.md").write_text("\n".join(lines) + "\n", "utf-8")
-    (report_dir / "chat-eval.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), "utf-8")
+    slug = llm.provider
+    (report_dir / f"chat-eval-{slug}.md").write_text("\n".join(lines) + "\n", "utf-8")
+    (report_dir / f"chat-eval-{slug}.json").write_text(json.dumps(rows, ensure_ascii=False, indent=2), "utf-8")
     print("\n".join(lines[:9]))
 
 

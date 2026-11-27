@@ -92,7 +92,7 @@ public class AiConversationStore {
                 .toolCalls(t.toolCalls() == null || t.toolCalls().isEmpty() ? null : truncate(String.join(",", t.toolCalls()), 500))
                 .promptTokens(t.promptTokens())
                 .completionTokens(t.completionTokens())
-                .costUsd(costs.usd(t.promptTokens(), t.completionTokens()))
+                .costUsd(costs.usd(t.model(), t.promptTokens(), t.completionTokens()))
                 .latencyMs(t.latencyMs())
                 .emergencyCategory(response.emergency() == null ? null : response.emergency().category())
                 .handoffSuggested(response.handoffSuggested())

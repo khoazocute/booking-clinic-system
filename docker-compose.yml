@@ -92,6 +92,10 @@ services:
       AI_INTERNAL_TOKEN: ${AI_INTERNAL_TOKEN:?set AI_INTERNAL_TOKEN in .env}
       BACKEND_BASE_URL: http://backend:8082
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # Gemini (free tier) is preferred when its key is set; LLM_PROVIDER=openai forces OpenAI
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-auto}
+      GEMINI_CHAT_MODEL: ${GEMINI_CHAT_MODEL:-gemini-3.6-flash}
       CHAT_MODEL: ${CHAT_MODEL:-gpt-4.1-mini}
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
       EMBEDDING_PROVIDER: auto   # OpenAI embeddings if OPENAI_API_KEY is set, BM25 otherwise

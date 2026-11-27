@@ -31,11 +31,14 @@ class SearchHit:
 
 class KnowledgeIndex:
     def __init__(self, store: VectorStore, embedder: Embedder, min_vector_score: float = 0.2,
-                 reranker: Reranker | None = None, rerank_candidates: int = 20):
+                 reranker: Reranker | None = None, rerank_candidates: int = 20, mode: str = "hybrid"):
         self._store = store
         self._embedder = embedder
         self._min_vector_score = min_vector_score
         self._reranker = reranker
+        # "hybrid" = vectors + BM25 fused with RRF; "dense" = vectors only (BM25 still answers if they fail).
+        # Chosen per embedding model by eval/retrieval_eval.py: strong embeddings lose accuracy when fused.
+        self._mode = mode
         self._rerank_candidates = rerank_candidates
         self._lock = threading.Lock()
         self._docs: list[KnowledgeDoc] = []
@@ -62,8 +65,18 @@ class KnowledgeIndex:
         if not docs or bm25 is None:
             return []
 
-        vector_hits = self._store.search(embed_query(self._embedder, query), k=20,
-                                         model_id=self._embedder.model_id, source_types=source_types)
+        try:
+            vector_hits = self._store.search(embed_query(self._embedder, query), k=20,
+                                             model_id=self._embedder.model_id, source_types=source_types)
+        except Exception as exc:  # embedding API down / rate limited: BM25 alone still answers
+            log.warning("vector search unavailable, using BM25 only: %s", exc)
+            vector_hits = []
+        if self._mode == "dense" and vector_hits:
+            hits = [SearchHit(d, s, s) for d, s in vector_hits if s >= self._min_vector_score]
+            if self._reranker is not None:
+                hits = self._rerank(query, hits[:max(k, self._rerank_candidates)])
+            return hits[:k]
+
         position = {d.id: i for i, d in enumerate(docs)}
         vector_rank = [position[d.id] for d, _ in vector_hits if d.id in position]
         vector_score = {position[d.id]: s for d, s in vector_hits if d.id in position}

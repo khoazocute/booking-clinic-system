@@ -83,6 +83,12 @@ class AiInsightsAndStoreTest {
     }
 
     @Test
+    void geminiFreeTierCostsNothingWhileOpenAiIsPriced() {
+        assertEquals(0, costs.usd("gemini/gemini-3.6-flash", 2000, 100).signum());
+        assertEquals(new BigDecimal("0.000960"), costs.usd("openai/gpt-4.1-mini", 2000, 100));
+    }
+
+    @Test
     void costEstimateUsesConfiguredPrices() {
         assertEquals(new BigDecimal("0.000960"), costs.usd(2000, 100)); // 2000 x 0.40 + 100 x 1.60, per million
         assertEquals(25, costs.vnd(new BigDecimal("0.000960")));

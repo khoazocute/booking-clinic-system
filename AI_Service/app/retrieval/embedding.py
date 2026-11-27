@@ -8,6 +8,7 @@ eval harness.
 import hashlib
 import json
 import logging
+import time
 from pathlib import Path
 from typing import Protocol
 
@@ -33,22 +34,59 @@ def embed_query(embedder: Embedder, text: str) -> list[float]:
     return query_fn(text) if query_fn else embedder.embed([text])[0]
 
 
+def _unit(vector: list[float]) -> list[float]:
+    """L2-normalise: truncated (Matryoshka) embeddings are not unit length, and dot products assume they are."""
+    norm = sum(x * x for x in vector) ** 0.5
+    return [x / norm for x in vector] if norm else vector
+
+
 class OpenAIEmbedder:
-    def __init__(self, api_key: str, model: str = "text-embedding-3-small", batch_size: int = 128):
+    """OpenAI-compatible embeddings (OpenAI, or Gemini through its OpenAI-compatible endpoint)."""
+
+    def __init__(self, api_key: str, model: str = "text-embedding-3-small", batch_size: int = 64,
+                 base_url: str | None = None, provider: str = "openai", dimensions: int | None = None,
+                 patient: bool = False, rate_limit_wait: float = 20.0):
         from openai import OpenAI  # imported lazily so tests and the keyword mode need no API key
 
-        self._client = OpenAI(api_key=api_key, timeout=20.0, max_retries=2)
+        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=30.0, max_retries=2)
         self._model = model
         self._batch_size = batch_size
-        self.model_id = f"openai/{model}"
+        self._dimensions = dimensions
+        # patient: wait out per-minute rate limits (indexing, evals). The request path stays impatient and
+        # lets the caller fall back (KnowledgeIndex answers with BM25 alone) instead of making a patient wait.
+        self._patient = patient
+        self._rate_limit_wait = rate_limit_wait
+        # the model id is stored with every vector: a different model or size re-embeds everything
+        self.model_id = f"{provider}/{model}" + (f"@{dimensions}" if dimensions else "")
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         vectors: list[list[float]] = []
         for start in range(0, len(texts), self._batch_size):
             batch = texts[start:start + self._batch_size]
-            response = self._client.embeddings.create(model=self._model, input=batch)
-            vectors.extend(item.embedding for item in sorted(response.data, key=lambda d: d.index))
+            vectors.extend(self._create(batch, patient=True))
         return vectors
+
+    def embed_query(self, text: str) -> list[float]:
+        return self._create([text], patient=self._patient)[0]
+
+    def _create(self, batch: list[str], patient: bool) -> list[list[float]]:
+        import openai
+
+        kwargs = {"model": self._model, "input": batch}
+        if self._dimensions:
+            kwargs["dimensions"] = self._dimensions
+        for attempt in range(4):
+            try:
+                response = self._client.embeddings.create(**kwargs)
+                break
+            except openai.RateLimitError:
+                if not patient or attempt == 3:
+                    raise
+                time.sleep(self._rate_limit_wait)
+        data = list(response.data)
+        if all(getattr(d, "index", None) is not None for d in data):  # Gemini omits it; order is preserved
+            data.sort(key=lambda d: d.index)
+        return [_unit(item.embedding) for item in data]
 
 
 class CachedEmbedder:

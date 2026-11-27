@@ -1,7 +1,30 @@
 from functools import lru_cache
+from dataclasses import dataclass
 from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+@dataclass(frozen=True)
+class LlmConfig:
+    provider: str                    # gemini | openai
+    api_key: str
+    base_url: str | None             # None = the OpenAI default
+    chat_model: str
+    fallback_models: tuple[str, ...]
+    embedding_model: str
+    embedding_dimensions: int | None
+
+    def chat_model_instance(self, temperature: float | None = 0.2, model: str | None = None):
+        from app.llm import OpenAIChatModel
+        return OpenAIChatModel(self.api_key, model or self.chat_model, temperature=temperature,
+                               base_url=self.base_url, provider=self.provider,
+                               fallback_models=() if model else self.fallback_models)
+
+    def embedder(self, patient: bool = False):
+        from app.retrieval.embedding import OpenAIEmbedder
+        return OpenAIEmbedder(self.api_key, self.embedding_model, base_url=self.base_url, provider=self.provider,
+                              dimensions=self.embedding_dimensions, patient=patient)
 
 
 class Settings(BaseSettings):
@@ -37,6 +60,20 @@ class Settings(BaseSettings):
     reranker_model: str = ""
     rerank_candidates: int = 20
 
+    # LLM provider for the chat agent, staff assist and RAG embeddings.
+    # "auto" prefers Gemini (free tier) when GEMINI_API_KEY is set, otherwise OpenAI when OPENAI_API_KEY is set.
+    llm_provider: Literal["auto", "gemini", "openai"] = "auto"
+    gemini_api_key: str = ""
+    gemini_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    gemini_chat_model: str = "gemini-3.6-flash"
+    # comma-separated, tried in order when the primary model is overloaded / rate limited (common on the free tier)
+    gemini_fallback_models: str = "gemini-3.5-flash-lite"
+    gemini_embedding_model: str = "gemini-embedding-001"
+    gemini_embedding_dimensions: int = 768  # pgvector HNSW indexes support at most 2000 dimensions
+
+    # RAG retrieval: "auto" = dense for Gemini embeddings (R@1 95% vs 87.5% fused), hybrid otherwise
+    retrieval_mode: Literal["auto", "hybrid", "dense"] = "auto"
+
     max_tool_iterations: int = 5
     max_history_messages: int = 12
 
@@ -48,8 +85,24 @@ class Settings(BaseSettings):
             return "bm25"
         return self.embedding_provider
 
+    def llm(self, provider: str | None = None) -> "LlmConfig | None":
+        """The resolved LLM configuration, or None when no key is configured (free fallback mode)."""
+        wanted = provider or self.llm_provider
+        if wanted in ("auto", "gemini") and self.gemini_api_key:
+            return LlmConfig("gemini", self.gemini_api_key, self.gemini_base_url, self.gemini_chat_model,
+                             tuple(m.strip() for m in self.gemini_fallback_models.split(",") if m.strip()),
+                             self.gemini_embedding_model, self.gemini_embedding_dimensions)
+        if wanted in ("auto", "openai") and self.openai_api_key:
+            return LlmConfig("openai", self.openai_api_key, None, self.chat_model, (), self.embedding_model, None)
+        return None
+
+    def resolved_retrieval_mode(self, provider: str | None) -> str:
+        if self.retrieval_mode != "auto":
+            return self.retrieval_mode
+        return "dense" if provider == "gemini" else "hybrid"
+
     def chat_enabled(self) -> bool:
-        return bool(self.openai_api_key)
+        return self.llm() is not None
 
 
 @lru_cache

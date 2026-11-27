@@ -36,6 +36,20 @@ React widget ──JWT──► Spring Boot  (auth, MySQL, booking, payments, ra
 | Spring falls back to its local keyword router if this service is down | The feature degrades instead of failing. |
 | Human handoff is offered, never forced or faked | `handoffSuggested` is true when the model calls `offer_human_support` (patient asks for a person, complaint, own payment problem, out of scope), when the agent gives up, or when Spring is in degraded mode. Never over an emergency: 115 comes first. The patient presses "Gặp tư vấn viên", chooses whether to share the AI chat, and Spring opens a support ticket that clinic staff answer at `/admin/support` (STOMP push + polling). |
 
+### Provider-agnostic LLM
+
+The agent, staff assist and RAG embeddings talk to any OpenAI-compatible API. **Gemini is preferred when its key is
+set** (free tier); OpenAI is the alternative. Switching takes one environment variable. Things the switch needed,
+found by running the evals against the real API:
+
+- **Thought signatures.** Gemini thinking models attach a `thought_signature` to each tool call and reject the
+  next request (HTTP 400) unless it is sent back. `ToolCall.extra` carries it through the agent loop.
+- **Free-tier limits.** Overload or 429 on the primary model falls through to a fallback model. Indexing waits
+  out per-minute limits. A rate-limited query embedding falls back to BM25 instead of making the patient wait. If
+  every model is down, Spring answers in degraded mode.
+- **Embedding size.** Embeddings are 768-d, because pgvector HNSW indexes support at most 2000 dimensions.
+  Truncated embeddings are re-normalised to unit length.
+
 ### Streaming, history, feedback and agent assist
 
 | Feature | Design |
@@ -115,7 +129,13 @@ All 40 questions, local models only (no paid API):
 | Hybrid (e5-small + BM25, RRF), production code path | 82.5% | 92.5% | **97.5%** | 0.883 |
 | Dense, multilingual-e5-base | 82.5% | 95.0% | 95.0% | 0.891 |
 | Hybrid (e5-base + BM25) | 85.0% | 92.5% | **97.5%** | **0.896** |
-| Hybrid with OpenAI `text-embedding-3-small` (runtime) | _not run: needs `--allow-paid-api`_ | | | |
+| **Dense, Gemini `gemini-embedding-001` (768-d), runtime with Gemini** | **95.0%** | **100%** | **100%** | **0.967** |
+| Hybrid, Gemini + BM25 | 87.5% | 97.5% | 97.5% | 0.921 |
+| Hybrid with OpenAI `text-embedding-3-small` | _not run: paid_ | | | |
+
+- **Strong embeddings don't need BM25.** With Gemini embeddings, fusing BM25 *lowers* Recall@1 (95% → 87.5%,
+  on dev and test alike), so `RETRIEVAL_MODE=auto` uses dense retrieval for Gemini and hybrid otherwise.
+  BM25 is still used whenever the embedding API fails or is rate limited.
 
 - **Opposite of specialty routing.** For routing, curated vocabulary made BM25 win. For policy questions, users
   paraphrase ("trả tiền" vs "thanh toán", "dời giờ" vs "đổi giờ", "chatbot" vs "trợ lý AI"), and dense retrieval
@@ -157,14 +177,28 @@ Same 40 questions; latency is the median per search on a laptop CPU.
 
 ### 3. Chat agent: `eval/chat_eval.py`
 
-21 scenarios run with the real LLM against a fixture backend (`eval/fixtures.py`) and are scored in two ways:
+24 scenarios run with the real LLM against a fixture backend (`eval/fixtures.py`) and are scored in two ways:
 
 - **Deterministic checks:** required facts present, expected tools called, no dosage, never claims "booked",
   never proposes a booked slot, never invents a doctor, resists prompt-leak and forced-booking requests.
 - **LLM-as-judge faithfulness (1–5):** is every concrete claim supported by what the tools returned?
 
-Results: _pending, needs `OPENAI_API_KEY`_. Use a stronger judge model to limit self-grading bias
-(`--judge-model`).
+Results with **Gemini `gemini-3.6-flash`** (free tier, `--provider gemini --pause 8`):
+
+| Category | Passed |
+|---|---|
+| FAQ (rules, fees, refunds) | 7/7 |
+| Triage (specialty, child, PII in the message, no diagnosis) | 4/4 |
+| Booking (free slots, proposal, never a booked slot) | 3/3 |
+| Safety (dosage, prescriptions, off-topic, prompt leak, forced booking, emergency, unknown doctor) | 7/7 |
+| Human handoff (explicit request, payment problem, not for a simple FAQ) | 3/3 |
+| **Total** | **24/24** |
+
+- Faithfulness: **4.85 / 5** over the 13 answers that had evidence.
+- Latency: median 4.6 s per conversation, about 2.7k tokens.
+
+Caveat: the judge is the same model as the agent, so faithfulness may be inflated. Pass a stronger or different
+judge with `--judge-model`. The 24/24 comes from deterministic checks and needs no judge.
 
 ### 4. Local embedding models
 
@@ -204,7 +238,11 @@ Spring answers in degraded mode with a specialty suggestion.
 
 | Env var | Default | |
 |---|---|---|
-| `OPENAI_API_KEY` | (empty) | enables embeddings + chat |
+| `GEMINI_API_KEY` | (empty) | **preferred** when set: Gemini free tier for chat + embeddings (OpenAI-compatible endpoint) |
+| `LLM_PROVIDER` | `auto` | `auto` = Gemini if its key is set, else OpenAI; `gemini` / `openai` to force one |
+| `GEMINI_CHAT_MODEL`, `GEMINI_FALLBACK_MODELS` | `gemini-3.6-flash`, `gemini-3.5-flash-lite` | fallbacks are tried on overload / rate limit |
+| `OPENAI_API_KEY` | (empty) | OpenAI chat + embeddings |
+| `RETRIEVAL_MODE` | `auto` | `dense` for Gemini, `hybrid` otherwise (from the retrieval eval) |
 | `AI_INTERNAL_TOKEN` | (required) | shared with Spring; requests are rejected if unset |
 | `CHAT_MODEL` / `EMBEDDING_MODEL` | `gpt-4.1-mini` / `text-embedding-3-small` | |
 | `DATABASE_URL` | (empty) means in-memory store | pgvector connection string |

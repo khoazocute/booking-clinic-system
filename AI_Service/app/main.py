@@ -31,7 +31,6 @@ from app.kb.index import KnowledgeIndex
 from app.kb.rerank import load_reranker
 from app.kb.profiles import load_specialty_profiles
 from app.kb.store import InMemoryVectorStore, PgVectorStore
-from app.llm import OpenAIChatModel
 from app.retrieval.base import Specialty, SpecialtyRouter
 from app.retrieval.embedding import EmbeddingRouter, OpenAIEmbedder
 from app.retrieval.hybrid import BM25Router
@@ -163,7 +162,7 @@ def default_router_factory(settings: Settings, specialties: list[Specialty]) -> 
     provider = settings.resolved_provider()
     profiles = load_specialty_profiles()
     if provider == "openai":
-        embedder = OpenAIEmbedder(settings.openai_api_key, settings.embedding_model)
+        embedder = OpenAIEmbedder(settings.openai_api_key, settings.embedding_model)  # triage router: OpenAI only
         return EmbeddingRouter(embedder, specialties, settings.refusal_threshold, profiles)
     if provider == "bm25":
         return BM25Router(specialties, settings.bm25_refusal_threshold, profiles)
@@ -179,17 +178,18 @@ class DefaultAgentFactory:
 
     def __call__(self, settings: Settings, backend: BackendClient, specialties: list[Specialty],
                  doctors: list[dict], triage_router: SpecialtyRouter) -> ClinicAgent | None:
-        if not settings.chat_enabled():
+        llm = settings.llm()
+        if llm is None:
             return None
         if self._index is None:
             store = PgVectorStore(settings.database_url) if settings.database_url else InMemoryVectorStore()
             # no disk cache here: the store keeps content hashes, so only changed docs are re-embedded
-            self._index = KnowledgeIndex(store, OpenAIEmbedder(settings.openai_api_key, settings.embedding_model),
+            self._index = KnowledgeIndex(store, llm.embedder(),
                                          reranker=load_reranker(settings.reranker_model),
-                                         rerank_candidates=settings.rerank_candidates)
+                                         rerank_candidates=settings.rerank_candidates,
+                                         mode=settings.resolved_retrieval_mode(llm.provider))
         self._index.sync(all_knowledge_docs(specialties, doctors))
-        llm = OpenAIChatModel(settings.openai_api_key, settings.chat_model)
-        return ClinicAgent(llm, ClinicTools(backend, self._index, triage_router),
+        return ClinicAgent(llm.chat_model_instance(), ClinicTools(backend, self._index, triage_router),
                            max_iterations=settings.max_tool_iterations, max_history=settings.max_history_messages)
 
 

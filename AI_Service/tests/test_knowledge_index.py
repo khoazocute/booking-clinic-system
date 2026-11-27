@@ -138,3 +138,42 @@ def test_missing_reranker_dependency_disables_the_feature(monkeypatch):
     monkeypatch.setattr(rerank, "CrossEncoderReranker", unavailable)
     assert rerank.load_reranker("") is None
     assert rerank.load_reranker("some/cross-encoder") is None  # logged, not raised: retrieval keeps working
+
+
+class FailingEmbedder(BagOfWordsEmbedder):
+    """Indexes fine, then the API is rate limited at query time."""
+
+    def __init__(self):
+        super().__init__()
+        self.down = False
+
+    def embed(self, texts):
+        if self.down:
+            raise RuntimeError("429 rate limited")
+        return super().embed(texts)
+
+
+def test_dense_mode_ranks_by_vectors_only():
+    index = KnowledgeIndex(InMemoryVectorStore(), BagOfWordsEmbedder(), mode="dense")
+    index.sync(all_docs())
+    hits = index.search("huỷ lịch có được hoàn tiền không", k=3)
+    assert hits and all(h.score == h.vector_score for h in hits)  # no RRF score
+    assert [h.vector_score for h in hits] == sorted((h.vector_score for h in hits), reverse=True)
+
+
+def test_embedding_outage_falls_back_to_bm25_in_both_modes():
+    for mode in ("hybrid", "dense"):
+        embedder = FailingEmbedder()
+        index = KnowledgeIndex(InMemoryVectorStore(), embedder, mode=mode)
+        index.sync(all_docs())
+        embedder.down = True
+        hits = index.search("huỷ lịch có được hoàn tiền không")
+        assert hits and "hoan-tien" in hits[0].doc.id, mode  # BM25 alone still finds the refund rule
+
+
+def test_retrieval_mode_follows_the_measured_choice():
+    from app.config import Settings
+    s = Settings(_env_file=None)
+    assert s.resolved_retrieval_mode("gemini") == "dense"
+    assert s.resolved_retrieval_mode("openai") == "hybrid"
+    assert Settings(_env_file=None, retrieval_mode="hybrid").resolved_retrieval_mode("gemini") == "hybrid"

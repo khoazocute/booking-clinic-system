@@ -108,7 +108,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--retriever", choices=["bm25", "dense", "hybrid"], default="bm25")
     parser.add_argument("--model", default="intfloat/multilingual-e5-small",
-                        help="sentence-transformers model name, or 'openai' (paid)")
+                        help="sentence-transformers model name, or 'openai' (paid) / 'gemini' (free tier)")
     parser.add_argument("--rerank", default="", help="cross-encoder model to rerank the first-stage candidates")
     parser.add_argument("--candidates", type=int, default=20, help="first-stage candidates passed to the reranker")
     parser.add_argument("--allow-paid-api", action="store_true", help=FLAG_HELP)
@@ -120,10 +120,12 @@ def main() -> None:
     if args.retriever == "bm25":
         name, search = "bm25", bm25_retriever(docs, depth)
     else:
-        if args.model == "openai":
-            require_paid_api_consent(args.allow_paid_api, "OpenAI embeddings")
-            settings = get_settings()
-            inner = OpenAIEmbedder(settings.openai_api_key, settings.embedding_model)
+        if args.model in ("openai", "gemini"):
+            require_paid_api_consent(args.allow_paid_api, f"{args.model} embeddings")
+            llm = get_settings().llm(args.model)
+            if llm is None:
+                raise SystemExit(f"No API key for {args.model} in the repo-root .env")
+            inner = llm.embedder(patient=True)
         else:
             from eval.local_embedder import SentenceTransformerEmbedder
             inner = SentenceTransformerEmbedder(args.model)

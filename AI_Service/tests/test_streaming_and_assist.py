@@ -101,7 +101,7 @@ def test_openai_stream_reassembles_tool_calls_sent_in_fragments():
               chunk(usage=NS(prompt_tokens=120, completion_tokens=30))]
     model = OpenAIChatModel.__new__(OpenAIChatModel)
     model._client = NS(chat=NS(completions=NS(create=lambda **kwargs: iter(chunks))))
-    model._model, model._temperature, model.model_id = "fake", None, "openai/fake"
+    model._model, model._models, model._temperature, model.model_id = "fake", ("fake",), None, "openai/fake"
 
     turn = list(model.stream([{"role": "user", "content": "x"}]))[-1][1]
 
