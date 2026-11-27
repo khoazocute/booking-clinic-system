@@ -1,0 +1,147 @@
+{
+  "_comment": "Fictional demo data, loaded only when DEMO_DATA=true. Same specialties as the AI evaluation fixtures.",
+  "specialties": [
+    {
+      "name": "Ung Thư",
+      "description": "Chuyên khám, tư vấn và theo dõi các bệnh lý ung thư, u bướu, khối u bất thường, sụt cân không rõ nguyên nhân, đau kéo dài, hạch to, tầm soát ung thư và hỗ trợ điều trị sau chẩn đoán."
+    },
+    {
+      "name": "Phụ sản",
+      "description": "Chuyên khám về các vấn đề phụ khoa và sản khoa như rối loạn kinh nguyệt, đau bụng kinh, viêm nhiễm phụ khoa, khí hư bất thường, tư vấn thai kỳ, khám thai, chăm sóc sức khỏe sinh sản và kế hoạch hóa gia đình."
+    },
+    {
+      "name": "Tim mạch",
+      "description": "Chuyên khám và tư vấn các vấn đề về tim, đau ngực, khó thở, tim đập nhanh, hồi hộp, huyết áp cao, huyết áp thấp, rối loạn nhịp tim."
+    },
+    {
+      "name": "Da liễu",
+      "description": "Chuyên khám các bệnh về da như nổi mẩn, ngứa da, mụn, viêm da, dị ứng da, phát ban, nấm da."
+    },
+    {
+      "name": "Tai mũi họng",
+      "description": "Chuyên khám các triệu chứng ho, đau họng, viêm họng, nghẹt mũi, sổ mũi, ù tai, đau tai, viêm xoang."
+    },
+    {
+      "name": "Thần kinh",
+      "description": "Chuyên khám các vấn đề đau đầu, chóng mặt, mất ngủ, tê tay chân, co giật, đau nửa đầu, rối loạn thần kinh."
+    },
+    {
+      "name": "Nhi khoa",
+      "description": "Chuyên khám cho trẻ em, em bé, trẻ sơ sinh với các triệu chứng sốt, ho, đau bụng, tiêu chảy, biếng ăn, phát ban."
+    },
+    {
+      "name": "Hô hấp",
+      "description": "Chuyên khám các bệnh về đường hô hấp như ho kéo dài, khó thở, đau tức ngực, viêm phổi, hen suyễn, viêm phế quản."
+    },
+    {
+      "name": "Tiêu hóa",
+      "description": "Chuyên khám các vấn đề đau bụng, buồn nôn, nôn ói, tiêu chảy, táo bón, đau dạ dày, trào ngược dạ dày, rối loạn tiêu hóa."
+    },
+    {
+      "name": "Cơ xương khớp",
+      "description": "Chuyên khám đau lưng, đau vai gáy, đau khớp, tê bì tay chân, viêm khớp, thoái hóa khớp, chấn thương xương khớp."
+    }
+  ],
+  "doctors": [
+    {
+      "fullName": "Lê Hoàng Nam",
+      "email": "le.hoang.nam@demo.bookingclinic.local",
+      "specialty": "Ung Thư",
+      "experienceYears": 4,
+      "qualification": "Bác sĩ chuyên khoa Ung Thư",
+      "biography": "Khám và tư vấn các bệnh lý ung thư.",
+      "clinicRoom": "P101",
+      "consultationFee": 200000
+    },
+    {
+      "fullName": "Nguyễn Thị Lan",
+      "email": "nguyen.thi.lan@demo.bookingclinic.local",
+      "specialty": "Phụ sản",
+      "experienceYears": 5,
+      "qualification": "Bác sĩ chuyên khoa Phụ sản",
+      "biography": "Khám phụ khoa, theo dõi thai kỳ.",
+      "clinicRoom": "P201",
+      "consultationFee": 300000
+    },
+    {
+      "fullName": "Đỗ Quang Huy",
+      "email": "do.quang.huy@demo.bookingclinic.local",
+      "specialty": "Tim mạch",
+      "experienceYears": 6,
+      "qualification": "Bác sĩ chuyên khoa Tim mạch",
+      "biography": "Khám và tư vấn các bệnh lý tim mạch.",
+      "clinicRoom": "P103",
+      "consultationFee": 300000
+    },
+    {
+      "fullName": "Bùi Gia Huy",
+      "email": "bui.gia.huy@demo.bookingclinic.local",
+      "specialty": "Da liễu",
+      "experienceYears": 10,
+      "qualification": "Bác sĩ nội trú Đại học Y Dược Hà Nội",
+      "biography": "Chuyên ngành Da Liễu.",
+      "clinicRoom": "P901",
+      "consultationFee": 800000
+    },
+    {
+      "fullName": "Trần Minh Khang",
+      "email": "tran.minh.khang@demo.bookingclinic.local",
+      "specialty": "Tai mũi họng",
+      "experienceYears": 6,
+      "qualification": "Chứng chỉ Tai Mũi Họng",
+      "biography": "Chuyên khám tai mũi họng.",
+      "clinicRoom": "P303",
+      "consultationFee": 250000
+    },
+    {
+      "fullName": "Đặng Thu Trang",
+      "email": "dang.thu.trang@demo.bookingclinic.local",
+      "specialty": "Nhi khoa",
+      "experienceYears": 5,
+      "qualification": "Tốt nghiệp Khoa Y ĐHQG TPHCM",
+      "biography": "Chuyên ngành Nhi khoa.",
+      "clinicRoom": "P801",
+      "consultationFee": 450000
+    },
+    {
+      "fullName": "Võ Thanh Hà",
+      "email": "vo.thanh.ha@demo.bookingclinic.local",
+      "specialty": "Hô hấp",
+      "experienceYears": 8,
+      "qualification": "Tốt nghiệp Đại học Phạm Ngọc Thạch",
+      "biography": "Chuyên ngành Hô Hấp.",
+      "clinicRoom": "P701",
+      "consultationFee": 350000
+    },
+    {
+      "fullName": "Trịnh Văn Đức",
+      "email": "trinh.van.duc@demo.bookingclinic.local",
+      "specialty": "Tiêu hóa",
+      "experienceYears": 12,
+      "qualification": "Bác sĩ chuyên khoa Tiêu hóa",
+      "biography": "Khám và tư vấn các bệnh lý tiêu hóa.",
+      "clinicRoom": "P108",
+      "consultationFee": 200000
+    },
+    {
+      "fullName": "Phạm Quốc Bảo",
+      "email": "pham.quoc.bao@demo.bookingclinic.local",
+      "specialty": "Cơ xương khớp",
+      "experienceYears": 10,
+      "qualification": "Tốt nghiệp Đại học Y Dược TPHCM",
+      "biography": "Chuyên ngành Cơ Xương Khớp.",
+      "clinicRoom": "P601",
+      "consultationFee": 500000
+    },
+    {
+      "fullName": "Hoàng Minh Châu",
+      "email": "hoang.minh.chau@demo.bookingclinic.local",
+      "specialty": "Thần kinh",
+      "experienceYears": 9,
+      "qualification": "Bác sĩ chuyên khoa Thần kinh",
+      "biography": "Khám đau đầu, chóng mặt, tê bì tay chân, rối loạn giấc ngủ.",
+      "clinicRoom": "P110",
+      "consultationFee": 300000
+    }
+  ]
+}

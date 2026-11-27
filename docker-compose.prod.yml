@@ -72,6 +72,8 @@ services:
       APP_BASE_URL: https://${DOMAIN}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      # fictional specialties/doctors + nightly free slots, so the public demo is always bookable
+      DEMO_DATA: ${DEMO_DATA:-false}
       VNPAY_TMN_CODE: ${VNPAY_TMN_CODE:-}
       VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET:-}
       VNPAY_RETURN_URL: https://${DOMAIN}/payment/return
