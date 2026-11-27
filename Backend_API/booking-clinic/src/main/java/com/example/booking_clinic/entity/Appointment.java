@@ -21,6 +21,7 @@ public class Appointment {
     private Long id;
 
     @Version
+    @Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
