@@ -1,0 +1,7 @@
+# Files that run on Linux must keep LF line endings whatever the committer's settings
+*.sh       text eol=lf
+mvnw       text eol=lf
+Dockerfile text eol=lf
+Caddyfile  text eol=lf
+*.yml      text eol=lf
+*.conf     text eol=lf
