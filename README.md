@@ -16,12 +16,14 @@ takes over when the assistant can't help.
 Two patients pressing "Book" on the same slot at the same moment is a *read-then-write* race. Booking runs in one
 transaction that **locks the slot row** (`SELECT … FOR UPDATE`). A concurrent request waits for that transaction to
 commit, then sees the slot as `BOOKED` and gets **HTTP 409**. A patient also cannot hold two visits at overlapping
-times, even with different doctors.
+times, even with different doctors. Deleting a slot takes the same lock: a slot that holds a booking returns 409,
+and a slot with past visits is closed rather than deleted, so the history is kept.
 
 | 50 patients book one slot at the same instant | Result |
 |---|---|
-| With the row lock | **1 booked, 49 × 409**, exactly one appointment in the database |
+| With the row lock, MySQL 8 (Testcontainers) | **1 booked, 49 × 409** in 319 ms, exactly one appointment in the database |
 | Same test with the lock removed | **10 patients got the same slot** (the test fails, as it should) |
+| End to end over HTTP on the Docker stack, 20 accounts | 1 × 201, 19 × 409 |
 
 The test ([`BookingConcurrencyTestBase`](Backend_API/booking-clinic/src/test/java/com/example/booking_clinic/booking/BookingConcurrencyTestBase.java))
 runs on H2 and on **MySQL 8 via Testcontainers in CI**. An unpaid booking holds the slot for 10 minutes, then a
@@ -122,6 +124,8 @@ OPENAI_API_KEY=                     # optional: without it the assistant runs in
 ```
 
 - App: http://localhost:5173 · API health: http://127.0.0.1:8082/api/v1/health
+- Memory: the whole stack uses about 1 GB of RAM when idle, measured with `docker stats` (backend about 460 MB,
+  MySQL about 370 MB, AI service about 75 MB).
 - VNPay sandbox: set `VNPAY_TMN_CODE` and `VNPAY_HASH_SECRET`.
 - Reminder emails: set `MAIL_USERNAME` and `MAIL_PASSWORD`. Without them, reminders are in-app only.
 - All options are listed in [`.env.example`](.env.example).

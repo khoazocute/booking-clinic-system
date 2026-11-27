@@ -1,5 +1,6 @@
 package com.example.booking_clinic.service.impl;
 
+import com.example.booking_clinic.common.exception.ResourceConflictException;
 import com.example.booking_clinic.common.exception.ResourceNotFoundException;
 import com.example.booking_clinic.dto.doctor_schedule.CreateDoctorScheduleRequest;
 import com.example.booking_clinic.dto.doctor_schedule.DoctorScheduleResponse;
@@ -7,6 +8,8 @@ import com.example.booking_clinic.dto.doctor_schedule.UpdateDoctorScheduleReques
 import com.example.booking_clinic.dto.doctor_schedule.UpdateStatusDoctorScheduleRequest;
 import com.example.booking_clinic.entity.Doctor;
 import com.example.booking_clinic.entity.DoctorSchedule;
+import com.example.booking_clinic.entity.enums.AppointmentStatus;
+import com.example.booking_clinic.repository.AppointmentRepository;
 import com.example.booking_clinic.repository.DoctorRepository;
 import com.example.booking_clinic.repository.DoctorScheduleRepository;
 import com.example.booking_clinic.service.DoctorScheduleService;
@@ -27,6 +30,7 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
 
     private final DoctorScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
+    private final AppointmentRepository appointmentRepository;
 
     //Validate dữ liệu
     private void validateScheduleTime(LocalDate workDate, LocalTime startTime, LocalTime endTime) {
@@ -117,10 +121,22 @@ public class DoctorScheduleServiceImpl implements DoctorScheduleService {
     @Override
     @Transactional
     public void deleteSchedule(Long id) {
-        if (!scheduleRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Schedule not found");
+        // same row lock as booking: a delete and a booking of this slot cannot interleave
+        DoctorSchedule schedule = scheduleRepository.findByIdWithLock(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Schedule not found"));
+
+        if (appointmentRepository.existsBySchedule_IdAndStatusIn(id, List.of(AppointmentStatus.PENDING,
+                AppointmentStatus.CONFIRMED, AppointmentStatus.REQUESTED, AppointmentStatus.SCHEDULED,
+                AppointmentStatus.IN_PROGRESS))) {
+            throw new ResourceConflictException("Khung giờ đang có lịch hẹn. Hãy huỷ lịch hẹn trước khi xoá khung giờ.");
         }
-        scheduleRepository.deleteById(id);
+        if (appointmentRepository.existsBySchedule_Id(id)) {
+            // past (cancelled / completed) visits still point here: keep the history, just close the slot
+            schedule.setStatus("CANCELLED");
+            scheduleRepository.save(schedule);
+            return;
+        }
+        scheduleRepository.delete(schedule);
     }
 
     @Override

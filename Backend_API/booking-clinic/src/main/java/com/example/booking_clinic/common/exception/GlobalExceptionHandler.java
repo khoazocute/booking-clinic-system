@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({PrescriptionAlreadyExistsException.class, PaymentAlreadyExistsException.class,
-            InsufficientStockException.class, SlotUnavailableException.class})
+            InsufficientStockException.class, SlotUnavailableException.class, ResourceConflictException.class})
     public ResponseEntity<ApiResponse<Object>> handleConflict(RuntimeException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ApiResponse.error(exception.getMessage(), null));

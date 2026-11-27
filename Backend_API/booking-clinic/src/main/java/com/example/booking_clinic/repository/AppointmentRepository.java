@@ -22,6 +22,8 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     boolean existsBySchedule_IdAndStatusIn(Long scheduleId, List<AppointmentStatus> statuses);
 
+    boolean existsBySchedule_Id(Long scheduleId);
+
     /** Does the patient already have an active appointment overlapping this time (with any doctor)? */
     @Query("SELECT COUNT(a) > 0 FROM Appointment a JOIN a.schedule s " +
             "WHERE a.patient.id = :patientId AND a.status IN :statuses AND s.workDate = :date " +
