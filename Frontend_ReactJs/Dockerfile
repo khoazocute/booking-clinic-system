@@ -1,5 +1,6 @@
 # Step 1: Build stage
-FROM node:18-alpine AS build
+# static files are platform-independent: build once on the native builder, even for an arm64 image
+FROM --platform=$BUILDPLATFORM node:20-alpine AS build
 WORKDIR /app
 
 # Sao chép package.json và lockfile để tải trước dependency (giúp tận dụng cache)

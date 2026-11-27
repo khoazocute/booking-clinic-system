@@ -1,0 +1,14 @@
+# HTTPS certificates are issued and renewed automatically for {$DOMAIN}.
+# The frontend's nginx serves the SPA and proxies /api (including the SSE stream) and /ws to the backend.
+{$DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy frontend:80
+}

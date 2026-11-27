@@ -1,6 +1,7 @@
 # Booking Clinic
 
 [![CI](https://github.com/khoazocute/booking-clinic-system/actions/workflows/ci.yml/badge.svg)](https://github.com/khoazocute/booking-clinic-system/actions/workflows/ci.yml)
+[![CD](https://github.com/khoazocute/booking-clinic-system/actions/workflows/cd.yml/badge.svg)](https://github.com/khoazocute/booking-clinic-system/actions/workflows/cd.yml)
 
 A clinic appointment platform with an **AI booking assistant**. Patients describe their symptoms, get a suggested
 specialty, see real doctors and free slots, and confirm a booking. Payment is through VNPay, and a member of staff
@@ -139,10 +140,21 @@ OPENAI_API_KEY=                     # optional: without it the assistant runs in
 | Offline evals | `python -m eval.run_eval --router all-offline` · `python -m eval.retrieval_eval --retriever bm25` | Free; paid evals require `--allow-paid-api` |
 | Frontend | `cd Frontend_ReactJs && npm run build` | |
 
-CI runs all of the above on every push, with real MySQL (Testcontainers) and real pgvector.
+## CI/CD
+
+- **CI** ([`ci.yml`](.github/workflows/ci.yml)) runs on every push. It runs all of the tests above with real MySQL
+  (Testcontainers) and a real pgvector, then builds the frontend and validates the compose file.
+- **CD** ([`cd.yml`](.github/workflows/cd.yml)) runs after CI is green on `main`.
+  - It builds multi-arch (amd64 and arm64) images and publishes them to GitHub Container Registry, tagged with the commit.
+  - It deploys them to the server over SSH (`compose pull` and `up -d`), then runs a health check.
+  - The running tag is pinned on the server, so rolling back means switching to the previous tag.
+- The production stack ([`docker-compose.prod.yml`](docker-compose.prod.yml)) pulls images and builds nothing on the
+  server. Caddy provides automatic HTTPS and is the only exposed service. Setup is in
+  [`deploy/README.md`](deploy/README.md).
 
 ## Limitations and next steps
 - The answer quality of the full chat agent is scored by an LLM-as-judge harness that is written but not yet run,
   because it needs paid API calls.
 - The evaluation sets are small and were written by the same author. The next step is an independent question set.
-- Production deployment (HTTPS reverse proxy, demo data, backups) is in progress.
+- There is no public demo deployment yet. The pipeline and the production stack are ready; demo data still has to
+  be created on a fresh database.

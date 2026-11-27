@@ -1,0 +1,134 @@
+# Production: runs the images published by .github/workflows/cd.yml (nothing is built on the server).
+#   docker compose -f docker-compose.prod.yml up -d
+# Only Caddy is exposed (80/443, automatic HTTPS). Setup and secrets: deploy/README.md
+
+name: booking-clinic
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    # small-server tuning: about 250 MB instead of about 400 MB
+    command: ["--performance-schema=OFF", "--innodb-buffer-pool-size=128M"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: booking_clinic_db
+    # no init.sql here: production starts empty; the first admin comes from ADMIN_EMAIL / ADMIN_PASSWORD
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logging
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    logging: *logging
+
+  vector-db:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kb
+      POSTGRES_PASSWORD: ${VECTOR_DB_PASSWORD:?set VECTOR_DB_PASSWORD in .env}
+      POSTGRES_DB: knowledge
+    volumes:
+      - vector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kb -d knowledge"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    logging: *logging
+
+  backend:
+    image: ${IMAGE_PREFIX:-ghcr.io/khoazocute/booking-clinic}-backend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/booking_clinic_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      TZ: Asia/Ho_Chi_Minh
+      JAVA_TOOL_OPTIONS: -Duser.timezone=Asia/Ho_Chi_Minh -Xmx384m -XX:+UseSerialGC
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      CORS_ALLOWED_ORIGINS: https://${DOMAIN:?set DOMAIN in .env}
+      APP_BASE_URL: https://${DOMAIN}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      VNPAY_TMN_CODE: ${VNPAY_TMN_CODE:-}
+      VNPAY_HASH_SECRET: ${VNPAY_HASH_SECRET:-}
+      VNPAY_RETURN_URL: https://${DOMAIN}/payment/return
+      MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      AI_SERVICE_BASE_URL: http://ai-service:8000
+      AI_INTERNAL_TOKEN: ${AI_INTERNAL_TOKEN:?set AI_INTERNAL_TOKEN in .env}
+      AI_CHAT_RATE_LIMIT_PER_MINUTE: ${AI_CHAT_RATE_LIMIT_PER_MINUTE:-10}
+      AI_CHAT_DAILY_LIMIT_PER_USER: ${AI_CHAT_DAILY_LIMIT_PER_USER:-20}
+      # public demo: keep the paid budget small; past it the assistant answers in free fallback mode
+      AI_CHAT_DAILY_LIMIT_GLOBAL: ${AI_CHAT_DAILY_LIMIT_GLOBAL:-100}
+    logging: *logging
+
+  ai-service:
+    image: ${IMAGE_PREFIX:-ghcr.io/khoazocute/booking-clinic}-ai-service:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      vector-db:
+        condition: service_healthy
+    environment:
+      AI_INTERNAL_TOKEN: ${AI_INTERNAL_TOKEN}
+      BACKEND_BASE_URL: http://backend:8082
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      CHAT_MODEL: ${CHAT_MODEL:-gpt-4.1-mini}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      EMBEDDING_PROVIDER: auto
+      DATABASE_URL: postgresql://kb:${VECTOR_DB_PASSWORD}@vector-db:5432/knowledge
+      TZ: Asia/Ho_Chi_Minh
+    logging: *logging
+
+  frontend:
+    image: ${IMAGE_PREFIX:-ghcr.io/khoazocute/booking-clinic}-frontend:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    logging: *logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - frontend
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    logging: *logging
+
+volumes:
+  mysql_data:
+  vector_data:
+  caddy_data:
+  caddy_config:

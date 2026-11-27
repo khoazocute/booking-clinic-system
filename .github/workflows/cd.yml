@@ -1,0 +1,117 @@
+name: CD
+
+# Runs after CI succeeds on main: publish images to GHCR, then deploy them to the server over SSH.
+# Deploy is skipped (images are still published) until the SSH_* secrets exist. Setup: deploy/README.md
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+# never run two deployments at once; a newer one waits instead of cancelling a half-done deploy
+concurrency:
+  group: cd-production
+  cancel-in-progress: false
+
+env:
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/booking-clinic
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.service }} image
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - service: backend
+            context: Backend_API/booking-clinic
+          - service: frontend
+            context: Frontend_ReactJs
+          - service: ai-service
+            context: AI_Service
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # exactly the commit CI tested
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: version
+        run: echo "tag=sha-$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+      # arm64 too, for ARM servers such as Oracle Cloud Always Free
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: |
+            VITE_API_BASE_URL=/api/v1
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ steps.version.outputs.tag }}
+            ${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.event.workflow_run.head_sha || github.sha }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  deploy:
+    name: Deploy to server
+    needs: publish
+    runs-on: ubuntu-latest
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+      DEPLOY_URL: ${{ vars.DEPLOY_URL }}
+      TAG: ${{ needs.publish.outputs.tag }}
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - name: No server configured
+        if: env.SSH_HOST == ''
+        run: echo "::notice::Images ${TAG} published to GHCR. Deploy skipped: add the SSH_* secrets (deploy/README.md)."
+
+      - name: Deploy over SSH
+        if: env.SSH_HOST != ''
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          ssh -i ~/.ssh/deploy_key -p "${SSH_PORT:-22}" "$SSH_USER@$SSH_HOST" \
+            "DEPLOY_PATH='${DEPLOY_PATH:-booking-clinic-system}' TAG='$TAG' SHA='$SHA' bash -s" <<'REMOTE'
+          set -euo pipefail
+          cd "$DEPLOY_PATH"
+          git fetch --quiet origin
+          git checkout --quiet --detach "$SHA"        # compose file + Caddyfile of the deployed commit
+          # pin the running version in .env, so a manual restart keeps it and rollback = previous tag
+          if grep -q '^IMAGE_TAG=' .env; then sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$TAG/" .env; else echo "IMAGE_TAG=$TAG" >> .env; fi
+          docker compose -f docker-compose.prod.yml pull --quiet
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker image prune -f > /dev/null
+          echo "deployed $TAG"
+          REMOTE
+
+      - name: Health check
+        if: env.SSH_HOST != '' && env.DEPLOY_URL != ''
+        run: curl -fsS --retry 30 --retry-delay 5 --retry-all-errors "$DEPLOY_URL/api/v1/health"

@@ -1,5 +1,6 @@
 # Step 1: Build stage
-FROM maven:3.9-eclipse-temurin-21-alpine AS build
+# the jar is platform-independent: build it once on the native builder, even for an arm64 image
+FROM --platform=$BUILDPLATFORM maven:3.9-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
 # Sao chép pom.xml trước để tải các dependency cần thiết (giúp tận dụng cache của Docker)
